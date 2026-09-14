@@ -60,8 +60,8 @@ io.on('connection', (socket) => {
     }
   });
 
-  // Host starts game with chosen question count
-  socket.on('host:start_game', (requestedCount) => {
+  // Host starts game with question count and difficulty
+  socket.on('host:start_game', (config) => {
     clearInterval(questionTimer);
     clearTimeout(intermissionTimer);
 
@@ -71,8 +71,36 @@ io.on('connection', (socket) => {
       players[id].currentAnswer = null;
     });
 
-    const shuffled = shuffle(masterQuestions);
-    const count = parseInt(requestedCount, 10) || masterQuestions.length;
+    const requestedCount = typeof config === 'object' ? config.count : config;
+    const requestedDifficulty = typeof config === 'object' ? config.difficulty : 'all';
+
+    // Filter master questions by requested difficulty
+    let eligibleQuestions = masterQuestions.filter((q) => {
+      const cat = (q.category || '').toLowerCase();
+      switch (requestedDifficulty) {
+        case 'easy':
+          return cat.includes('easy');
+        case 'medium':
+          return cat.includes('medium');
+        case 'hard':
+          return cat.includes('hard');
+        case 'easy_medium':
+          return cat.includes('easy') || cat.includes('medium');
+        case 'medium_hard':
+          return cat.includes('medium') || cat.includes('hard');
+        case 'all':
+        default:
+          return true;
+      }
+    });
+
+    // Fallback if filter returns empty
+    if (eligibleQuestions.length === 0) {
+      eligibleQuestions = masterQuestions;
+    }
+
+    const shuffled = shuffle(eligibleQuestions);
+    const count = parseInt(requestedCount, 10) || eligibleQuestions.length;
     activeQuestions = shuffled.slice(0, Math.min(count, shuffled.length));
 
     currentQuestionIndex = -1;
