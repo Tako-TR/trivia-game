@@ -96,6 +96,20 @@
       font-size: 1rem;
       margin-bottom: 1rem;
     }
+    .trivia-image-box {
+      margin: 1rem auto;
+      background-color: #ffffff;
+      padding: 1rem;
+      border-radius: 12px;
+      display: inline-block;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+    }
+    .trivia-image {
+      max-height: 200px;
+      max-width: 100%;
+      object-fit: contain;
+      display: block;
+    }
   </style>
 </head>
 <body>
@@ -113,6 +127,7 @@
           <label for="category-select">Select Category</label>
           <select id="category-select">
             <option value="all" selected>Mixed (All Categories)</option>
+            <option value="logos">Brand Logos Only</option>
             <option value="bible">Bible Trivia Only</option>
             <option value="movie">Movie Quotes Only</option>
           </select>
@@ -158,10 +173,15 @@
     <div id="host-game" class="hidden">
       <div id="host-category" class="badge">Category</div>
       <div id="host-timer" class="timer">15</div>
+
+      <!-- Image Box -->
+      <div id="host-image-container" class="trivia-image-box hidden">
+        <img id="host-question-image" class="trivia-image" src="" alt="Trivia Visual">
+      </div>
+
       <p id="host-question" class="question-text">Question</p>
       <div id="host-options" class="options-grid"></div>
 
-      <!-- Stop Game Button during active question -->
       <button class="btn-danger stop-game-btn">Stop / End Game</button>
     </div>
 
@@ -178,7 +198,6 @@
       <h2>Current Standings</h2>
       <ul id="host-leaderboard" class="leaderboard"></ul>
 
-      <!-- Stop Game Button during intermission -->
       <button class="btn-danger stop-game-btn">Stop / End Game</button>
     </div>
 
@@ -206,6 +225,8 @@
     const hostCategory = document.getElementById('host-category');
     const hostTimer = document.getElementById('host-timer');
     const hostQuestion = document.getElementById('host-question');
+    const hostImageContainer = document.getElementById('host-image-container');
+    const hostQuestionImage = document.getElementById('host-question-image');
     const hostOptions = document.getElementById('host-options');
     const hostCorrectAnswer = document.getElementById('host-correct-answer');
     const hostLeaderboard = document.getElementById('host-leaderboard');
@@ -227,7 +248,6 @@
       socket.emit('host:start_game', config);
     });
 
-    // Handle Stop / End Game click
     stopGameButtons.forEach(btn => {
       btn.addEventListener('click', () => {
         if (confirm("Are you sure you want to stop the game right now?")) {
@@ -260,6 +280,15 @@
       hostCategory.textContent = `${data.category} (${data.questionNumber}/${data.totalQuestions})`;
       hostTimer.textContent = data.timeLeft;
       hostQuestion.textContent = data.question;
+
+      // Handle logo image
+      if (data.image) {
+        hostQuestionImage.src = data.image;
+        hostImageContainer.classList.remove('hidden');
+      } else {
+        hostQuestionImage.src = '';
+        hostImageContainer.classList.add('hidden');
+      }
 
       hostOptions.innerHTML = '';
       data.options.forEach(opt => {
