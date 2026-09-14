@@ -9,6 +9,7 @@ const server = http.createServer(app);
 const io = new Server(server);
 
 const PORT = process.env.PORT || 3000;
+const QUESTION_DURATION = 15; // seconds per question
 
 app.use(express.static(path.join(__dirname, 'public')));
 
@@ -32,12 +33,12 @@ function shuffle(array) {
 }
 
 // Game State
-let players = {};
+let players = {}; // socketId -> { name, score, currentAnswer, answerTimeLeft, roundPointsEarned }
 let activeQuestions = [];
 let currentQuestionIndex = -1;
 let questionTimer = null;
 let intermissionTimer = null;
-let timeLeft = 15;
+let timeLeft = QUESTION_DURATION;
 let roundActive = false;
 
 io.on('connection', (socket) => {
@@ -46,7 +47,9 @@ io.on('connection', (socket) => {
     players[socket.id] = {
       name: name || `Player_${socket.id.substring(0, 4)}`,
       score: 0,
-      currentAnswer: null
+      currentAnswer: null,
+      answerTimeLeft: 0,
+      roundPointsEarned: 0
     };
     socket.emit('player:joined', { id: socket.id, name: players[socket.id].name });
     io.emit('game:player_list', getLeaderboard());
@@ -56,6 +59,7 @@ io.on('connection', (socket) => {
   socket.on('player:submit_answer', (answerIndex) => {
     if (roundActive && players[socket.id] && players[socket.id].currentAnswer === null) {
       players[socket.id].currentAnswer = answerIndex;
+      players[socket.id].answerTimeLeft = timeLeft; // Capture the exact seconds remaining
       socket.emit('player:answer_received', answerIndex);
     }
   });
@@ -69,12 +73,14 @@ io.on('connection', (socket) => {
     Object.keys(players).forEach((id) => {
       players[id].score = 0;
       players[id].currentAnswer = null;
+      players[id].answerTimeLeft = 0;
+      players[id].roundPointsEarned = 0;
     });
 
     const requestedCount = typeof config === 'object' ? config.count : config;
     const requestedDifficulty = typeof config === 'object' ? config.difficulty : 'all';
 
-    // Filter master questions by requested difficulty
+    // Filter questions by difficulty
     let eligibleQuestions = masterQuestions.filter((q) => {
       const cat = (q.category || '').toLowerCase();
       switch (requestedDifficulty) {
@@ -94,7 +100,6 @@ io.on('connection', (socket) => {
       }
     });
 
-    // Fallback if filter returns empty
     if (eligibleQuestions.length === 0) {
       eligibleQuestions = masterQuestions;
     }
@@ -121,18 +126,20 @@ function startNextQuestion() {
 
   if (currentQuestionIndex >= activeQuestions.length) {
     roundActive = false;
-    io.emit('game:over', getLeaderboard());
+    broadcastGameOver();
     return;
   }
 
-  // Clear previous answers
+  // Clear round answers
   Object.keys(players).forEach((id) => {
     players[id].currentAnswer = null;
+    players[id].answerTimeLeft = 0;
+    players[id].roundPointsEarned = 0;
   });
 
   const currentQ = activeQuestions[currentQuestionIndex];
   roundActive = true;
-  timeLeft = 15;
+  timeLeft = QUESTION_DURATION;
 
   io.emit('game:new_question', {
     category: currentQ.category,
@@ -161,18 +168,38 @@ function endRound() {
   const correctAnswerIndex = currentQ.answer;
   const correctAnswerText = currentQ.options[correctAnswerIndex];
 
-  // Score calculations
+  // Speed-based scoring calculation:
+  // Base: 500 points for correct answer
+  // Speed bonus: up to 500 additional points based on remaining time
   Object.keys(players).forEach((id) => {
-    if (players[id].currentAnswer === correctAnswerIndex) {
-      players[id].score += 100;
+    const p = players[id];
+    if (p.currentAnswer === correctAnswerIndex) {
+      const bonus = Math.round((Math.max(1, p.answerTimeLeft) / QUESTION_DURATION) * 500);
+      const earned = 500 + bonus;
+      p.roundPointsEarned = earned;
+      p.score += earned;
+    } else {
+      p.roundPointsEarned = 0;
     }
   });
 
-  io.emit('game:round_ended', {
-    correctAnswer: correctAnswerIndex,
-    correctAnswerText: correctAnswerText,
-    questionText: currentQ.question,
-    leaderboard: getLeaderboard()
+  const leaderboard = getLeaderboard();
+
+  // Send individualized payload to each socket so they know their personal rank & points
+  io.sockets.sockets.forEach((socket) => {
+    const player = players[socket.id];
+    const rankIndex = leaderboard.findIndex((item) => item.id === socket.id);
+    const rank = rankIndex !== -1 ? rankIndex + 1 : null;
+
+    socket.emit('game:round_ended', {
+      correctAnswer: correctAnswerIndex,
+      correctAnswerText: correctAnswerText,
+      questionText: currentQ.question,
+      leaderboard: leaderboard,
+      myRank: rank,
+      myPointsEarned: player ? player.roundPointsEarned : 0,
+      myTotalScore: player ? player.score : 0
+    });
   });
 
   // Automatically advance after a 5-second results screen
@@ -181,10 +208,27 @@ function endRound() {
   }, 5000);
 }
 
+function broadcastGameOver() {
+  const leaderboard = getLeaderboard();
+  io.sockets.sockets.forEach((socket) => {
+    const rankIndex = leaderboard.findIndex((item) => item.id === socket.id);
+    const rank = rankIndex !== -1 ? rankIndex + 1 : null;
+
+    socket.emit('game:over', {
+      leaderboard: leaderboard,
+      myRank: rank
+    });
+  });
+}
+
 function getLeaderboard() {
-  return Object.values(players)
-    .sort((a, b) => b.score - a.score)
-    .map((p) => ({ name: p.name, score: p.score }));
+  return Object.keys(players)
+    .map((id) => ({
+      id: id,
+      name: players[id].name,
+      score: players[id].score
+    }))
+    .sort((a, b) => b.score - a.score);
 }
 
 server.listen(PORT, () => {
