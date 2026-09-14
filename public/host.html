@@ -28,8 +28,8 @@
       gap: 0.4rem;
     }
     .setting-row label {
-      font-size: 0.9rem;
-      font-weight: 600;
+      font-size: 0.85rem;
+      font-weight: 700;
       color: #94a3b8;
       text-transform: uppercase;
       letter-spacing: 0.05em;
@@ -108,6 +108,17 @@
       <div class="player-counter">Players connected: <strong id="player-count">0</strong></div>
       
       <div class="settings-panel">
+        <!-- Category Selector -->
+        <div class="setting-row">
+          <label for="category-select">Select Category</label>
+          <select id="category-select">
+            <option value="all" selected>Mixed (All Categories)</option>
+            <option value="bible">Bible Trivia Only</option>
+            <option value="movie">Movie Quotes Only</option>
+          </select>
+        </div>
+
+        <!-- Difficulty Selector -->
         <div class="setting-row">
           <label for="difficulty-select">Select Difficulty</label>
           <select id="difficulty-select">
@@ -120,8 +131,9 @@
           </select>
         </div>
 
+        <!-- Question Count Selector -->
         <div class="setting-row">
-          <label for="question-count">Question Count</label>
+          <label for="question-count">Number of Questions</label>
           <select id="question-count">
             <option value="5">5 Questions</option>
             <option value="10" selected>10 Questions</option>
@@ -149,7 +161,7 @@
       <p id="host-question" class="question-text">Question</p>
       <div id="host-options" class="options-grid"></div>
 
-      <!-- Stop Game Button during live question -->
+      <!-- Stop Game Button during active question -->
       <button class="btn-danger stop-game-btn">Stop / End Game</button>
     </div>
 
@@ -201,14 +213,16 @@
 
     const btnStart = document.getElementById('btn-start');
     const btnRestart = document.getElementById('btn-restart');
-    const questionCountSelect = document.getElementById('question-count');
+    const categorySelect = document.getElementById('category-select');
     const difficultySelect = document.getElementById('difficulty-select');
+    const questionCountSelect = document.getElementById('question-count');
     const stopGameButtons = document.querySelectorAll('.stop-game-btn');
 
     btnStart.addEventListener('click', () => {
       const config = {
-        count: questionCountSelect.value,
-        difficulty: difficultySelect.value
+        category: categorySelect.value,
+        difficulty: difficultySelect.value,
+        count: questionCountSelect.value
       };
       socket.emit('host:start_game', config);
     });
