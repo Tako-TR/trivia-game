@@ -12,7 +12,7 @@ const PORT = process.env.PORT || 3000;
 
 app.use(express.static(path.join(__dirname, 'public')));
 
-// Load master questions from questions.json
+// Load questions from questions.json
 let masterQuestions = [];
 try {
   const data = fs.readFileSync(path.join(__dirname, 'questions.json'), 'utf8');
@@ -21,7 +21,7 @@ try {
   console.error('Error loading questions.json:', err);
 }
 
-// Fisher-Yates array shuffle function
+// Fisher-Yates array shuffle
 function shuffle(array) {
   const arr = [...array];
   for (let i = arr.length - 1; i > 0; i--) {
@@ -32,10 +32,11 @@ function shuffle(array) {
 }
 
 // Game State
-let players = {}; // socketId -> { name, score, currentAnswer }
+let players = {};
 let activeQuestions = [];
 let currentQuestionIndex = -1;
-let timer = null;
+let questionTimer = null;
+let intermissionTimer = null;
 let timeLeft = 15;
 let roundActive = false;
 
@@ -59,49 +60,23 @@ io.on('connection', (socket) => {
     }
   });
 
-  // Host starts or advances question
-  socket.on('host:next_question', () => {
-    // If starting a fresh run from lobby or restarting after game over, shuffle questions
-    if (currentQuestionIndex === -1 || currentQuestionIndex >= activeQuestions.length) {
-      activeQuestions = shuffle(masterQuestions);
-      currentQuestionIndex = 0;
-    } else {
-      currentQuestionIndex++;
-    }
+  // Host starts game with chosen question count
+  socket.on('host:start_game', (requestedCount) => {
+    clearInterval(questionTimer);
+    clearTimeout(intermissionTimer);
 
-    if (currentQuestionIndex >= activeQuestions.length) {
-      io.emit('game:over', getLeaderboard());
-      return;
-    }
-
-    // Reset round answers
+    // Reset scores for new game
     Object.keys(players).forEach((id) => {
+      players[id].score = 0;
       players[id].currentAnswer = null;
     });
 
-    const currentQ = activeQuestions[currentQuestionIndex];
-    roundActive = true;
-    timeLeft = 15;
+    const shuffled = shuffle(masterQuestions);
+    const count = parseInt(requestedCount, 10) || masterQuestions.length;
+    activeQuestions = shuffled.slice(0, Math.min(count, shuffled.length));
 
-    io.emit('game:new_question', {
-      category: currentQ.category,
-      question: currentQ.question,
-      options: currentQ.options,
-      questionNumber: currentQuestionIndex + 1,
-      totalQuestions: activeQuestions.length,
-      timeLeft: timeLeft
-    });
-
-    clearInterval(timer);
-    timer = setInterval(() => {
-      timeLeft--;
-      io.emit('game:timer_tick', timeLeft);
-
-      if (timeLeft <= 0) {
-        clearInterval(timer);
-        endRound();
-      }
-    }, 1000);
+    currentQuestionIndex = -1;
+    startNextQuestion();
   });
 
   // Disconnect
@@ -113,12 +88,51 @@ io.on('connection', (socket) => {
   });
 });
 
+function startNextQuestion() {
+  currentQuestionIndex++;
+
+  if (currentQuestionIndex >= activeQuestions.length) {
+    roundActive = false;
+    io.emit('game:over', getLeaderboard());
+    return;
+  }
+
+  // Clear previous answers
+  Object.keys(players).forEach((id) => {
+    players[id].currentAnswer = null;
+  });
+
+  const currentQ = activeQuestions[currentQuestionIndex];
+  roundActive = true;
+  timeLeft = 15;
+
+  io.emit('game:new_question', {
+    category: currentQ.category,
+    question: currentQ.question,
+    options: currentQ.options,
+    questionNumber: currentQuestionIndex + 1,
+    totalQuestions: activeQuestions.length,
+    timeLeft: timeLeft
+  });
+
+  clearInterval(questionTimer);
+  questionTimer = setInterval(() => {
+    timeLeft--;
+    io.emit('game:timer_tick', timeLeft);
+
+    if (timeLeft <= 0) {
+      clearInterval(questionTimer);
+      endRound();
+    }
+  }, 1000);
+}
+
 function endRound() {
   roundActive = false;
   const currentQ = activeQuestions[currentQuestionIndex];
   const correctAnswer = currentQ.answer;
 
-  // Calculate points
+  // Score calculations
   Object.keys(players).forEach((id) => {
     if (players[id].currentAnswer === correctAnswer) {
       players[id].score += 100;
@@ -127,8 +141,14 @@ function endRound() {
 
   io.emit('game:round_ended', {
     correctAnswer: correctAnswer,
-    leaderboard: getLeaderboard()
+    leaderboard: getLeaderboard(),
+    nextInSeconds: 5
   });
+
+  // Automatically advance after a 5-second results screen
+  intermissionTimer = setTimeout(() => {
+    startNextQuestion();
+  }, 5000);
 }
 
 function getLeaderboard() {
