@@ -12,14 +12,38 @@
     }
     .host-controls {
       display: flex;
-      justify-content: center;
+      flex-direction: column;
+      align-items: center;
       gap: 1rem;
       margin-top: 1.5rem;
+    }
+    .select-wrapper {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      font-size: 1rem;
+      color: #94a3b8;
+    }
+    select {
+      background-color: #0f172a;
+      color: #38bdf8;
+      border: 1px solid #475569;
+      padding: 0.5rem 1rem;
+      border-radius: 8px;
+      font-size: 1rem;
+      font-weight: bold;
+      cursor: pointer;
     }
     .player-counter {
       margin-top: 1rem;
       font-size: 1.1rem;
       color: #94a3b8;
+    }
+    .auto-notice {
+      color: #f59e0b;
+      font-weight: bold;
+      margin-bottom: 1rem;
+      font-size: 1.1rem;
     }
   </style>
 </head>
@@ -31,9 +55,23 @@
     <div id="host-lobby">
       <p class="question-text">Waiting for players to connect...</p>
       <div class="player-counter">Players connected: <strong id="player-count">0</strong></div>
+      
       <div class="host-controls">
-        <button id="btn-start" style="background-color: #10b981;">Start Game</button>
+        <div class="select-wrapper">
+          <label for="question-count">Number of Questions:</label>
+          <select id="question-count">
+            <option value="5">5 Questions</option>
+            <option value="10" selected>10 Questions</option>
+            <option value="15">15 Questions</option>
+            <option value="20">20 Questions</option>
+            <option value="25">25 Questions</option>
+            <option value="50">50 Questions</option>
+            <option value="100">All 100 Questions</option>
+          </select>
+        </div>
+        <button id="btn-start" style="background-color: #10b981; min-width: 200px;">Start Game</button>
       </div>
+
       <h2 style="margin-top: 1.5rem; font-size: 1.2rem;">Connected Players</h2>
       <ul id="host-lobby-players" class="leaderboard"></ul>
     </div>
@@ -49,10 +87,8 @@
     <!-- Round End / Leaderboard View -->
     <div id="host-round-end" class="hidden">
       <h1>Round Results</h1>
-      <div class="host-controls">
-        <button id="btn-next" style="background-color: #3b82f6;">Next Question</button>
-      </div>
-      <h2 style="margin-top: 1.5rem;">Current Standings</h2>
+      <p class="auto-notice">Next question loading automatically in 5 seconds...</p>
+      <h2>Current Standings</h2>
       <ul id="host-leaderboard" class="leaderboard"></ul>
     </div>
 
@@ -61,6 +97,9 @@
       <h1 style="color: #f59e0b;">Game Over!</h1>
       <p class="question-text">Final Standings</p>
       <ul id="host-final-leaderboard" class="leaderboard"></ul>
+      <div class="host-controls">
+        <button id="btn-restart" style="background-color: #3b82f6;">Play Again</button>
+      </div>
     </div>
   </div>
 
@@ -82,14 +121,17 @@
     const hostFinalLeaderboard = document.getElementById('host-final-leaderboard');
 
     const btnStart = document.getElementById('btn-start');
-    const btnNext = document.getElementById('btn-next');
+    const btnRestart = document.getElementById('btn-restart');
+    const questionCountSelect = document.getElementById('question-count');
 
     btnStart.addEventListener('click', () => {
-      socket.emit('host:next_question');
+      const count = questionCountSelect.value;
+      socket.emit('host:start_game', count);
     });
 
-    btnNext.addEventListener('click', () => {
-      socket.emit('host:next_question');
+    btnRestart.addEventListener('click', () => {
+      hostGameOver.classList.add('hidden');
+      hostLobby.classList.remove('hidden');
     });
 
     socket.on('game:player_list', (players) => {
