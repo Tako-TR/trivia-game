@@ -7,6 +7,24 @@
   <link rel="stylesheet" href="style.css">
   <script src="/socket.io/socket.io.js"></script>
   <style>
+    .rank-badge-box {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.5rem;
+      background-color: #334155;
+      padding: 0.5rem 1.25rem;
+      border-radius: 9999px;
+      margin: 0.75rem auto 1rem;
+      font-size: 1.1rem;
+      font-weight: 700;
+      color: #f8fafc;
+      border: 1px solid #475569;
+    }
+    .rank-number {
+      color: #38bdf8;
+      font-size: 1.3rem;
+    }
     .player-answer-reveal {
       background-color: #064e3b;
       border: 2px solid #10b981;
@@ -52,10 +70,16 @@
       <p id="status-message" class="badge hidden">Answer Submitted</p>
     </div>
 
-    <!-- Round Over / Leaderboard Screen -->
+    <!-- Round Over Screen -->
     <div id="results-screen" class="hidden">
       <h1>Round Results</h1>
-      <p id="result-feedback" class="question-text" style="margin-bottom: 0.5rem;"></p>
+      <p id="result-feedback" class="question-text" style="margin-bottom: 0.25rem; font-weight: 700;"></p>
+
+      <!-- Personal Rank Indicator -->
+      <div id="rank-indicator" class="rank-badge-box">
+        <span>Rank:</span>
+        <span id="player-rank-display" class="rank-number">#--</span>
+      </div>
 
       <!-- Prominent Correct Answer Display -->
       <div class="player-answer-reveal">
@@ -87,6 +111,7 @@
     const optionsContainer = document.getElementById('options-container');
     const statusMessage = document.getElementById('status-message');
     const resultFeedback = document.getElementById('result-feedback');
+    const playerRankDisplay = document.getElementById('player-rank-display');
     const playerCorrectAnswer = document.getElementById('player-correct-answer');
     const leaderboardList = document.getElementById('leaderboard-list');
 
@@ -140,34 +165,51 @@
       // Populate correct answer text box
       playerCorrectAnswer.textContent = data.correctAnswerText;
 
-      // Personal feedback
+      // Update personal rank
+      if (data.myRank) {
+        playerRankDisplay.textContent = `#${data.myRank}`;
+      }
+
+      // Personal feedback with speed scoring points
       if (selectedAnswer === data.correctAnswer) {
-        resultFeedback.textContent = "You got it right! (+100 pts)";
+        resultFeedback.textContent = `Correct! +${data.myPointsEarned} pts`;
         resultFeedback.style.color = "#10b981";
       } else if (selectedAnswer === null) {
         resultFeedback.textContent = "Time's up! No answer submitted.";
         resultFeedback.style.color = "#f59e0b";
       } else {
-        resultFeedback.textContent = "You got it wrong!";
+        resultFeedback.textContent = "Incorrect! +0 pts";
         resultFeedback.style.color = "#ef4444";
       }
 
       renderLeaderboard(data.leaderboard);
     });
 
-    socket.on('game:over', (leaderboard) => {
+    socket.on('game:over', (data) => {
       gameScreen.classList.add('hidden');
       resultsScreen.classList.remove('hidden');
-      resultFeedback.textContent = "Game Over! Final Standings:";
+
+      const leaderboard = Array.isArray(data) ? data : data.leaderboard;
+      const myRank = data.myRank;
+
+      if (myRank) {
+        playerRankDisplay.textContent = `#${myRank}`;
+        resultFeedback.textContent = `Game Over! You finished #${myRank}`;
+      } else {
+        resultFeedback.textContent = "Game Over! Final Standings:";
+      }
       resultFeedback.style.color = "#38bdf8";
+
       renderLeaderboard(leaderboard);
     });
 
     function renderLeaderboard(players) {
       leaderboardList.innerHTML = '';
-      players.forEach(p => {
+      players.forEach((p, idx) => {
         const li = document.createElement('li');
-        li.innerHTML = `<span>${p.name}</span><strong>${p.score} pts</strong>`;
+        const isMe = p.id === socket.id;
+        li.style.border = isMe ? '2px solid #38bdf8' : 'none';
+        li.innerHTML = `<span>#${idx + 1} ${p.name} ${isMe ? '(You)' : ''}</span><strong>${p.score} pts</strong>`;
         leaderboardList.appendChild(li);
       });
     }
