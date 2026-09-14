@@ -12,17 +12,28 @@ const PORT = process.env.PORT || 3000;
 
 app.use(express.static(path.join(__dirname, 'public')));
 
-// Load questions from questions.json
-let questions = [];
+// Load master questions from questions.json
+let masterQuestions = [];
 try {
   const data = fs.readFileSync(path.join(__dirname, 'questions.json'), 'utf8');
-  questions = JSON.parse(data);
+  masterQuestions = JSON.parse(data);
 } catch (err) {
   console.error('Error loading questions.json:', err);
 }
 
+// Fisher-Yates array shuffle function
+function shuffle(array) {
+  const arr = [...array];
+  for (let i = arr.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [arr[i], arr[j]] = [arr[j], arr[i]];
+  }
+  return arr;
+}
+
 // Game State
 let players = {}; // socketId -> { name, score, currentAnswer }
+let activeQuestions = [];
 let currentQuestionIndex = -1;
 let timer = null;
 let timeLeft = 15;
@@ -48,10 +59,17 @@ io.on('connection', (socket) => {
     }
   });
 
-  // Host starts next question
+  // Host starts or advances question
   socket.on('host:next_question', () => {
-    currentQuestionIndex++;
-    if (currentQuestionIndex >= questions.length) {
+    // If starting a fresh run from lobby or restarting after game over, shuffle questions
+    if (currentQuestionIndex === -1 || currentQuestionIndex >= activeQuestions.length) {
+      activeQuestions = shuffle(masterQuestions);
+      currentQuestionIndex = 0;
+    } else {
+      currentQuestionIndex++;
+    }
+
+    if (currentQuestionIndex >= activeQuestions.length) {
       io.emit('game:over', getLeaderboard());
       return;
     }
@@ -61,7 +79,7 @@ io.on('connection', (socket) => {
       players[id].currentAnswer = null;
     });
 
-    const currentQ = questions[currentQuestionIndex];
+    const currentQ = activeQuestions[currentQuestionIndex];
     roundActive = true;
     timeLeft = 15;
 
@@ -70,7 +88,7 @@ io.on('connection', (socket) => {
       question: currentQ.question,
       options: currentQ.options,
       questionNumber: currentQuestionIndex + 1,
-      totalQuestions: questions.length,
+      totalQuestions: activeQuestions.length,
       timeLeft: timeLeft
     });
 
@@ -97,7 +115,7 @@ io.on('connection', (socket) => {
 
 function endRound() {
   roundActive = false;
-  const currentQ = questions[currentQuestionIndex];
+  const currentQ = activeQuestions[currentQuestionIndex];
   const correctAnswer = currentQ.answer;
 
   // Calculate points
