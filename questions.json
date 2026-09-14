@@ -1,20 +1,602 @@
 [
   {
-    "category": "General Knowledge",
-    "question": "Which planet in our solar system is known as the Red Planet?",
-    "options": ["Venus", "Mars", "Jupiter", "Saturn"],
+    "category": "Bible: Easy",
+    "question": "How many days did it take God to create the heavens and the earth before resting?",
+    "options": ["3 days", "6 days", "7 days", "40 days"],
     "answer": 1
   },
   {
-    "category": "Science",
-    "question": "What is the hardest natural substance on Earth?",
-    "options": ["Gold", "Iron", "Diamond", "Platinum"],
+    "category": "Bible: Easy",
+    "question": "What kind of wood was Noah instructed to use to build the Ark?",
+    "options": ["Cedar", "Gopher wood", "Acacia", "Olive"],
+    "answer": 1
+  },
+  {
+    "category": "Bible: Easy",
+    "question": "Who was swallowed by a great fish after trying to flee to Tarshish?",
+    "options": ["Jonah", "Elijah", "Micah", "Hosea"],
+    "answer": 0
+  },
+  {
+    "category": "Bible: Easy",
+    "question": "What weapon did David use to defeat Goliath?",
+    "options": ["A bronze spear", "A sling and a stone", "A broadsword", "A recurve bow"],
+    "answer": 1
+  },
+  {
+    "category": "Bible: Easy",
+    "question": "In what town was Jesus born?",
+    "options": ["Nazareth", "Jerusalem", "Bethlehem", "Jericho"],
     "answer": 2
   },
   {
-    "category": "Pop Culture",
-    "question": "Which animated movie features a talking snowman named Olaf?",
-    "options": ["Moana", "Tangled", "Frozen", "Brave"],
+    "category": "Bible: Easy",
+    "question": "What is the very first book of the Bible?",
+    "options": ["Exodus", "Psalms", "Matthew", "Genesis"],
+    "answer": 3
+  },
+  {
+    "category": "Bible: Easy",
+    "question": "Who received the Ten Commandments on Mount Sinai?",
+    "options": ["Aaron", "Moses", "Joshua", "Abraham"],
+    "answer": 1
+  },
+  {
+    "category": "Bible: Easy",
+    "question": "How many disciples did Jesus choose to be in his inner group of apostles?",
+    "options": ["7", "10", "12", "14"],
     "answer": 2
+  },
+  {
+    "category": "Bible: Easy",
+    "question": "What sea did Moses part by God's power so the Israelites could escape Egypt?",
+    "options": ["Dead Sea", "Red Sea", "Sea of Galilee", "Mediterranean Sea"],
+    "answer": 1
+  },
+  {
+    "category": "Bible: Easy",
+    "question": "Which disciple denied knowing Jesus three times before the rooster crowed?",
+    "options": ["Peter", "John", "Judas", "Thomas"],
+    "answer": 0
+  },
+  {
+    "category": "Bible: Easy",
+    "question": "What did God use to make the first woman, Eve?",
+    "options": ["Dust of the ground", "Adam's rib", "Clay", "A breath of wind"],
+    "answer": 1
+  },
+  {
+    "category": "Bible: Easy",
+    "question": "What food did God provide from heaven each morning in the desert for the Israelites?",
+    "options": ["Quail", "Figs", "Manna", "Barley cakes"],
+    "answer": 2
+  },
+  {
+    "category": "Bible: Easy",
+    "question": "Who was thrown into a den of lions for praying to God?",
+    "options": ["Shadrach", "Daniel", "Ezekiel", "Jeremiah"],
+    "answer": 1
+  },
+  {
+    "category": "Bible: Easy",
+    "question": "What was the occupation of Zacchaeus before meeting Jesus?",
+    "options": ["Fisherman", "Carpenter", "Tax collector", "Centurion"],
+    "answer": 2
+  },
+  {
+    "category": "Bible: Easy",
+    "question": "Who betrayed Jesus for thirty pieces of silver?",
+    "options": ["Pontius Pilate", "Judas Iscariot", "Barabbas", "Caiaphas"],
+    "answer": 1
+  },
+  {
+    "category": "Bible: Easy",
+    "question": "What sign did God place in the sky as a promise never again to destroy the earth with a flood?",
+    "options": ["A shooting star", "A dove", "A rainbow", "A solar eclipse"],
+    "answer": 2
+  },
+  {
+    "category": "Bible: Easy",
+    "question": "Who wore a coat of many colors given to him by his father Jacob?",
+    "options": ["Benjamin", "Joseph", "Judah", "Reuben"],
+    "answer": 1
+  },
+  {
+    "category": "Bible: Easy",
+    "question": "Who was the mother of Jesus?",
+    "options": ["Martha", "Mary Magdalene", "Mary", "Elizabeth"],
+    "answer": 2
+  },
+  {
+    "category": "Bible: Easy",
+    "question": "What did Jesus turn water into at the wedding feast in Cana?",
+    "options": ["Milk", "Wine", "Grape juice", "Olive oil"],
+    "answer": 1
+  },
+  {
+    "category": "Bible: Easy",
+    "question": "Who was swallowed up into heaven in a whirlwind with chariots and horses of fire?",
+    "options": ["Enoch", "Elijah", "Moses", "Isaiah"],
+    "answer": 1
+  },
+  {
+    "category": "Bible: Easy",
+    "question": "Who was known as the strongest man in the Old Testament, whose strength was tied to his hair?",
+    "options": ["Gideon", "Saul", "Samson", "Jonathan"],
+    "answer": 2
+  },
+  {
+    "category": "Bible: Easy",
+    "question": "What is the longest book in the Bible by chapter count?",
+    "options": ["Genesis", "Isaiah", "Jeremiah", "Psalms"],
+    "answer": 3
+  },
+  {
+    "category": "Bible: Easy",
+    "question": "Who built the first permanent temple for the Lord in Jerusalem?",
+    "options": ["David", "Solomon", "Hezekiah", "Josiah"],
+    "answer": 1
+  },
+  {
+    "category": "Bible: Easy",
+    "question": "How many books are in the standard Protestant Bible?",
+    "options": ["39", "66", "72", "80"],
+    "answer": 1
+  },
+  {
+    "category": "Bible: Easy",
+    "question": "What did John the Baptist eat while preaching in the wilderness?",
+    "options": ["Locusts and wild honey", "Bread and fish", "Figs and dates", "Unleavened bread"],
+    "answer": 0
+  },
+  {
+    "category": "Bible: Easy",
+    "question": "Which brother did Cain kill out of jealousy?",
+    "options": ["Seth", "Abel", "Jabal", "Lamech"],
+    "answer": 1
+  },
+  {
+    "category": "Bible: Easy",
+    "question": "Who was the Roman governor who sentenced Jesus to be crucified?",
+    "options": ["Herod Antipas", "Felix", "Festus", "Pontius Pilate"],
+    "answer": 3
+  },
+  {
+    "category": "Bible: Easy",
+    "question": "What happened to the walls of Jericho after the Israelites marched around them and blew trumpets?",
+    "options": ["They burned down", "They collapsed flat", "They opened wide", "They turned to dust"],
+    "answer": 1
+  },
+  {
+    "category": "Bible: Easy",
+    "question": "Who was Jesus's close friend whom he raised from the dead after four days in the tomb?",
+    "options": ["Lazarus", "Nicodemus", "Jairus", "Bartimaeus"],
+    "answer": 0
+  },
+  {
+    "category": "Bible: Easy",
+    "question": "What is the last book of the New Testament?",
+    "options": ["Jude", "Hebrews", "Revelation", "Acts"],
+    "answer": 2
+  },
+  {
+    "category": "Bible: Medium",
+    "question": "Who was the first king of Israel?",
+    "options": ["David", "Saul", "Solomon", "Rehoboam"],
+    "answer": 1
+  },
+  {
+    "category": "Bible: Medium",
+    "question": "On what island was the Apostle John exiled when he wrote the Book of Revelation?",
+    "options": ["Cyprus", "Crete", "Patmos", "Malta"],
+    "answer": 2
+  },
+  {
+    "category": "Bible: Medium",
+    "question": "Who was the left-handed judge who assassinated the Moabite king Eglon?",
+    "options": ["Othniel", "Ehud", "Shamgar", "Barak"],
+    "answer": 1
+  },
+  {
+    "category": "Bible: Medium",
+    "question": "How old was Methuselah when he died, making him the oldest person recorded in scripture?",
+    "options": ["912 years", "950 years", "969 years", "999 years"],
+    "answer": 2
+  },
+  {
+    "category": "Bible: Medium",
+    "question": "What was the Jewish name of Queen Esther before she became queen of Persia?",
+    "options": ["Hadassah", "Miriam", "Abigail", "Keziah"],
+    "answer": 0
+  },
+  {
+    "category": "Bible: Medium",
+    "question": "Which bird did Noah send out of the Ark first to see if the floodwaters had receded?",
+    "options": ["A dove", "A raven", "A sparrow", "A swallow"],
+    "answer": 1
+  },
+  {
+    "category": "Bible: Medium",
+    "question": "In the Book of Acts, who was chosen to replace Judas Iscariot among the twelve apostles?",
+    "options": ["Barnabas", "Silas", "Matthias", "Barsabbas"],
+    "answer": 2
+  },
+  {
+    "category": "Bible: Medium",
+    "question": "What was the hometown of the prophet Elijah?",
+    "options": ["Tishbe", "Shiloh", "Anathoth", "Tekoa"],
+    "answer": 0
+  },
+  {
+    "category": "Bible: Medium",
+    "question": "Which disciple refused to believe Jesus had risen until he touched his wounds?",
+    "options": ["Philip", "Bartholomew", "Thomas", "James"],
+    "answer": 2
+  },
+  {
+    "category": "Bible: Medium",
+    "question": "How many days and nights was Jonah in the belly of the fish?",
+    "options": ["1 day and night", "3 days and nights", "7 days and nights", "40 days and nights"],
+    "answer": 1
+  },
+  {
+    "category": "Bible: Medium",
+    "question": "Who was Moses's father-in-law, the priest of Midian?",
+    "options": ["Balaam", "Jethro", "Laban", "Potiphar"],
+    "answer": 1
+  },
+  {
+    "category": "Bible: Medium",
+    "question": "What prophet confronted King David over his sin with Bathsheba?",
+    "options": ["Samuel", "Nathan", "Gad", "Ahijah"],
+    "answer": 1
+  },
+  {
+    "category": "Bible: Medium",
+    "question": "What was the name of Abraham's wife originally before God changed it?",
+    "options": ["Milcah", "Sarai", "Keturah", "Hagar"],
+    "answer": 1
+  },
+  {
+    "category": "Bible: Medium",
+    "question": "On the road to which city did Saul have his dramatic encounter with the risen Christ?",
+    "options": ["Antioch", "Damascus", "Tarsus", "Alexandria"],
+    "answer": 1
+  },
+  {
+    "category": "Bible: Medium",
+    "question": "How many men did Gideon lead into battle against the Midianites after God reduced his army?",
+    "options": ["100", "300", "700", "1,000"],
+    "answer": 1
+  },
+  {
+    "category": "Bible: Medium",
+    "question": "What prophet was told by God to marry an unfaithful woman named Gomer as a living parable?",
+    "options": ["Amos", "Hosea", "Micah", "Habakkuk"],
+    "answer": 1
+  },
+  {
+    "category": "Bible: Medium",
+    "question": "What town was Jesus raised in throughout his childhood?",
+    "options": ["Capernaum", "Nazareth", "Bethsaida", "Cana"],
+    "answer": 1
+  },
+  {
+    "category": "Bible: Medium",
+    "question": "Which Old Testament book never explicitly mentions the name of God?",
+    "options": ["Song of Solomon", "Ruth", "Esther", "Ecclesiastes"],
+    "answer": 2
+  },
+  {
+    "category": "Bible: Medium",
+    "question": "Who was the sister of Moses who watched him as a baby in the basket along the Nile?",
+    "options": ["Miriam", "Deborah", "Zipporah", "Jochebed"],
+    "answer": 0
+  },
+  {
+    "category": "Bible: Medium",
+    "question": "Which king of Babylon lost his mind and lived like an animal eating grass for seven years?",
+    "options": ["Belshazzar", "Nebuchadnezzar", "Darius", "Cyrus"],
+    "answer": 1
+  },
+  {
+    "category": "Bible: Medium",
+    "question": "What is the shortest verse in the entire Bible?",
+    "options": ["Rejoice always.", "Jesus wept.", "Pray without ceasing.", "The Lord is my shepherd."],
+    "answer": 1
+  },
+  {
+    "category": "Bible: Medium",
+    "question": "Who was the female judge and prophetess who led Israel alongside Barak?",
+    "options": ["Huldah", "Abigail", "Deborah", "Jael"],
+    "answer": 2
+  },
+  {
+    "category": "Bible: Medium",
+    "question": "What river was Naaman the Syrian commander told to wash in seven times to cure his leprosy?",
+    "options": ["Nile", "Euphrates", "Jordan", "Tigris"],
+    "answer": 2
+  },
+  {
+    "category": "Bible: Medium",
+    "question": "Who was the high priest who presided over Jesus's trial before handing him to Pilate?",
+    "options": ["Annas", "Caiaphas", "Gamaliel", "Nicodemus"],
+    "answer": 1
+  },
+  {
+    "category": "Bible: Medium",
+    "question": "What city's walls crumbled after Nehemiah returned from Persia to rebuild them in just 52 days?",
+    "options": ["Samaria", "Jerusalem", "Hebron", "Bethel"],
+    "answer": 1
+  },
+  {
+    "category": "Bible: Medium",
+    "question": "Who was struck dead alongside her husband Ananias for lying to the Holy Spirit about money?",
+    "options": ["Priscilla", "Sapphira", "Rhoda", "Dorcas"],
+    "answer": 1
+  },
+  {
+    "category": "Bible: Medium",
+    "question": "Which tribe of Israel was set apart to serve as priests and caretakers of the tabernacle?",
+    "options": ["Judah", "Benjamin", "Levi", "Dan"],
+    "answer": 2
+  },
+  {
+    "category": "Bible: Medium",
+    "question": "What was the name of the garden where Jesus prayed agonized prayers the night before his crucifixion?",
+    "options": ["Eden", "Gethsemane", "Bethel", "Sharon"],
+    "answer": 1
+  },
+  {
+    "category": "Bible: Medium",
+    "question": "Who was the mother of Samuel who prayed earnestly at Shiloh because she had been barren?",
+    "options": ["Peninnah", "Hannah", "Elizabeth", "Rachel"],
+    "answer": 1
+  },
+  {
+    "category": "Bible: Medium",
+    "question": "Which apostle was a physician by profession?",
+    "options": ["Matthew", "Mark", "Luke", "John"],
+    "answer": 2
+  },
+  {
+    "category": "Bible: Hard",
+    "question": "What was the name of the king of Salem and priest of God Most High to whom Abraham gave a tenth?",
+    "options": ["Abimelech", "Melchizedek", "Og", "Sihon"],
+    "answer": 1
+  },
+  {
+    "category": "Bible: Hard",
+    "question": "What was the name of the bronze serpent Moses erected on a pole that King Hezekiah later destroyed?",
+    "options": ["Asherah", "Nehushtan", "Dagon", "Urim"],
+    "answer": 1
+  },
+  {
+    "category": "Bible: Hard",
+    "question": "Who killed Sisera by hammering a tent peg through his temple while he slept?",
+    "options": ["Deborah", "Jael", "Michal", "Rahab"],
+    "answer": 1
+  },
+  {
+    "category": "Bible: Hard",
+    "question": "What were the Babylonian names given to Hananiah, Mishael, and Azariah?",
+    "options": ["Belteshazzar, Darius, Cyrus", "Shadrach, Meshach, Abednego", "Sanballat, Tobiah, Geshem", "Eliphaz, Bildad, Zophar"],
+    "answer": 1
+  },
+  {
+    "category": "Bible: Hard",
+    "question": "What was the name of Moses's wife, the daughter of Jethro?",
+    "options": ["Zipporah", "Cozbi", "Dinah", "Bilhah"],
+    "answer": 0
+  },
+  {
+    "category": "Bible: Hard",
+    "question": "Which king of Judah was hidden in the temple as an infant to escape Queen Athaliah's massacre?",
+    "options": ["Josiah", "Joash", "Manasseh", "Uzziah"],
+    "answer": 1
+  },
+  {
+    "category": "Bible: Hard",
+    "question": "In Paul's letter to Philemon, who was the runaway slave whom Paul urged him to welcome back as a brother?",
+    "options": ["Epaphras", "Onesimus", "Tychicus", "Aristarchus"],
+    "answer": 1
+  },
+  {
+    "category": "Bible: Hard",
+    "question": "Who died instantly when he reached out his hand to steady the Ark of the Covenant on an ox cart?",
+    "options": ["Ahio", "Uzzah", "Obed-Edom", "Eleazar"],
+    "answer": 1
+  },
+  {
+    "category": "Bible: Hard",
+    "question": "What prophet was fed by ravens morning and evening beside the Kerith Ravine?",
+    "options": ["Elisha", "Elijah", "Jeremiah", "Amos"],
+    "answer": 1
+  },
+  {
+    "category": "Bible: Hard",
+    "question": "What was the name of the mountain where Noah's Ark came to rest after the flood waters receded?",
+    "options": ["Mount Sinai", "Mount Ararat", "Mount Carmel", "Mount Nebo"],
+    "answer": 1
+  },
+  {
+    "category": "Bible: Hard",
+    "question": "How many years did the kingdom of Judah spend in exile in Babylon as prophesied by Jeremiah?",
+    "options": ["40 years", "50 years", "70 years", "100 years"],
+    "answer": 2
+  },
+  {
+    "category": "Bible: Hard",
+    "question": "Who fell out of a third-story window while listening to Paul preach late into the night?",
+    "options": ["Trophimus", "Eutychus", "Agabus", "Publius"],
+    "answer": 1
+  },
+  {
+    "category": "Bible: Hard",
+    "question": "What was the Hebrew name of the place where Jacob wrestled with God until daybreak?",
+    "options": ["Bethel", "Peniel", "Mahanaim", "Shechem"],
+    "answer": 1
+  },
+  {
+    "category": "Bible: Hard",
+    "question": "Which prophet was thrown into a muddy cistern by royal officials during the siege of Jerusalem?",
+    "options": ["Jeremiah", "Ezekiel", "Zephaniah", "Malachi"],
+    "answer": 0
+  },
+  {
+    "category": "Bible: Hard",
+    "question": "What was the name of the sorcerer on Cyprus who was struck blind for opposing Paul and Barnabas?",
+    "options": ["Simon Magus", "Elymas (Bar-Jesus)", "Demetrius", "Alexander"],
+    "answer": 1
+  },
+  {
+    "category": "Bible: Hard",
+    "question": "Which prophet saw a vision of a valley filled with dry bones coming back to life?",
+    "options": ["Daniel", "Ezekiel", "Isaiah", "Zechariah"],
+    "answer": 1
+  },
+  {
+    "category": "Bible: Hard",
+    "question": "What did the prophet Elisha throw into the pot of poisonous stew to make it safe to eat?",
+    "options": ["Salt", "Flour", "Olive oil", "Myrrh"],
+    "answer": 1
+  },
+  {
+    "category": "Bible: Hard",
+    "question": "Who was the Moabite woman who remained devoted to her mother-in-law Naomi?",
+    "options": ["Orpah", "Ruth", "Vashti", "Tamar"],
+    "answer": 1
+  },
+  {
+    "category": "Bible: Hard",
+    "question": "In the Book of Acts, who was the seller of purple fabric from Thyatira who was baptized by Paul?",
+    "options": ["Phoebe", "Lydia", "Priscilla", "Chloe"],
+    "answer": 1
+  },
+  {
+    "category": "Bible: Hard",
+    "question": "What was the name of King Saul's daughter who was given to David as his first wife?",
+    "options": ["Merab", "Michal", "Ahinoam", "Rizpah"],
+    "answer": 1
+  },
+  {
+    "category": "Bible: Hard",
+    "question": "Which king of Israel dug a 1,750-foot underground water tunnel through solid bedrock to defend against Assyria?",
+    "options": ["Asa", "Hezekiah", "Jehoshaphat", "Josiah"],
+    "answer": 1
+  },
+  {
+    "category": "Bible: Hard",
+    "question": "What were the names of the two sons of Zebedee whom Jesus nicknamed the 'Sons of Thunder'?",
+    "options": ["Peter and Andrew", "James and John", "Philip and Bartholomew", "Simon and Jude"],
+    "answer": 1
+  },
+  {
+    "category": "Bible: Hard",
+    "question": "Who was the judge of Israel who made a rash vow that cost the life of his only daughter?",
+    "options": ["Ibzan", "Jephthah", "Abdon", "Tola"],
+    "answer": 1
+  },
+  {
+    "category": "Bible: Hard",
+    "question": "Which apostle was martyred by King Herod Agrippa I with the sword in Acts chapter 12?",
+    "options": ["Stephen", "James the brother of John", "Philip", "Andrew"],
+    "answer": 1
+  },
+  {
+    "category": "Bible: Hard",
+    "question": "What was the name of the high priest's servant whose right ear Peter severed with a sword?",
+    "options": ["Malchus", "Barabbas", "Alexander", "Sceva"],
+    "answer": 0
+  },
+  {
+    "category": "Bible: Hard",
+    "question": "What prophet pronounced judgment against the ancient city of Nineveh other than Jonah?",
+    "options": ["Nahum", "Obadiah", "Habakkuk", "Haggai"],
+    "answer": 0
+  },
+  {
+    "category": "Bible: Hard",
+    "question": "What did the sign above Jesus on the cross say in Hebrew, Latin, and Greek?",
+    "options": ["The Prophet of Nazareth", "Jesus of Nazareth, King of the Jews", "The Holy One of God", "The Son of David"],
+    "answer": 1
+  },
+  {
+    "category": "Bible: Hard",
+    "question": "Who was the prophetess who recognized baby Jesus as the redemption of Jerusalem in the temple?",
+    "options": ["Anna", "Elizabeth", "Huldah", "Noadiah"],
+    "answer": 0
+  },
+  {
+    "category": "Bible: Hard",
+    "question": "How many silver shekels did Abraham pay Ephron the Hittite for the cave of Machpelah as a burial site?",
+    "options": ["50", "200", "400", "600"],
+    "answer": 2
+  },
+  {
+    "category": "Bible: Hard",
+    "question": "In what language was most of the Old Testament originally written?",
+    "options": ["Aramaic", "Classical Greek", "Ancient Hebrew", "Latin"],
+    "answer": 2
+  },
+  {
+    "category": "Bible: Hard",
+    "question": "Who was the Roman centurion in Caesarea whose conversion marked the gospel opening to the Gentiles?",
+    "options": ["Julius", "Cornelius", "Claudius Lysias", "Gallio"],
+    "answer": 1
+  },
+  {
+    "category": "Bible: Hard",
+    "question": "What did God turn Aaron's staff into when he cast it down before Pharaoh?",
+    "options": ["A serpent", "A river of blood", "A scorpion", "A column of fire"],
+    "answer": 0
+  },
+  {
+    "category": "Bible: Hard",
+    "question": "Which king of Israel set up golden calf worship centers at Dan and Bethel to keep his people away from Jerusalem?",
+    "options": ["Jeroboam I", "Baasha", "Omri", "Ahab"],
+    "answer": 0
+  },
+  {
+    "category": "Bible: Hard",
+    "question": "Who was the scribe who wrote down the prophecies dictated to him by the prophet Jeremiah?",
+    "options": ["Gedaliah", "Baruch", "Seraiah", "Shemaiah"],
+    "answer": 1
+  },
+  {
+    "category": "Bible: Hard",
+    "question": "On which mountain did Moses view the Promised Land before he died?",
+    "options": ["Mount Nebo", "Mount Hor", "Mount Gerizim", "Mount Hermon"],
+    "answer": 0
+  },
+  {
+    "category": "Bible: Hard",
+    "question": "Who had his earlobes, right thumb, and right big toe touched with consecrated oil during priestly ordination?",
+    "options": ["David", "Aaron", "Solomon", "Samuel"],
+    "answer": 1
+  },
+  {
+    "category": "Bible: Hard",
+    "question": "Which New Testament letter contains an entire chapter dedicated to heroes of faith (the 'Hall of Faith')?",
+    "options": ["Romans 8", "Hebrews 11", "James 2", "1 Peter 1"],
+    "answer": 1
+  },
+  {
+    "category": "Bible: Hard",
+    "question": "What was the name of the silversmith in Ephesus who started a riot against Paul over Diana/Artemis shrines?",
+    "options": ["Alexander", "Demetrius", "Tertullus", "Secundus"],
+    "answer": 1
+  },
+  {
+    "category": "Bible: Hard",
+    "question": "How many days did Jesus remain on earth appearing to his disciples between his resurrection and ascension?",
+    "options": ["3 days", "12 days", "40 days", "50 days"],
+    "answer": 2
+  },
+  {
+    "category": "Bible: Hard",
+    "question": "What was the name of the pool in Jerusalem where Jesus healed a man invalid for 38 years?",
+    "options": ["Siloam", "Bethesda", "Gihon", "En-rogel"],
+    "answer": 1
   }
 ]
