@@ -10,40 +10,91 @@
     .container {
       max-width: 800px;
     }
-    .host-controls {
+    .settings-panel {
+      background-color: #0f172a;
+      border: 1px solid #334155;
+      padding: 1.25rem;
+      border-radius: 10px;
+      margin: 1.25rem auto;
+      max-width: 500px;
       display: flex;
       flex-direction: column;
-      align-items: center;
       gap: 1rem;
-      margin-top: 1.5rem;
+      text-align: left;
     }
-    .select-wrapper {
+    .setting-row {
       display: flex;
-      align-items: center;
-      gap: 0.5rem;
-      font-size: 1rem;
+      flex-direction: column;
+      gap: 0.4rem;
+    }
+    .setting-row label {
+      font-size: 0.9rem;
+      font-weight: 600;
       color: #94a3b8;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
     }
     select {
-      background-color: #0f172a;
+      width: 100%;
+      background-color: #1e293b;
       color: #38bdf8;
       border: 1px solid #475569;
-      padding: 0.5rem 1rem;
+      padding: 0.75rem 1rem;
       border-radius: 8px;
       font-size: 1rem;
-      font-weight: bold;
+      font-weight: 600;
       cursor: pointer;
+    }
+    select:focus {
+      outline: 2px solid #38bdf8;
+    }
+    .host-controls {
+      display: flex;
+      justify-content: center;
+      gap: 1rem;
+      margin-top: 1rem;
+      flex-wrap: wrap;
+    }
+    .btn-danger {
+      background-color: #dc2626 !important;
+      color: #ffffff;
+      padding: 0.6rem 1.25rem;
+      font-size: 0.95rem;
+      border-radius: 8px;
+      margin-top: 1.5rem;
+    }
+    .btn-danger:hover {
+      background-color: #b91c1c !important;
     }
     .player-counter {
       margin-top: 1rem;
       font-size: 1.1rem;
       color: #94a3b8;
     }
+    .answer-reveal-box {
+      background-color: #064e3b;
+      border: 2px solid #10b981;
+      padding: 1.25rem;
+      border-radius: 10px;
+      margin: 1.25rem 0;
+    }
+    .answer-reveal-label {
+      text-transform: uppercase;
+      font-size: 0.85rem;
+      letter-spacing: 0.1em;
+      color: #6ee7b7;
+      margin-bottom: 0.4rem;
+    }
+    .answer-reveal-text {
+      font-size: 1.6rem;
+      font-weight: 800;
+      color: #ffffff;
+    }
     .auto-notice {
       color: #f59e0b;
-      font-weight: bold;
+      font-weight: 600;
+      font-size: 1rem;
       margin-bottom: 1rem;
-      font-size: 1.1rem;
     }
   </style>
 </head>
@@ -56,9 +107,21 @@
       <p class="question-text">Waiting for players to connect...</p>
       <div class="player-counter">Players connected: <strong id="player-count">0</strong></div>
       
-      <div class="host-controls">
-        <div class="select-wrapper">
-          <label for="question-count">Number of Questions:</label>
+      <div class="settings-panel">
+        <div class="setting-row">
+          <label for="difficulty-select">Select Difficulty</label>
+          <select id="difficulty-select">
+            <option value="all" selected>Mixed (All Difficulties)</option>
+            <option value="easy">Easy Only</option>
+            <option value="medium">Medium Only</option>
+            <option value="hard">Hard Only</option>
+            <option value="easy_medium">Easy & Medium</option>
+            <option value="medium_hard">Medium & Hard</option>
+          </select>
+        </div>
+
+        <div class="setting-row">
+          <label for="question-count">Question Count</label>
           <select id="question-count">
             <option value="5">5 Questions</option>
             <option value="10" selected>10 Questions</option>
@@ -66,9 +129,12 @@
             <option value="20">20 Questions</option>
             <option value="25">25 Questions</option>
             <option value="50">50 Questions</option>
-            <option value="100">All 100 Questions</option>
+            <option value="100">All Available Questions</option>
           </select>
         </div>
+      </div>
+
+      <div class="host-controls">
         <button id="btn-start" style="background-color: #10b981; min-width: 200px;">Start Game</button>
       </div>
 
@@ -82,14 +148,26 @@
       <div id="host-timer" class="timer">15</div>
       <p id="host-question" class="question-text">Question</p>
       <div id="host-options" class="options-grid"></div>
+
+      <!-- Stop Game Button during live question -->
+      <button class="btn-danger stop-game-btn">Stop / End Game</button>
     </div>
 
     <!-- Round End / Leaderboard View -->
     <div id="host-round-end" class="hidden">
       <h1>Round Results</h1>
+
+      <div class="answer-reveal-box">
+        <div class="answer-reveal-label">Correct Answer</div>
+        <div id="host-correct-answer" class="answer-reveal-text">---</div>
+      </div>
+
       <p class="auto-notice">Next question loading automatically in 5 seconds...</p>
       <h2>Current Standings</h2>
       <ul id="host-leaderboard" class="leaderboard"></ul>
+
+      <!-- Stop Game Button during intermission -->
+      <button class="btn-danger stop-game-btn">Stop / End Game</button>
     </div>
 
     <!-- Game Over View -->
@@ -98,7 +176,7 @@
       <p class="question-text">Final Standings</p>
       <ul id="host-final-leaderboard" class="leaderboard"></ul>
       <div class="host-controls">
-        <button id="btn-restart" style="background-color: #3b82f6;">Play Again</button>
+        <button id="btn-restart" style="background-color: #3b82f6;">Back to Lobby</button>
       </div>
     </div>
   </div>
@@ -117,16 +195,31 @@
     const hostTimer = document.getElementById('host-timer');
     const hostQuestion = document.getElementById('host-question');
     const hostOptions = document.getElementById('host-options');
+    const hostCorrectAnswer = document.getElementById('host-correct-answer');
     const hostLeaderboard = document.getElementById('host-leaderboard');
     const hostFinalLeaderboard = document.getElementById('host-final-leaderboard');
 
     const btnStart = document.getElementById('btn-start');
     const btnRestart = document.getElementById('btn-restart');
     const questionCountSelect = document.getElementById('question-count');
+    const difficultySelect = document.getElementById('difficulty-select');
+    const stopGameButtons = document.querySelectorAll('.stop-game-btn');
 
     btnStart.addEventListener('click', () => {
-      const count = questionCountSelect.value;
-      socket.emit('host:start_game', count);
+      const config = {
+        count: questionCountSelect.value,
+        difficulty: difficultySelect.value
+      };
+      socket.emit('host:start_game', config);
+    });
+
+    // Handle Stop / End Game click
+    stopGameButtons.forEach(btn => {
+      btn.addEventListener('click', () => {
+        if (confirm("Are you sure you want to stop the game right now?")) {
+          socket.emit('host:stop_game');
+        }
+      });
     });
 
     btnRestart.addEventListener('click', () => {
@@ -171,6 +264,8 @@
       hostGame.classList.add('hidden');
       hostRoundEnd.classList.remove('hidden');
 
+      hostCorrectAnswer.textContent = data.correctAnswerText;
+
       hostLeaderboard.innerHTML = '';
       data.leaderboard.forEach(p => {
         const li = document.createElement('li');
@@ -179,10 +274,12 @@
       });
     });
 
-    socket.on('game:over', (leaderboard) => {
+    socket.on('game:over', (data) => {
       hostGame.classList.add('hidden');
       hostRoundEnd.classList.add('hidden');
       hostGameOver.classList.remove('hidden');
+
+      const leaderboard = Array.isArray(data) ? data : data.leaderboard;
 
       hostFinalLeaderboard.innerHTML = '';
       leaderboard.forEach((p, idx) => {
