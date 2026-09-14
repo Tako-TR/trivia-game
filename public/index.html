@@ -44,6 +44,20 @@
       font-weight: 800;
       color: #ffffff;
     }
+    .trivia-image-box {
+      margin: 0.75rem auto;
+      background-color: #ffffff;
+      padding: 0.75rem;
+      border-radius: 10px;
+      display: inline-block;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.25);
+    }
+    .trivia-image {
+      max-height: 140px;
+      max-width: 100%;
+      object-fit: contain;
+      display: block;
+    }
   </style>
 </head>
 <body>
@@ -65,6 +79,12 @@
     <div id="game-screen" class="hidden">
       <div id="category-badge" class="badge">Category</div>
       <div id="timer" class="timer">15</div>
+
+      <!-- Player Image Box -->
+      <div id="player-image-container" class="trivia-image-box hidden">
+        <img id="player-question-image" class="trivia-image" src="" alt="Trivia Visual">
+      </div>
+
       <p id="question-text" class="question-text">Question text goes here</p>
       <div id="options-container" class="options-grid"></div>
       <p id="status-message" class="badge hidden">Answer Submitted</p>
@@ -75,13 +95,11 @@
       <h1>Round Results</h1>
       <p id="result-feedback" class="question-text" style="margin-bottom: 0.25rem; font-weight: 700;"></p>
 
-      <!-- Personal Rank Indicator -->
       <div id="rank-indicator" class="rank-badge-box">
         <span>Rank:</span>
         <span id="player-rank-display" class="rank-number">#--</span>
       </div>
 
-      <!-- Prominent Correct Answer Display -->
       <div class="player-answer-reveal">
         <div class="player-answer-label">Correct Answer</div>
         <div id="player-correct-answer" class="player-answer-text">---</div>
@@ -108,6 +126,8 @@
     const categoryBadge = document.getElementById('category-badge');
     const timerDisplay = document.getElementById('timer');
     const questionText = document.getElementById('question-text');
+    const playerImageContainer = document.getElementById('player-image-container');
+    const playerQuestionImage = document.getElementById('player-question-image');
     const optionsContainer = document.getElementById('options-container');
     const statusMessage = document.getElementById('status-message');
     const resultFeedback = document.getElementById('result-feedback');
@@ -138,6 +158,15 @@
       questionText.textContent = data.question;
       statusMessage.classList.add('hidden');
 
+      // Handle logo image
+      if (data.image) {
+        playerQuestionImage.src = data.image;
+        playerImageContainer.classList.remove('hidden');
+      } else {
+        playerQuestionImage.src = '';
+        playerImageContainer.classList.add('hidden');
+      }
+
       optionsContainer.innerHTML = '';
       data.options.forEach((opt, index) => {
         const btn = document.createElement('button');
@@ -162,15 +191,12 @@
       gameScreen.classList.add('hidden');
       resultsScreen.classList.remove('hidden');
 
-      // Populate correct answer text box
       playerCorrectAnswer.textContent = data.correctAnswerText;
 
-      // Update personal rank
       if (data.myRank) {
         playerRankDisplay.textContent = `#${data.myRank}`;
       }
 
-      // Personal feedback with speed scoring points
       if (selectedAnswer === data.correctAnswer) {
         resultFeedback.textContent = `Correct! +${data.myPointsEarned} pts`;
         resultFeedback.style.color = "#10b981";
