@@ -6,6 +6,27 @@
   <title>Trivia Player</title>
   <link rel="stylesheet" href="style.css">
   <script src="/socket.io/socket.io.js"></script>
+  <style>
+    .player-answer-reveal {
+      background-color: #064e3b;
+      border: 2px solid #10b981;
+      padding: 1rem;
+      border-radius: 8px;
+      margin: 1rem 0;
+    }
+    .player-answer-label {
+      text-transform: uppercase;
+      font-size: 0.75rem;
+      letter-spacing: 0.1em;
+      color: #6ee7b7;
+      margin-bottom: 0.3rem;
+    }
+    .player-answer-text {
+      font-size: 1.35rem;
+      font-weight: 800;
+      color: #ffffff;
+    }
+  </style>
 </head>
 <body>
   <div class="container">
@@ -34,7 +55,14 @@
     <!-- Round Over / Leaderboard Screen -->
     <div id="results-screen" class="hidden">
       <h1>Round Results</h1>
-      <p id="result-feedback" class="question-text"></p>
+      <p id="result-feedback" class="question-text" style="margin-bottom: 0.5rem;"></p>
+
+      <!-- Prominent Correct Answer Display -->
+      <div class="player-answer-reveal">
+        <div class="player-answer-label">Correct Answer</div>
+        <div id="player-correct-answer" class="player-answer-text">---</div>
+      </div>
+
       <h2>Leaderboard</h2>
       <ul id="leaderboard-list" class="leaderboard"></ul>
     </div>
@@ -59,6 +87,7 @@
     const optionsContainer = document.getElementById('options-container');
     const statusMessage = document.getElementById('status-message');
     const resultFeedback = document.getElementById('result-feedback');
+    const playerCorrectAnswer = document.getElementById('player-correct-answer');
     const leaderboardList = document.getElementById('leaderboard-list');
 
     btnJoin.addEventListener('click', () => {
@@ -92,7 +121,6 @@
           if (selectedAnswer !== null) return;
           selectedAnswer = index;
           btn.classList.add('selected');
-          // Disable all buttons once selected
           Array.from(optionsContainer.children).forEach(b => b.disabled = true);
           statusMessage.classList.remove('hidden');
           socket.emit('player:submit_answer', index);
@@ -109,11 +137,18 @@
       gameScreen.classList.add('hidden');
       resultsScreen.classList.remove('hidden');
 
+      // Populate correct answer text box
+      playerCorrectAnswer.textContent = data.correctAnswerText;
+
+      // Personal feedback
       if (selectedAnswer === data.correctAnswer) {
-        resultFeedback.textContent = "Correct! +100 points";
+        resultFeedback.textContent = "You got it right! (+100 pts)";
         resultFeedback.style.color = "#10b981";
+      } else if (selectedAnswer === null) {
+        resultFeedback.textContent = "Time's up! No answer submitted.";
+        resultFeedback.style.color = "#f59e0b";
       } else {
-        resultFeedback.textContent = "Incorrect!";
+        resultFeedback.textContent = "You got it wrong!";
         resultFeedback.style.color = "#ef4444";
       }
 
