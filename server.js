@@ -64,7 +64,7 @@ io.on('connection', (socket) => {
     }
   });
 
-  // Host starts game
+  // Host starts game with category, difficulty, and question count
   socket.on('host:start_game', (config) => {
     clearInterval(questionTimer);
     clearTimeout(intermissionTimer);
@@ -77,12 +77,27 @@ io.on('connection', (socket) => {
       players[id].roundPointsEarned = 0;
     });
 
-    const requestedCount = typeof config === 'object' ? config.count : config;
-    const requestedDifficulty = typeof config === 'object' ? config.difficulty : 'all';
+    const requestedCategory = config.category || 'all';
+    const requestedDifficulty = config.difficulty || 'all';
+    const requestedCount = parseInt(config.count, 10) || 10;
 
-    // Filter questions by difficulty
+    // Filter by category and difficulty
     let eligibleQuestions = masterQuestions.filter((q) => {
       const cat = (q.category || '').toLowerCase();
+
+      // 1. Check Category
+      let matchesCategory = false;
+      if (requestedCategory === 'all') {
+        matchesCategory = true;
+      } else if (requestedCategory === 'bible') {
+        matchesCategory = cat.includes('bible');
+      } else if (requestedCategory === 'movie') {
+        matchesCategory = cat.includes('movie');
+      }
+
+      if (!matchesCategory) return false;
+
+      // 2. Check Difficulty
       switch (requestedDifficulty) {
         case 'easy':
           return cat.includes('easy');
@@ -100,13 +115,13 @@ io.on('connection', (socket) => {
       }
     });
 
+    // Fallback if no questions matched the combination
     if (eligibleQuestions.length === 0) {
       eligibleQuestions = masterQuestions;
     }
 
     const shuffled = shuffle(eligibleQuestions);
-    const count = parseInt(requestedCount, 10) || eligibleQuestions.length;
-    activeQuestions = shuffled.slice(0, Math.min(count, shuffled.length));
+    activeQuestions = shuffled.slice(0, Math.min(requestedCount, shuffled.length));
 
     currentQuestionIndex = -1;
     startNextQuestion();
@@ -176,7 +191,7 @@ function endRound() {
   const correctAnswerIndex = currentQ.answer;
   const correctAnswerText = currentQ.options[correctAnswerIndex];
 
-  // Speed-based scoring
+  // Speed-based scoring (500 base + up to 500 time bonus)
   Object.keys(players).forEach((id) => {
     const p = players[id];
     if (p.currentAnswer === correctAnswerIndex) {
