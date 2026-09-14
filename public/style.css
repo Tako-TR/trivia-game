@@ -1,0 +1,140 @@
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+}
+
+body {
+  background-color: #0f172a;
+  color: #f8fafc;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 100vh;
+  padding: 1rem;
+}
+
+.container {
+  width: 100%;
+  max-width: 600px;
+  background-color: #1e293b;
+  padding: 2rem;
+  border-radius: 12px;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.5);
+  text-align: center;
+}
+
+h1 {
+  font-size: 1.8rem;
+  margin-bottom: 1rem;
+  color: #38bdf8;
+}
+
+.badge {
+  display: inline-block;
+  background-color: #334155;
+  color: #94a3b8;
+  padding: 0.25rem 0.75rem;
+  border-radius: 9999px;
+  font-size: 0.85rem;
+  margin-bottom: 1rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.timer {
+  font-size: 2.5rem;
+  font-weight: 700;
+  color: #f59e0b;
+  margin-bottom: 1.5rem;
+}
+
+.question-text {
+  font-size: 1.25rem;
+  margin-bottom: 1.5rem;
+  line-height: 1.4;
+}
+
+.options-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 0.75rem;
+  margin-bottom: 1.5rem;
+}
+
+button {
+  background-color: #3b82f6;
+  color: #ffffff;
+  border: none;
+  padding: 1rem;
+  border-radius: 8px;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background-color 0.2s, transform 0.1s;
+}
+
+button:hover:not(:disabled) {
+  background-color: #2563eb;
+}
+
+button:active:not(:disabled) {
+  transform: scale(0.98);
+}
+
+button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+button.selected {
+  background-color: #8b5cf6;
+  outline: 3px solid #c4b5fd;
+}
+
+button.correct {
+  background-color: #10b981 !important;
+  color: #ffffff;
+}
+
+button.wrong {
+  background-color: #ef4444 !important;
+  color: #ffffff;
+}
+
+input[type="text"] {
+  width: 100%;
+  padding: 0.75rem 1rem;
+  border-radius: 8px;
+  border: 1px solid #475569;
+  background-color: #0f172a;
+  color: #ffffff;
+  font-size: 1rem;
+  margin-bottom: 1rem;
+}
+
+input[type="text"]:focus {
+  outline: 2px solid #38bdf8;
+  border-color: transparent;
+}
+
+.leaderboard {
+  list-style: none;
+  margin-top: 1rem;
+  text-align: left;
+}
+
+.leaderboard li {
+  display: flex;
+  justify-content: space-between;
+  padding: 0.5rem 0.75rem;
+  background-color: #334155;
+  border-radius: 6px;
+  margin-bottom: 0.5rem;
+  font-size: 0.95rem;
+}
+
+.hidden {
+  display: none !important;
+}

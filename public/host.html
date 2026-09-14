@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Trivia Host Control</title>
+  <link rel="stylesheet" href="style.css">
+  <script src="/socket.io/socket.io.js"></script>
+  <style>
+    .container {
+      max-width: 800px;
+    }
+    .host-controls {
+      display: flex;
+      justify-content: center;
+      gap: 1rem;
+      margin-top: 1.5rem;
+    }
+    .player-counter {
+      margin-top: 1rem;
+      font-size: 1.1rem;
+      color: #94a3b8;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>Host Screen</h1>
+
+    <!-- Pre-game / Lobby View -->
+    <div id="host-lobby">
+      <p class="question-text">Waiting for players to connect...</p>
+      <div class="player-counter">Players connected: <strong id="player-count">0</strong></div>
+      <div class="host-controls">
+        <button id="btn-start" style="background-color: #10b981;">Start Game</button>
+      </div>
+      <h2 style="margin-top: 1.5rem; font-size: 1.2rem;">Connected Players</h2>
+      <ul id="host-lobby-players" class="leaderboard"></ul>
+    </div>
+
+    <!-- Live Game View -->
+    <div id="host-game" class="hidden">
+      <div id="host-category" class="badge">Category</div>
+      <div id="host-timer" class="timer">15</div>
+      <p id="host-question" class="question-text">Question</p>
+      <div id="host-options" class="options-grid"></div>
+    </div>
+
+    <!-- Round End / Leaderboard View -->
+    <div id="host-round-end" class="hidden">
+      <h1>Round Results</h1>
+      <div class="host-controls">
+        <button id="btn-next" style="background-color: #3b82f6;">Next Question</button>
+      </div>
+      <h2 style="margin-top: 1.5rem;">Current Standings</h2>
+      <ul id="host-leaderboard" class="leaderboard"></ul>
+    </div>
+
+    <!-- Game Over View -->
+    <div id="host-game-over" class="hidden">
+      <h1 style="color: #f59e0b;">Game Over!</h1>
+      <p class="question-text">Final Standings</p>
+      <ul id="host-final-leaderboard" class="leaderboard"></ul>
+    </div>
+  </div>
+
+  <script>
+    const socket = io();
+
+    const hostLobby = document.getElementById('host-lobby');
+    const hostGame = document.getElementById('host-game');
+    const hostRoundEnd = document.getElementById('host-round-end');
+    const hostGameOver = document.getElementById('host-game-over');
+
+    const playerCount = document.getElementById('player-count');
+    const hostLobbyPlayers = document.getElementById('host-lobby-players');
+    const hostCategory = document.getElementById('host-category');
+    const hostTimer = document.getElementById('host-timer');
+    const hostQuestion = document.getElementById('host-question');
+    const hostOptions = document.getElementById('host-options');
+    const hostLeaderboard = document.getElementById('host-leaderboard');
+    const hostFinalLeaderboard = document.getElementById('host-final-leaderboard');
+
+    const btnStart = document.getElementById('btn-start');
+    const btnNext = document.getElementById('btn-next');
+
+    btnStart.addEventListener('click', () => {
+      socket.emit('host:next_question');
+    });
+
+    btnNext.addEventListener('click', () => {
+      socket.emit('host:next_question');
+    });
+
+    socket.on('game:player_list', (players) => {
+      playerCount.textContent = players.length;
+      hostLobbyPlayers.innerHTML = '';
+      players.forEach(p => {
+        const li = document.createElement('li');
+        li.innerHTML = `<span>${p.name}</span>`;
+        hostLobbyPlayers.appendChild(li);
+      });
+    });
+
+    socket.on('game:new_question', (data) => {
+      hostLobby.classList.add('hidden');
+      hostRoundEnd.classList.add('hidden');
+      hostGameOver.classList.add('hidden');
+      hostGame.classList.remove('hidden');
+
+      hostCategory.textContent = `${data.category} (${data.questionNumber}/${data.totalQuestions})`;
+      hostTimer.textContent = data.timeLeft;
+      hostQuestion.textContent = data.question;
+
+      hostOptions.innerHTML = '';
+      data.options.forEach(opt => {
+        const div = document.createElement('button');
+        div.textContent = opt;
+        div.disabled = true;
+        hostOptions.appendChild(div);
+      });
+    });
+
+    socket.on('game:timer_tick', (timeLeft) => {
+      hostTimer.textContent = timeLeft;
+    });
+
+    socket.on('game:round_ended', (data) => {
+      hostGame.classList.add('hidden');
+      hostRoundEnd.classList.remove('hidden');
+
+      hostLeaderboard.innerHTML = '';
+      data.leaderboard.forEach(p => {
+        const li = document.createElement('li');
+        li.innerHTML = `<span>${p.name}</span><strong>${p.score} pts</strong>`;
+        hostLeaderboard.appendChild(li);
+      });
+    });
+
+    socket.on('game:over', (leaderboard) => {
+      hostGame.classList.add('hidden');
+      hostRoundEnd.classList.add('hidden');
+      hostGameOver.classList.remove('hidden');
+
+      hostFinalLeaderboard.innerHTML = '';
+      leaderboard.forEach((p, idx) => {
+        const li = document.createElement('li');
+        li.innerHTML = `<span>#${idx + 1} ${p.name}</span><strong>${p.score} pts</strong>`;
+        hostFinalLeaderboard.appendChild(li);
+      });
+    });
+  </script>
+</body>
+</html>

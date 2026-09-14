@@ -1,0 +1,20 @@
+[
+  {
+    "category": "General Knowledge",
+    "question": "Which planet in our solar system is known as the Red Planet?",
+    "options": ["Venus", "Mars", "Jupiter", "Saturn"],
+    "answer": 1
+  },
+  {
+    "category": "Science",
+    "question": "What is the hardest natural substance on Earth?",
+    "options": ["Gold", "Iron", "Diamond", "Platinum"],
+    "answer": 2
+  },
+  {
+    "category": "Pop Culture",
+    "question": "Which animated movie features a talking snowman named Olaf?",
+    "options": ["Moana", "Tangled", "Frozen", "Brave"],
+    "answer": 2
+  }
+]

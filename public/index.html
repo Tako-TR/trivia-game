@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Trivia Player</title>
+  <link rel="stylesheet" href="style.css">
+  <script src="/socket.io/socket.io.js"></script>
+</head>
+<body>
+  <div class="container">
+    <!-- Join Screen -->
+    <div id="join-screen">
+      <h1>Join Trivia</h1>
+      <input type="text" id="player-name" placeholder="Enter your display name" maxlength="15">
+      <button id="btn-join">Join Game</button>
+    </div>
+
+    <!-- Lobby / Waiting Screen -->
+    <div id="lobby-screen" class="hidden">
+      <h1>Welcome, <span id="display-player-name"></span>!</h1>
+      <p class="question-text">Waiting for the host to start the round...</p>
+    </div>
+
+    <!-- Game / Question Screen -->
+    <div id="game-screen" class="hidden">
+      <div id="category-badge" class="badge">Category</div>
+      <div id="timer" class="timer">15</div>
+      <p id="question-text" class="question-text">Question text goes here</p>
+      <div id="options-container" class="options-grid"></div>
+      <p id="status-message" class="badge hidden">Answer Submitted</p>
+    </div>
+
+    <!-- Round Over / Leaderboard Screen -->
+    <div id="results-screen" class="hidden">
+      <h1>Round Results</h1>
+      <p id="result-feedback" class="question-text"></p>
+      <h2>Leaderboard</h2>
+      <ul id="leaderboard-list" class="leaderboard"></ul>
+    </div>
+  </div>
+
+  <script>
+    const socket = io();
+    let selectedAnswer = null;
+
+    const joinScreen = document.getElementById('join-screen');
+    const lobbyScreen = document.getElementById('lobby-screen');
+    const gameScreen = document.getElementById('game-screen');
+    const resultsScreen = document.getElementById('results-screen');
+
+    const playerNameInput = document.getElementById('player-name');
+    const btnJoin = document.getElementById('btn-join');
+    const displayPlayerName = document.getElementById('display-player-name');
+
+    const categoryBadge = document.getElementById('category-badge');
+    const timerDisplay = document.getElementById('timer');
+    const questionText = document.getElementById('question-text');
+    const optionsContainer = document.getElementById('options-container');
+    const statusMessage = document.getElementById('status-message');
+    const resultFeedback = document.getElementById('result-feedback');
+    const leaderboardList = document.getElementById('leaderboard-list');
+
+    btnJoin.addEventListener('click', () => {
+      const name = playerNameInput.value.trim();
+      if (!name) return;
+      socket.emit('player:join', name);
+    });
+
+    socket.on('player:joined', (player) => {
+      displayPlayerName.textContent = player.name;
+      joinScreen.classList.add('hidden');
+      lobbyScreen.classList.remove('hidden');
+    });
+
+    socket.on('game:new_question', (data) => {
+      selectedAnswer = null;
+      lobbyScreen.classList.add('hidden');
+      resultsScreen.classList.add('hidden');
+      gameScreen.classList.remove('hidden');
+
+      categoryBadge.textContent = `${data.category} (${data.questionNumber}/${data.totalQuestions})`;
+      timerDisplay.textContent = data.timeLeft;
+      questionText.textContent = data.question;
+      statusMessage.classList.add('hidden');
+
+      optionsContainer.innerHTML = '';
+      data.options.forEach((opt, index) => {
+        const btn = document.createElement('button');
+        btn.textContent = opt;
+        btn.addEventListener('click', () => {
+          if (selectedAnswer !== null) return;
+          selectedAnswer = index;
+          btn.classList.add('selected');
+          // Disable all buttons once selected
+          Array.from(optionsContainer.children).forEach(b => b.disabled = true);
+          statusMessage.classList.remove('hidden');
+          socket.emit('player:submit_answer', index);
+        });
+        optionsContainer.appendChild(btn);
+      });
+    });
+
+    socket.on('game:timer_tick', (timeLeft) => {
+      timerDisplay.textContent = timeLeft;
+    });
+
+    socket.on('game:round_ended', (data) => {
+      gameScreen.classList.add('hidden');
+      resultsScreen.classList.remove('hidden');
+
+      if (selectedAnswer === data.correctAnswer) {
+        resultFeedback.textContent = "Correct! +100 points";
+        resultFeedback.style.color = "#10b981";
+      } else {
+        resultFeedback.textContent = "Incorrect!";
+        resultFeedback.style.color = "#ef4444";
+      }
+
+      renderLeaderboard(data.leaderboard);
+    });
+
+    socket.on('game:over', (leaderboard) => {
+      gameScreen.classList.add('hidden');
+      resultsScreen.classList.remove('hidden');
+      resultFeedback.textContent = "Game Over! Final Standings:";
+      resultFeedback.style.color = "#38bdf8";
+      renderLeaderboard(leaderboard);
+    });
+
+    function renderLeaderboard(players) {
+      leaderboardList.innerHTML = '';
+      players.forEach(p => {
+        const li = document.createElement('li');
+        li.innerHTML = `<span>${p.name}</span><strong>${p.score} pts</strong>`;
+        leaderboardList.appendChild(li);
+      });
+    }
+  </script>
+</body>
+</html>
