@@ -130,19 +130,21 @@ function startNextQuestion() {
 function endRound() {
   roundActive = false;
   const currentQ = activeQuestions[currentQuestionIndex];
-  const correctAnswer = currentQ.answer;
+  const correctAnswerIndex = currentQ.answer;
+  const correctAnswerText = currentQ.options[correctAnswerIndex];
 
   // Score calculations
   Object.keys(players).forEach((id) => {
-    if (players[id].currentAnswer === correctAnswer) {
+    if (players[id].currentAnswer === correctAnswerIndex) {
       players[id].score += 100;
     }
   });
 
   io.emit('game:round_ended', {
-    correctAnswer: correctAnswer,
-    leaderboard: getLeaderboard(),
-    nextInSeconds: 5
+    correctAnswer: correctAnswerIndex,
+    correctAnswerText: correctAnswerText,
+    questionText: currentQ.question,
+    leaderboard: getLeaderboard()
   });
 
   // Automatically advance after a 5-second results screen
