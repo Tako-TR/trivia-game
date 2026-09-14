@@ -81,7 +81,7 @@ io.on('connection', (socket) => {
     const requestedDifficulty = config.difficulty || 'all';
     const requestedCount = parseInt(config.count, 10) || 10;
 
-    // Filter by category and difficulty
+    // Filter questions by Category AND Difficulty
     let eligibleQuestions = masterQuestions.filter((q) => {
       const cat = (q.category || '').toLowerCase();
 
@@ -93,6 +93,8 @@ io.on('connection', (socket) => {
         matchesCategory = cat.includes('bible');
       } else if (requestedCategory === 'movie') {
         matchesCategory = cat.includes('movie');
+      } else if (requestedCategory === 'logos') {
+        matchesCategory = cat.includes('logo');
       }
 
       if (!matchesCategory) return false;
@@ -115,7 +117,7 @@ io.on('connection', (socket) => {
       }
     });
 
-    // Fallback if no questions matched the combination
+    // Fallback if combination has no questions
     if (eligibleQuestions.length === 0) {
       eligibleQuestions = masterQuestions;
     }
@@ -153,7 +155,7 @@ function startNextQuestion() {
     return;
   }
 
-  // Clear round answers
+  // Clear previous answers
   Object.keys(players).forEach((id) => {
     players[id].currentAnswer = null;
     players[id].answerTimeLeft = 0;
@@ -164,9 +166,11 @@ function startNextQuestion() {
   roundActive = true;
   timeLeft = QUESTION_DURATION;
 
+  // Broadcast question payload including optional image URL
   io.emit('game:new_question', {
     category: currentQ.category,
     question: currentQ.question,
+    image: currentQ.image || null,
     options: currentQ.options,
     questionNumber: currentQuestionIndex + 1,
     totalQuestions: activeQuestions.length,
@@ -191,7 +195,7 @@ function endRound() {
   const correctAnswerIndex = currentQ.answer;
   const correctAnswerText = currentQ.options[correctAnswerIndex];
 
-  // Speed-based scoring (500 base + up to 500 time bonus)
+  // Speed-based scoring (500 base + up to 500 bonus)
   Object.keys(players).forEach((id) => {
     const p = players[id];
     if (p.currentAnswer === correctAnswerIndex) {
