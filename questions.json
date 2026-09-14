@@ -1,602 +1,205 @@
 [
-  {
-    "category": "Bible: Easy",
-    "question": "How many days did it take God to create the heavens and the earth before resting?",
-    "options": ["3 days", "6 days", "7 days", "40 days"],
-    "answer": 1
-  },
-  {
-    "category": "Bible: Easy",
-    "question": "What kind of wood was Noah instructed to use to build the Ark?",
-    "options": ["Cedar", "Gopher wood", "Acacia", "Olive"],
-    "answer": 1
-  },
-  {
-    "category": "Bible: Easy",
-    "question": "Who was swallowed by a great fish after trying to flee to Tarshish?",
-    "options": ["Jonah", "Elijah", "Micah", "Hosea"],
-    "answer": 0
-  },
-  {
-    "category": "Bible: Easy",
-    "question": "What weapon did David use to defeat Goliath?",
-    "options": ["A bronze spear", "A sling and a stone", "A broadsword", "A recurve bow"],
-    "answer": 1
-  },
-  {
-    "category": "Bible: Easy",
-    "question": "In what town was Jesus born?",
-    "options": ["Nazareth", "Jerusalem", "Bethlehem", "Jericho"],
-    "answer": 2
-  },
-  {
-    "category": "Bible: Easy",
-    "question": "What is the very first book of the Bible?",
-    "options": ["Exodus", "Psalms", "Matthew", "Genesis"],
-    "answer": 3
-  },
-  {
-    "category": "Bible: Easy",
-    "question": "Who received the Ten Commandments on Mount Sinai?",
-    "options": ["Aaron", "Moses", "Joshua", "Abraham"],
-    "answer": 1
-  },
-  {
-    "category": "Bible: Easy",
-    "question": "How many disciples did Jesus choose to be in his inner group of apostles?",
-    "options": ["7", "10", "12", "14"],
-    "answer": 2
-  },
-  {
-    "category": "Bible: Easy",
-    "question": "What sea did Moses part by God's power so the Israelites could escape Egypt?",
-    "options": ["Dead Sea", "Red Sea", "Sea of Galilee", "Mediterranean Sea"],
-    "answer": 1
-  },
-  {
-    "category": "Bible: Easy",
-    "question": "Which disciple denied knowing Jesus three times before the rooster crowed?",
-    "options": ["Peter", "John", "Judas", "Thomas"],
-    "answer": 0
-  },
-  {
-    "category": "Bible: Easy",
-    "question": "What did God use to make the first woman, Eve?",
-    "options": ["Dust of the ground", "Adam's rib", "Clay", "A breath of wind"],
-    "answer": 1
-  },
-  {
-    "category": "Bible: Easy",
-    "question": "What food did God provide from heaven each morning in the desert for the Israelites?",
-    "options": ["Quail", "Figs", "Manna", "Barley cakes"],
-    "answer": 2
-  },
-  {
-    "category": "Bible: Easy",
-    "question": "Who was thrown into a den of lions for praying to God?",
-    "options": ["Shadrach", "Daniel", "Ezekiel", "Jeremiah"],
-    "answer": 1
-  },
-  {
-    "category": "Bible: Easy",
-    "question": "What was the occupation of Zacchaeus before meeting Jesus?",
-    "options": ["Fisherman", "Carpenter", "Tax collector", "Centurion"],
-    "answer": 2
-  },
-  {
-    "category": "Bible: Easy",
-    "question": "Who betrayed Jesus for thirty pieces of silver?",
-    "options": ["Pontius Pilate", "Judas Iscariot", "Barabbas", "Caiaphas"],
-    "answer": 1
-  },
-  {
-    "category": "Bible: Easy",
-    "question": "What sign did God place in the sky as a promise never again to destroy the earth with a flood?",
-    "options": ["A shooting star", "A dove", "A rainbow", "A solar eclipse"],
-    "answer": 2
-  },
-  {
-    "category": "Bible: Easy",
-    "question": "Who wore a coat of many colors given to him by his father Jacob?",
-    "options": ["Benjamin", "Joseph", "Judah", "Reuben"],
-    "answer": 1
-  },
-  {
-    "category": "Bible: Easy",
-    "question": "Who was the mother of Jesus?",
-    "options": ["Martha", "Mary Magdalene", "Mary", "Elizabeth"],
-    "answer": 2
-  },
-  {
-    "category": "Bible: Easy",
-    "question": "What did Jesus turn water into at the wedding feast in Cana?",
-    "options": ["Milk", "Wine", "Grape juice", "Olive oil"],
-    "answer": 1
-  },
-  {
-    "category": "Bible: Easy",
-    "question": "Who was swallowed up into heaven in a whirlwind with chariots and horses of fire?",
-    "options": ["Enoch", "Elijah", "Moses", "Isaiah"],
-    "answer": 1
-  },
-  {
-    "category": "Bible: Easy",
-    "question": "Who was known as the strongest man in the Old Testament, whose strength was tied to his hair?",
-    "options": ["Gideon", "Saul", "Samson", "Jonathan"],
-    "answer": 2
-  },
-  {
-    "category": "Bible: Easy",
-    "question": "What is the longest book in the Bible by chapter count?",
-    "options": ["Genesis", "Isaiah", "Jeremiah", "Psalms"],
-    "answer": 3
-  },
-  {
-    "category": "Bible: Easy",
-    "question": "Who built the first permanent temple for the Lord in Jerusalem?",
-    "options": ["David", "Solomon", "Hezekiah", "Josiah"],
-    "answer": 1
-  },
-  {
-    "category": "Bible: Easy",
-    "question": "How many books are in the standard Protestant Bible?",
-    "options": ["39", "66", "72", "80"],
-    "answer": 1
-  },
-  {
-    "category": "Bible: Easy",
-    "question": "What did John the Baptist eat while preaching in the wilderness?",
-    "options": ["Locusts and wild honey", "Bread and fish", "Figs and dates", "Unleavened bread"],
-    "answer": 0
-  },
-  {
-    "category": "Bible: Easy",
-    "question": "Which brother did Cain kill out of jealousy?",
-    "options": ["Seth", "Abel", "Jabal", "Lamech"],
-    "answer": 1
-  },
-  {
-    "category": "Bible: Easy",
-    "question": "Who was the Roman governor who sentenced Jesus to be crucified?",
-    "options": ["Herod Antipas", "Felix", "Festus", "Pontius Pilate"],
-    "answer": 3
-  },
-  {
-    "category": "Bible: Easy",
-    "question": "What happened to the walls of Jericho after the Israelites marched around them and blew trumpets?",
-    "options": ["They burned down", "They collapsed flat", "They opened wide", "They turned to dust"],
-    "answer": 1
-  },
-  {
-    "category": "Bible: Easy",
-    "question": "Who was Jesus's close friend whom he raised from the dead after four days in the tomb?",
-    "options": ["Lazarus", "Nicodemus", "Jairus", "Bartimaeus"],
-    "answer": 0
-  },
-  {
-    "category": "Bible: Easy",
-    "question": "What is the last book of the New Testament?",
-    "options": ["Jude", "Hebrews", "Revelation", "Acts"],
-    "answer": 2
-  },
-  {
-    "category": "Bible: Medium",
-    "question": "Who was the first king of Israel?",
-    "options": ["David", "Saul", "Solomon", "Rehoboam"],
-    "answer": 1
-  },
-  {
-    "category": "Bible: Medium",
-    "question": "On what island was the Apostle John exiled when he wrote the Book of Revelation?",
-    "options": ["Cyprus", "Crete", "Patmos", "Malta"],
-    "answer": 2
-  },
-  {
-    "category": "Bible: Medium",
-    "question": "Who was the left-handed judge who assassinated the Moabite king Eglon?",
-    "options": ["Othniel", "Ehud", "Shamgar", "Barak"],
-    "answer": 1
-  },
-  {
-    "category": "Bible: Medium",
-    "question": "How old was Methuselah when he died, making him the oldest person recorded in scripture?",
-    "options": ["912 years", "950 years", "969 years", "999 years"],
-    "answer": 2
-  },
-  {
-    "category": "Bible: Medium",
-    "question": "What was the Jewish name of Queen Esther before she became queen of Persia?",
-    "options": ["Hadassah", "Miriam", "Abigail", "Keziah"],
-    "answer": 0
-  },
-  {
-    "category": "Bible: Medium",
-    "question": "Which bird did Noah send out of the Ark first to see if the floodwaters had receded?",
-    "options": ["A dove", "A raven", "A sparrow", "A swallow"],
-    "answer": 1
-  },
-  {
-    "category": "Bible: Medium",
-    "question": "In the Book of Acts, who was chosen to replace Judas Iscariot among the twelve apostles?",
-    "options": ["Barnabas", "Silas", "Matthias", "Barsabbas"],
-    "answer": 2
-  },
-  {
-    "category": "Bible: Medium",
-    "question": "What was the hometown of the prophet Elijah?",
-    "options": ["Tishbe", "Shiloh", "Anathoth", "Tekoa"],
-    "answer": 0
-  },
-  {
-    "category": "Bible: Medium",
-    "question": "Which disciple refused to believe Jesus had risen until he touched his wounds?",
-    "options": ["Philip", "Bartholomew", "Thomas", "James"],
-    "answer": 2
-  },
-  {
-    "category": "Bible: Medium",
-    "question": "How many days and nights was Jonah in the belly of the fish?",
-    "options": ["1 day and night", "3 days and nights", "7 days and nights", "40 days and nights"],
-    "answer": 1
-  },
-  {
-    "category": "Bible: Medium",
-    "question": "Who was Moses's father-in-law, the priest of Midian?",
-    "options": ["Balaam", "Jethro", "Laban", "Potiphar"],
-    "answer": 1
-  },
-  {
-    "category": "Bible: Medium",
-    "question": "What prophet confronted King David over his sin with Bathsheba?",
-    "options": ["Samuel", "Nathan", "Gad", "Ahijah"],
-    "answer": 1
-  },
-  {
-    "category": "Bible: Medium",
-    "question": "What was the name of Abraham's wife originally before God changed it?",
-    "options": ["Milcah", "Sarai", "Keturah", "Hagar"],
-    "answer": 1
-  },
-  {
-    "category": "Bible: Medium",
-    "question": "On the road to which city did Saul have his dramatic encounter with the risen Christ?",
-    "options": ["Antioch", "Damascus", "Tarsus", "Alexandria"],
-    "answer": 1
-  },
-  {
-    "category": "Bible: Medium",
-    "question": "How many men did Gideon lead into battle against the Midianites after God reduced his army?",
-    "options": ["100", "300", "700", "1,000"],
-    "answer": 1
-  },
-  {
-    "category": "Bible: Medium",
-    "question": "What prophet was told by God to marry an unfaithful woman named Gomer as a living parable?",
-    "options": ["Amos", "Hosea", "Micah", "Habakkuk"],
-    "answer": 1
-  },
-  {
-    "category": "Bible: Medium",
-    "question": "What town was Jesus raised in throughout his childhood?",
-    "options": ["Capernaum", "Nazareth", "Bethsaida", "Cana"],
-    "answer": 1
-  },
-  {
-    "category": "Bible: Medium",
-    "question": "Which Old Testament book never explicitly mentions the name of God?",
-    "options": ["Song of Solomon", "Ruth", "Esther", "Ecclesiastes"],
-    "answer": 2
-  },
-  {
-    "category": "Bible: Medium",
-    "question": "Who was the sister of Moses who watched him as a baby in the basket along the Nile?",
-    "options": ["Miriam", "Deborah", "Zipporah", "Jochebed"],
-    "answer": 0
-  },
-  {
-    "category": "Bible: Medium",
-    "question": "Which king of Babylon lost his mind and lived like an animal eating grass for seven years?",
-    "options": ["Belshazzar", "Nebuchadnezzar", "Darius", "Cyrus"],
-    "answer": 1
-  },
-  {
-    "category": "Bible: Medium",
-    "question": "What is the shortest verse in the entire Bible?",
-    "options": ["Rejoice always.", "Jesus wept.", "Pray without ceasing.", "The Lord is my shepherd."],
-    "answer": 1
-  },
-  {
-    "category": "Bible: Medium",
-    "question": "Who was the female judge and prophetess who led Israel alongside Barak?",
-    "options": ["Huldah", "Abigail", "Deborah", "Jael"],
-    "answer": 2
-  },
-  {
-    "category": "Bible: Medium",
-    "question": "What river was Naaman the Syrian commander told to wash in seven times to cure his leprosy?",
-    "options": ["Nile", "Euphrates", "Jordan", "Tigris"],
-    "answer": 2
-  },
-  {
-    "category": "Bible: Medium",
-    "question": "Who was the high priest who presided over Jesus's trial before handing him to Pilate?",
-    "options": ["Annas", "Caiaphas", "Gamaliel", "Nicodemus"],
-    "answer": 1
-  },
-  {
-    "category": "Bible: Medium",
-    "question": "What city's walls crumbled after Nehemiah returned from Persia to rebuild them in just 52 days?",
-    "options": ["Samaria", "Jerusalem", "Hebron", "Bethel"],
-    "answer": 1
-  },
-  {
-    "category": "Bible: Medium",
-    "question": "Who was struck dead alongside her husband Ananias for lying to the Holy Spirit about money?",
-    "options": ["Priscilla", "Sapphira", "Rhoda", "Dorcas"],
-    "answer": 1
-  },
-  {
-    "category": "Bible: Medium",
-    "question": "Which tribe of Israel was set apart to serve as priests and caretakers of the tabernacle?",
-    "options": ["Judah", "Benjamin", "Levi", "Dan"],
-    "answer": 2
-  },
-  {
-    "category": "Bible: Medium",
-    "question": "What was the name of the garden where Jesus prayed agonized prayers the night before his crucifixion?",
-    "options": ["Eden", "Gethsemane", "Bethel", "Sharon"],
-    "answer": 1
-  },
-  {
-    "category": "Bible: Medium",
-    "question": "Who was the mother of Samuel who prayed earnestly at Shiloh because she had been barren?",
-    "options": ["Peninnah", "Hannah", "Elizabeth", "Rachel"],
-    "answer": 1
-  },
-  {
-    "category": "Bible: Medium",
-    "question": "Which apostle was a physician by profession?",
-    "options": ["Matthew", "Mark", "Luke", "John"],
-    "answer": 2
-  },
-  {
-    "category": "Bible: Hard",
-    "question": "What was the name of the king of Salem and priest of God Most High to whom Abraham gave a tenth?",
-    "options": ["Abimelech", "Melchizedek", "Og", "Sihon"],
-    "answer": 1
-  },
-  {
-    "category": "Bible: Hard",
-    "question": "What was the name of the bronze serpent Moses erected on a pole that King Hezekiah later destroyed?",
-    "options": ["Asherah", "Nehushtan", "Dagon", "Urim"],
-    "answer": 1
-  },
-  {
-    "category": "Bible: Hard",
-    "question": "Who killed Sisera by hammering a tent peg through his temple while he slept?",
-    "options": ["Deborah", "Jael", "Michal", "Rahab"],
-    "answer": 1
-  },
-  {
-    "category": "Bible: Hard",
-    "question": "What were the Babylonian names given to Hananiah, Mishael, and Azariah?",
-    "options": ["Belteshazzar, Darius, Cyrus", "Shadrach, Meshach, Abednego", "Sanballat, Tobiah, Geshem", "Eliphaz, Bildad, Zophar"],
-    "answer": 1
-  },
-  {
-    "category": "Bible: Hard",
-    "question": "What was the name of Moses's wife, the daughter of Jethro?",
-    "options": ["Zipporah", "Cozbi", "Dinah", "Bilhah"],
-    "answer": 0
-  },
-  {
-    "category": "Bible: Hard",
-    "question": "Which king of Judah was hidden in the temple as an infant to escape Queen Athaliah's massacre?",
-    "options": ["Josiah", "Joash", "Manasseh", "Uzziah"],
-    "answer": 1
-  },
-  {
-    "category": "Bible: Hard",
-    "question": "In Paul's letter to Philemon, who was the runaway slave whom Paul urged him to welcome back as a brother?",
-    "options": ["Epaphras", "Onesimus", "Tychicus", "Aristarchus"],
-    "answer": 1
-  },
-  {
-    "category": "Bible: Hard",
-    "question": "Who died instantly when he reached out his hand to steady the Ark of the Covenant on an ox cart?",
-    "options": ["Ahio", "Uzzah", "Obed-Edom", "Eleazar"],
-    "answer": 1
-  },
-  {
-    "category": "Bible: Hard",
-    "question": "What prophet was fed by ravens morning and evening beside the Kerith Ravine?",
-    "options": ["Elisha", "Elijah", "Jeremiah", "Amos"],
-    "answer": 1
-  },
-  {
-    "category": "Bible: Hard",
-    "question": "What was the name of the mountain where Noah's Ark came to rest after the flood waters receded?",
-    "options": ["Mount Sinai", "Mount Ararat", "Mount Carmel", "Mount Nebo"],
-    "answer": 1
-  },
-  {
-    "category": "Bible: Hard",
-    "question": "How many years did the kingdom of Judah spend in exile in Babylon as prophesied by Jeremiah?",
-    "options": ["40 years", "50 years", "70 years", "100 years"],
-    "answer": 2
-  },
-  {
-    "category": "Bible: Hard",
-    "question": "Who fell out of a third-story window while listening to Paul preach late into the night?",
-    "options": ["Trophimus", "Eutychus", "Agabus", "Publius"],
-    "answer": 1
-  },
-  {
-    "category": "Bible: Hard",
-    "question": "What was the Hebrew name of the place where Jacob wrestled with God until daybreak?",
-    "options": ["Bethel", "Peniel", "Mahanaim", "Shechem"],
-    "answer": 1
-  },
-  {
-    "category": "Bible: Hard",
-    "question": "Which prophet was thrown into a muddy cistern by royal officials during the siege of Jerusalem?",
-    "options": ["Jeremiah", "Ezekiel", "Zephaniah", "Malachi"],
-    "answer": 0
-  },
-  {
-    "category": "Bible: Hard",
-    "question": "What was the name of the sorcerer on Cyprus who was struck blind for opposing Paul and Barnabas?",
-    "options": ["Simon Magus", "Elymas (Bar-Jesus)", "Demetrius", "Alexander"],
-    "answer": 1
-  },
-  {
-    "category": "Bible: Hard",
-    "question": "Which prophet saw a vision of a valley filled with dry bones coming back to life?",
-    "options": ["Daniel", "Ezekiel", "Isaiah", "Zechariah"],
-    "answer": 1
-  },
-  {
-    "category": "Bible: Hard",
-    "question": "What did the prophet Elisha throw into the pot of poisonous stew to make it safe to eat?",
-    "options": ["Salt", "Flour", "Olive oil", "Myrrh"],
-    "answer": 1
-  },
-  {
-    "category": "Bible: Hard",
-    "question": "Who was the Moabite woman who remained devoted to her mother-in-law Naomi?",
-    "options": ["Orpah", "Ruth", "Vashti", "Tamar"],
-    "answer": 1
-  },
-  {
-    "category": "Bible: Hard",
-    "question": "In the Book of Acts, who was the seller of purple fabric from Thyatira who was baptized by Paul?",
-    "options": ["Phoebe", "Lydia", "Priscilla", "Chloe"],
-    "answer": 1
-  },
-  {
-    "category": "Bible: Hard",
-    "question": "What was the name of King Saul's daughter who was given to David as his first wife?",
-    "options": ["Merab", "Michal", "Ahinoam", "Rizpah"],
-    "answer": 1
-  },
-  {
-    "category": "Bible: Hard",
-    "question": "Which king of Israel dug a 1,750-foot underground water tunnel through solid bedrock to defend against Assyria?",
-    "options": ["Asa", "Hezekiah", "Jehoshaphat", "Josiah"],
-    "answer": 1
-  },
-  {
-    "category": "Bible: Hard",
-    "question": "What were the names of the two sons of Zebedee whom Jesus nicknamed the 'Sons of Thunder'?",
-    "options": ["Peter and Andrew", "James and John", "Philip and Bartholomew", "Simon and Jude"],
-    "answer": 1
-  },
-  {
-    "category": "Bible: Hard",
-    "question": "Who was the judge of Israel who made a rash vow that cost the life of his only daughter?",
-    "options": ["Ibzan", "Jephthah", "Abdon", "Tola"],
-    "answer": 1
-  },
-  {
-    "category": "Bible: Hard",
-    "question": "Which apostle was martyred by King Herod Agrippa I with the sword in Acts chapter 12?",
-    "options": ["Stephen", "James the brother of John", "Philip", "Andrew"],
-    "answer": 1
-  },
-  {
-    "category": "Bible: Hard",
-    "question": "What was the name of the high priest's servant whose right ear Peter severed with a sword?",
-    "options": ["Malchus", "Barabbas", "Alexander", "Sceva"],
-    "answer": 0
-  },
-  {
-    "category": "Bible: Hard",
-    "question": "What prophet pronounced judgment against the ancient city of Nineveh other than Jonah?",
-    "options": ["Nahum", "Obadiah", "Habakkuk", "Haggai"],
-    "answer": 0
-  },
-  {
-    "category": "Bible: Hard",
-    "question": "What did the sign above Jesus on the cross say in Hebrew, Latin, and Greek?",
-    "options": ["The Prophet of Nazareth", "Jesus of Nazareth, King of the Jews", "The Holy One of God", "The Son of David"],
-    "answer": 1
-  },
-  {
-    "category": "Bible: Hard",
-    "question": "Who was the prophetess who recognized baby Jesus as the redemption of Jerusalem in the temple?",
-    "options": ["Anna", "Elizabeth", "Huldah", "Noadiah"],
-    "answer": 0
-  },
-  {
-    "category": "Bible: Hard",
-    "question": "How many silver shekels did Abraham pay Ephron the Hittite for the cave of Machpelah as a burial site?",
-    "options": ["50", "200", "400", "600"],
-    "answer": 2
-  },
-  {
-    "category": "Bible: Hard",
-    "question": "In what language was most of the Old Testament originally written?",
-    "options": ["Aramaic", "Classical Greek", "Ancient Hebrew", "Latin"],
-    "answer": 2
-  },
-  {
-    "category": "Bible: Hard",
-    "question": "Who was the Roman centurion in Caesarea whose conversion marked the gospel opening to the Gentiles?",
-    "options": ["Julius", "Cornelius", "Claudius Lysias", "Gallio"],
-    "answer": 1
-  },
-  {
-    "category": "Bible: Hard",
-    "question": "What did God turn Aaron's staff into when he cast it down before Pharaoh?",
-    "options": ["A serpent", "A river of blood", "A scorpion", "A column of fire"],
-    "answer": 0
-  },
-  {
-    "category": "Bible: Hard",
-    "question": "Which king of Israel set up golden calf worship centers at Dan and Bethel to keep his people away from Jerusalem?",
-    "options": ["Jeroboam I", "Baasha", "Omri", "Ahab"],
-    "answer": 0
-  },
-  {
-    "category": "Bible: Hard",
-    "question": "Who was the scribe who wrote down the prophecies dictated to him by the prophet Jeremiah?",
-    "options": ["Gedaliah", "Baruch", "Seraiah", "Shemaiah"],
-    "answer": 1
-  },
-  {
-    "category": "Bible: Hard",
-    "question": "On which mountain did Moses view the Promised Land before he died?",
-    "options": ["Mount Nebo", "Mount Hor", "Mount Gerizim", "Mount Hermon"],
-    "answer": 0
-  },
-  {
-    "category": "Bible: Hard",
-    "question": "Who had his earlobes, right thumb, and right big toe touched with consecrated oil during priestly ordination?",
-    "options": ["David", "Aaron", "Solomon", "Samuel"],
-    "answer": 1
-  },
-  {
-    "category": "Bible: Hard",
-    "question": "Which New Testament letter contains an entire chapter dedicated to heroes of faith (the 'Hall of Faith')?",
-    "options": ["Romans 8", "Hebrews 11", "James 2", "1 Peter 1"],
-    "answer": 1
-  },
-  {
-    "category": "Bible: Hard",
-    "question": "What was the name of the silversmith in Ephesus who started a riot against Paul over Diana/Artemis shrines?",
-    "options": ["Alexander", "Demetrius", "Tertullus", "Secundus"],
-    "answer": 1
-  },
-  {
-    "category": "Bible: Hard",
-    "question": "How many days did Jesus remain on earth appearing to his disciples between his resurrection and ascension?",
-    "options": ["3 days", "12 days", "40 days", "50 days"],
-    "answer": 2
-  },
-  {
-    "category": "Bible: Hard",
-    "question": "What was the name of the pool in Jerusalem where Jesus healed a man invalid for 38 years?",
-    "options": ["Siloam", "Bethesda", "Gihon", "En-rogel"],
-    "answer": 1
-  }
+  { "category": "Bible: Easy", "question": "How many days did it take God to create the heavens and the earth before resting?", "options": ["3 days", "6 days", "7 days", "40 days"], "answer": 1 },
+  { "category": "Bible: Easy", "question": "What kind of wood was Noah instructed to use to build the Ark?", "options": ["Cedar", "Gopher wood", "Acacia", "Olive"], "answer": 1 },
+  { "category": "Bible: Easy", "question": "Who was swallowed by a great fish after trying to flee to Tarshish?", "options": ["Jonah", "Elijah", "Micah", "Hosea"], "answer": 0 },
+  { "category": "Bible: Easy", "question": "What weapon did David use to defeat Goliath?", "options": ["A bronze spear", "A sling and a stone", "A broadsword", "A recurve bow"], "answer": 1 },
+  { "category": "Bible: Easy", "question": "In what town was Jesus born?", "options": ["Nazareth", "Jerusalem", "Bethlehem", "Jericho"], "answer": 2 },
+  { "category": "Bible: Easy", "question": "What is the very first book of the Bible?", "options": ["Exodus", "Psalms", "Matthew", "Genesis"], "answer": 3 },
+  { "category": "Bible: Easy", "question": "Who received the Ten Commandments on Mount Sinai?", "options": ["Aaron", "Moses", "Joshua", "Abraham"], "answer": 1 },
+  { "category": "Bible: Easy", "question": "How many disciples did Jesus choose to be in his inner group of apostles?", "options": ["7", "10", "12", "14"], "answer": 2 },
+  { "category": "Bible: Easy", "question": "What sea did Moses part by God's power so the Israelites could escape Egypt?", "options": ["Dead Sea", "Red Sea", "Sea of Galilee", "Mediterranean Sea"], "answer": 1 },
+  { "category": "Bible: Easy", "question": "Which disciple denied knowing Jesus three times before the rooster crowed?", "options": ["Peter", "John", "Judas", "Thomas"], "answer": 0 },
+  { "category": "Bible: Easy", "question": "What did God use to make the first woman, Eve?", "options": ["Dust of the ground", "Adam's rib", "Clay", "A breath of wind"], "answer": 1 },
+  { "category": "Bible: Easy", "question": "What food did God provide from heaven each morning in the desert for the Israelites?", "options": ["Quail", "Figs", "Manna", "Barley cakes"], "answer": 2 },
+  { "category": "Bible: Easy", "question": "Who was thrown into a den of lions for praying to God?", "options": ["Shadrach", "Daniel", "Ezekiel", "Jeremiah"], "answer": 1 },
+  { "category": "Bible: Easy", "question": "What was the occupation of Zacchaeus before meeting Jesus?", "options": ["Fisherman", "Carpenter", "Tax collector", "Centurion"], "answer": 2 },
+  { "category": "Bible: Easy", "question": "Who betrayed Jesus for thirty pieces of silver?", "options": ["Pontius Pilate", "Judas Iscariot", "Barabbas", "Caiaphas"], "answer": 1 },
+  { "category": "Bible: Easy", "question": "What sign did God place in the sky as a promise never again to destroy the earth with a flood?", "options": ["A shooting star", "A dove", "A rainbow", "A solar eclipse"], "answer": 2 },
+  { "category": "Bible: Easy", "question": "Who wore a coat of many colors given to him by his father Jacob?", "options": ["Benjamin", "Joseph", "Judah", "Reuben"], "answer": 1 },
+  { "category": "Bible: Easy", "question": "Who was the mother of Jesus?", "options": ["Martha", "Mary Magdalene", "Mary", "Elizabeth"], "answer": 2 },
+  { "category": "Bible: Easy", "question": "What did Jesus turn water into at the wedding feast in Cana?", "options": ["Milk", "Wine", "Grape juice", "Olive oil"], "answer": 1 },
+  { "category": "Bible: Easy", "question": "Who was swallowed up into heaven in a whirlwind with chariots and horses of fire?", "options": ["Enoch", "Elijah", "Moses", "Isaiah"], "answer": 1 },
+  { "category": "Bible: Easy", "question": "Who was known as the strongest man in the Old Testament, whose strength was tied to his hair?", "options": ["Gideon", "Saul", "Samson", "Jonathan"], "answer": 2 },
+  { "category": "Bible: Easy", "question": "What is the longest book in the Bible by chapter count?", "options": ["Genesis", "Isaiah", "Jeremiah", "Psalms"], "answer": 3 },
+  { "category": "Bible: Easy", "question": "Who built the first permanent temple for the Lord in Jerusalem?", "options": ["David", "Solomon", "Hezekiah", "Josiah"], "answer": 1 },
+  { "category": "Bible: Easy", "question": "How many books are in the standard Protestant Bible?", "options": ["39", "66", "72", "80"], "answer": 1 },
+  { "category": "Bible: Easy", "question": "What did John the Baptist eat while preaching in the wilderness?", "options": ["Locusts and wild honey", "Bread and fish", "Figs and dates", "Unleavened bread"], "answer": 0 },
+  { "category": "Bible: Easy", "question": "Which brother did Cain kill out of jealousy?", "options": ["Seth", "Abel", "Jabal", "Lamech"], "answer": 1 },
+  { "category": "Bible: Easy", "question": "Who was the Roman governor who sentenced Jesus to be crucified?", "options": ["Herod Antipas", "Felix", "Festus", "Pontius Pilate"], "answer": 3 },
+  { "category": "Bible: Easy", "question": "What happened to the walls of Jericho after the Israelites marched around them and blew trumpets?", "options": ["They burned down", "They collapsed flat", "They opened wide", "They turned to dust"], "answer": 1 },
+  { "category": "Bible: Easy", "question": "Who was Jesus's close friend whom he raised from the dead after four days in the tomb?", "options": ["Lazarus", "Nicodemus", "Jairus", "Bartimaeus"], "answer": 0 },
+  { "category": "Bible: Easy", "question": "What is the last book of the New Testament?", "options": ["Jude", "Hebrews", "Revelation", "Acts"], "answer": 2 },
+  { "category": "Bible: Medium", "question": "Who was the first king of Israel?", "options": ["David", "Saul", "Solomon", "Rehoboam"], "answer": 1 },
+  { "category": "Bible: Medium", "question": "On what island was the Apostle John exiled when he wrote the Book of Revelation?", "options": ["Cyprus", "Crete", "Patmos", "Malta"], "answer": 2 },
+  { "category": "Bible: Medium", "question": "Who was the left-handed judge who assassinated the Moabite king Eglon?", "options": ["Othniel", "Ehud", "Shamgar", "Barak"], "answer": 1 },
+  { "category": "Bible: Medium", "question": "How old was Methuselah when he died, making him the oldest person recorded in scripture?", "options": ["912 years", "950 years", "969 years", "999 years"], "answer": 2 },
+  { "category": "Bible: Medium", "question": "What was the Jewish name of Queen Esther before she became queen of Persia?", "options": ["Hadassah", "Miriam", "Abigail", "Keziah"], "answer": 0 },
+  { "category": "Bible: Medium", "question": "Which bird did Noah send out of the Ark first to see if the floodwaters had receded?", "options": ["A dove", "A raven", "A sparrow", "A swallow"], "answer": 1 },
+  { "category": "Bible: Medium", "question": "In the Book of Acts, who was chosen to replace Judas Iscariot among the twelve apostles?", "options": ["Barnabas", "Silas", "Matthias", "Barsabbas"], "answer": 2 },
+  { "category": "Bible: Medium", "question": "What was the hometown of the prophet Elijah?", "options": ["Tishbe", "Shiloh", "Anathoth", "Tekoa"], "answer": 0 },
+  { "category": "Bible: Medium", "question": "Which disciple refused to believe Jesus had risen until he touched his wounds?", "options": ["Philip", "Bartholomew", "Thomas", "James"], "answer": 2 },
+  { "category": "Bible: Medium", "question": "How many days and nights was Jonah in the belly of the fish?", "options": ["1 day and night", "3 days and nights", "7 days and nights", "40 days and nights"], "answer": 1 },
+  { "category": "Bible: Medium", "question": "Who was Moses's father-in-law, the priest of Midian?", "options": ["Balaam", "Jethro", "Laban", "Potiphar"], "answer": 1 },
+  { "category": "Bible: Medium", "question": "What prophet confronted King David over his sin with Bathsheba?", "options": ["Samuel", "Nathan", "Gad", "Ahijah"], "answer": 1 },
+  { "category": "Bible: Medium", "question": "What was the name of Abraham's wife originally before God changed it?", "options": ["Milcah", "Sarai", "Keturah", "Hagar"], "answer": 1 },
+  { "category": "Bible: Medium", "question": "On the road to which city did Saul have his dramatic encounter with the risen Christ?", "options": ["Antioch", "Damascus", "Tarsus", "Alexandria"], "answer": 1 },
+  { "category": "Bible: Medium", "question": "How many men did Gideon lead into battle against the Midianites after God reduced his army?", "options": ["100", "300", "700", "1,000"], "answer": 1 },
+  { "category": "Bible: Medium", "question": "What prophet was told by God to marry an unfaithful woman named Gomer as a living parable?", "options": ["Amos", "Hosea", "Micah", "Habakkuk"], "answer": 1 },
+  { "category": "Bible: Medium", "question": "What town was Jesus raised in throughout his childhood?", "options": ["Capernaum", "Nazareth", "Bethsaida", "Cana"], "answer": 1 },
+  { "category": "Bible: Medium", "question": "Which Old Testament book never explicitly mentions the name of God?", "options": ["Song of Solomon", "Ruth", "Esther", "Ecclesiastes"], "answer": 2 },
+  { "category": "Bible: Medium", "question": "Who was the sister of Moses who watched him as a baby in the basket along the Nile?", "options": ["Miriam", "Deborah", "Zipporah", "Jochebed"], "answer": 0 },
+  { "category": "Bible: Medium", "question": "Which king of Babylon lost his mind and lived like an animal eating grass for seven years?", "options": ["Belshazzar", "Nebuchadnezzar", "Darius", "Cyrus"], "answer": 1 },
+  { "category": "Bible: Medium", "question": "What is the shortest verse in the entire Bible?", "options": ["Rejoice always.", "Jesus wept.", "Pray without ceasing.", "The Lord is my shepherd."], "answer": 1 },
+  { "category": "Bible: Medium", "question": "Who was the female judge and prophetess who led Israel alongside Barak?", "options": ["Huldah", "Abigail", "Deborah", "Jael"], "answer": 2 },
+  { "category": "Bible: Medium", "question": "What river was Naaman the Syrian commander told to wash in seven times to cure his leprosy?", "options": ["Nile", "Euphrates", "Jordan", "Tigris"], "answer": 2 },
+  { "category": "Bible: Medium", "question": "Who was the high priest who presided over Jesus's trial before handing him to Pilate?", "options": ["Annas", "Caiaphas", "Gamaliel", "Nicodemus"], "answer": 1 },
+  { "category": "Bible: Medium", "question": "What city's walls crumbled after Nehemiah returned from Persia to rebuild them in just 52 days?", "options": ["Samaria", "Jerusalem", "Hebron", "Bethel"], "answer": 1 },
+  { "category": "Bible: Medium", "question": "Who was struck dead alongside her husband Ananias for lying to the Holy Spirit about money?", "options": ["Priscilla", "Sapphira", "Rhoda", "Dorcas"], "answer": 1 },
+  { "category": "Bible: Medium", "question": "Which tribe of Israel was set apart to serve as priests and caretakers of the tabernacle?", "options": ["Judah", "Benjamin", "Levi", "Dan"], "answer": 2 },
+  { "category": "Bible: Medium", "question": "What was the name of the garden where Jesus prayed agonized prayers the night before his crucifixion?", "options": ["Eden", "Gethsemane", "Bethel", "Sharon"], "answer": 1 },
+  { "category": "Bible: Medium", "question": "Who was the mother of Samuel who prayed earnestly at Shiloh because she had been barren?", "options": ["Peninnah", "Hannah", "Elizabeth", "Rachel"], "answer": 1 },
+  { "category": "Bible: Medium", "question": "Which apostle was a physician by profession?", "options": ["Matthew", "Mark", "Luke", "John"], "answer": 2 },
+  { "category": "Bible: Hard", "question": "What was the name of the king of Salem and priest of God Most High to whom Abraham gave a tenth?", "options": ["Abimelech", "Melchizedek", "Og", "Sihon"], "answer": 1 },
+  { "category": "Bible: Hard", "question": "What was the name of the bronze serpent Moses erected on a pole that King Hezekiah later destroyed?", "options": ["Asherah", "Nehushtan", "Dagon", "Urim"], "answer": 1 },
+  { "category": "Bible: Hard", "question": "Who killed Sisera by hammering a tent peg through his temple while he slept?", "options": ["Deborah", "Jael", "Michal", "Rahab"], "answer": 1 },
+  { "category": "Bible: Hard", "question": "What were the Babylonian names given to Hananiah, Mishael, and Azariah?", "options": ["Belteshazzar, Darius, Cyrus", "Shadrach, Meshach, Abednego", "Sanballat, Tobiah, Geshem", "Eliphaz, Bildad, Zophar"], "answer": 1 },
+  { "category": "Bible: Hard", "question": "What was the name of Moses's wife, the daughter of Jethro?", "options": ["Zipporah", "Cozbi", "Dinah", "Bilhah"], "answer": 0 },
+  { "category": "Bible: Hard", "question": "Which king of Judah was hidden in the temple as an infant to escape Queen Athaliah's massacre?", "options": ["Josiah", "Joash", "Manasseh", "Uzziah"], "answer": 1 },
+  { "category": "Bible: Hard", "question": "In Paul's letter to Philemon, who was the runaway slave whom Paul urged him to welcome back as a brother?", "options": ["Epaphras", "Onesimus", "Tychicus", "Aristarchus"], "answer": 1 },
+  { "category": "Bible: Hard", "question": "Who died instantly when he reached out his hand to steady the Ark of the Covenant on an ox cart?", "options": ["Ahio", "Uzzah", "Obed-Edom", "Eleazar"], "answer": 1 },
+  { "category": "Bible: Hard", "question": "What prophet was fed by ravens morning and evening beside the Kerith Ravine?", "options": ["Elisha", "Elijah", "Jeremiah", "Amos"], "answer": 1 },
+  { "category": "Bible: Hard", "question": "What was the name of the mountain where Noah's Ark came to rest after the flood waters receded?", "options": ["Mount Sinai", "Mount Ararat", "Mount Carmel", "Mount Nebo"], "answer": 1 },
+  { "category": "Bible: Hard", "question": "How many years did the kingdom of Judah spend in exile in Babylon as prophesied by Jeremiah?", "options": ["40 years", "50 years", "70 years", "100 years"], "answer": 2 },
+  { "category": "Bible: Hard", "question": "Who fell out of a third-story window while listening to Paul preach late into the night?", "options": ["Trophimus", "Eutychus", "Agabus", "Publius"], "answer": 1 },
+  { "category": "Bible: Hard", "question": "What was the Hebrew name of the place where Jacob wrestled with God until daybreak?", "options": ["Bethel", "Peniel", "Mahanaim", "Shechem"], "answer": 1 },
+  { "category": "Bible: Hard", "question": "Which prophet was thrown into a muddy cistern by royal officials during the siege of Jerusalem?", "options": ["Jeremiah", "Ezekiel", "Zephaniah", "Malachi"], "answer": 0 },
+  { "category": "Bible: Hard", "question": "What was the name of the sorcerer on Cyprus who was struck blind for opposing Paul and Barnabas?", "options": ["Simon Magus", "Elymas (Bar-Jesus)", "Demetrius", "Alexander"], "answer": 1 },
+  { "category": "Bible: Hard", "question": "Which prophet saw a vision of a valley filled with dry bones coming back to life?", "options": ["Daniel", "Ezekiel", "Isaiah", "Zechariah"], "answer": 1 },
+  { "category": "Bible: Hard", "question": "What did the prophet Elisha throw into the pot of poisonous stew to make it safe to eat?", "options": ["Salt", "Flour", "Olive oil", "Myrrh"], "answer": 1 },
+  { "category": "Bible: Hard", "question": "Who was the Moabite woman who remained devoted to her mother-in-law Naomi?", "options": ["Orpah", "Ruth", "Vashti", "Tamar"], "answer": 1 },
+  { "category": "Bible: Hard", "question": "In the Book of Acts, who was the seller of purple fabric from Thyatira who was baptized by Paul?", "options": ["Phoebe", "Lydia", "Priscilla", "Chloe"], "answer": 1 },
+  { "category": "Bible: Hard", "question": "What was the name of King Saul's daughter who was given to David as his first wife?", "options": ["Merab", "Michal", "Ahinoam", "Rizpah"], "answer": 1 },
+  { "category": "Bible: Hard", "question": "Which king of Israel dug a 1,750-foot underground water tunnel through solid bedrock to defend against Assyria?", "options": ["Asa", "Hezekiah", "Jehoshaphat", "Josiah"], "answer": 1 },
+  { "category": "Bible: Hard", "question": "What were the names of the two sons of Zebedee whom Jesus nicknamed the 'Sons of Thunder'?", "options": ["Peter and Andrew", "James and John", "Philip and Bartholomew", "Simon and Jude"], "answer": 1 },
+  { "category": "Bible: Hard", "question": "Who was the judge of Israel who made a rash vow that cost the life of his only daughter?", "options": ["Ibzan", "Jephthah", "Abdon", "Tola"], "answer": 1 },
+  { "category": "Bible: Hard", "question": "Which apostle was martyred by King Herod Agrippa I with the sword in Acts chapter 12?", "options": ["Stephen", "James the brother of John", "Philip", "Andrew"], "answer": 1 },
+  { "category": "Bible: Hard", "question": "What was the name of the high priest's servant whose right ear Peter severed with a sword?", "options": ["Malchus", "Barabbas", "Alexander", "Sceva"], "answer": 0 },
+  { "category": "Bible: Hard", "question": "What prophet pronounced judgment against the ancient city of Nineveh other than Jonah?", "options": ["Nahum", "Obadiah", "Habakkuk", "Haggai"], "answer": 0 },
+  { "category": "Bible: Hard", "question": "What did the sign above Jesus on the cross say in Hebrew, Latin, and Greek?", "options": ["The Prophet of Nazareth", "Jesus of Nazareth, King of the Jews", "The Holy One of God", "The Son of David"], "answer": 1 },
+  { "category": "Bible: Hard", "question": "Who was the prophetess who recognized baby Jesus as the redemption of Jerusalem in the temple?", "options": ["Anna", "Elizabeth", "Huldah", "Noadiah"], "answer": 0 },
+  { "category": "Bible: Hard", "question": "How many silver shekels did Abraham pay Ephron the Hittite for the cave of Machpelah as a burial site?", "options": ["50", "200", "400", "600"], "answer": 2 },
+  { "category": "Bible: Hard", "question": "In what language was most of the Old Testament originally written?", "options": ["Aramaic", "Classical Greek", "Ancient Hebrew", "Latin"], "answer": 2 },
+  { "category": "Bible: Hard", "question": "Who was the Roman centurion in Caesarea whose conversion marked the gospel opening to the Gentiles?", "options": ["Julius", "Cornelius", "Claudius Lysias", "Gallio"], "answer": 1 },
+  { "category": "Bible: Hard", "question": "What did God turn Aaron's staff into when he cast it down before Pharaoh?", "options": ["A serpent", "A river of blood", "A scorpion", "A column of fire"], "answer": 0 },
+  { "category": "Bible: Hard", "question": "Which king of Israel set up golden calf worship centers at Dan and Bethel to keep his people away from Jerusalem?", "options": ["Jeroboam I", "Baasha", "Omri", "Ahab"], "answer": 0 },
+  { "category": "Bible: Hard", "question": "Who was the scribe who wrote down the prophecies dictated to him by the prophet Jeremiah?", "options": ["Gedaliah", "Baruch", "Seraiah", "Shemaiah"], "answer": 1 },
+  { "category": "Bible: Hard", "question": "On which mountain did Moses view the Promised Land before he died?", "options": ["Mount Nebo", "Mount Hor", "Mount Gerizim", "Mount Hermon"], "answer": 0 },
+  { "category": "Bible: Hard", "question": "Who had his earlobes, right thumb, and right big toe touched with consecrated oil during priestly ordination?", "options": ["David", "Aaron", "Solomon", "Samuel"], "answer": 1 },
+  { "category": "Bible: Hard", "question": "Which New Testament letter contains an entire chapter dedicated to heroes of faith (the 'Hall of Faith')?", "options": ["Romans 8", "Hebrews 11", "James 2", "1 Peter 1"], "answer": 1 },
+  { "category": "Bible: Hard", "question": "What was the name of the silversmith in Ephesus who started a riot against Paul over Diana/Artemis shrines?", "options": ["Alexander", "Demetrius", "Tertullus", "Secundus"], "answer": 1 },
+  { "category": "Bible: Hard", "question": "How many days did Jesus remain on earth appearing to his disciples between his resurrection and ascension?", "options": ["3 days", "12 days", "40 days", "50 days"], "answer": 2 },
+  { "category": "Bible: Hard", "question": "What was the name of the pool in Jerusalem where Jesus healed a man invalid for 38 years?", "options": ["Siloam", "Bethesda", "Gihon", "En-rogel"], "answer": 1 },
+
+  { "category": "Movie Quotes: Easy", "question": "\"May the Force be with you.\" is from which iconic film?", "options": ["Star Wars", "Star Trek", "Dune", "Guardians of the Galaxy"], "answer": 0 },
+  { "category": "Movie Quotes: Easy", "question": "\"There's no place like home.\" is spoken by Dorothy in which classic film?", "options": ["Mary Poppins", "The Wizard of Oz", "Alice in Wonderland", "Peter Pan"], "answer": 1 },
+  { "category": "Movie Quotes: Easy", "question": "\"I'll be back.\" is the signature line from which movie?", "options": ["Predator", "RoboCop", "The Terminator", "Total Recall"], "answer": 2 },
+  { "category": "Movie Quotes: Easy", "question": "\"To infinity and beyond!\" is shouted by which character in Toy Story?", "options": ["Woody", "Rex", "Buzz Lightyear", "Mr. Potato Head"], "answer": 2 },
+  { "category": "Movie Quotes: Easy", "question": "\"Life is like a box of chocolates. You never know what you're gonna get.\" is from which movie?", "options": ["Forrest Gump", "Cast Away", "Big", "The Terminal"], "answer": 0 },
+  { "category": "Movie Quotes: Easy", "question": "\"You're gonna need a bigger boat.\" was said after seeing a giant shark in which film?", "options": ["The Meg", "Jaws", "Deep Blue Sea", "Sharknado"], "answer": 1 },
+  { "category": "Movie Quotes: Easy", "question": "\"E.T. phone home.\" comes from which classic Steven Spielberg movie?", "options": ["Close Encounters of the Third Kind", "Jurassic Park", "E.T. the Extra-Terrestrial", "Hook"], "answer": 2 },
+  { "category": "Movie Quotes: Easy", "question": "\"I'm the king of the world!\" is shouted by Leonardo DiCaprio in which film?", "options": ["Titanic", "The Wolf of Wall Street", "Catch Me If You Can", "Inception"], "answer": 0 },
+  { "category": "Movie Quotes: Easy", "question": "\"Just keep swimming!\" is the optimistic motto of Dory in which Pixar film?", "options": ["Finding Nemo", "The Little Mermaid", "Shark Tale", "Luca"], "answer": 0 },
+  { "category": "Movie Quotes: Easy", "question": "\"Houston, we have a problem.\" was immortalized in which space rescue drama?", "options": ["The Right Stuff", "Apollo 13", "Interstellar", "First Man"], "answer": 1 },
+  { "category": "Movie Quotes: Easy", "question": "\"Here's Johnny!\" was famously shouted through a chopped-open door in which horror film?", "options": ["Psycho", "Halloween", "The Shining", "Misery"], "answer": 2 },
+  { "category": "Movie Quotes: Easy", "question": "\"Hakuna Matata! What a wonderful phrase!\" originates from which animated classic?", "options": ["Tarzan", "The Lion King", "Aladdin", "Madagascar"], "answer": 1 },
+  { "category": "Movie Quotes: Easy", "question": "\"I feel the need... the need for speed!\" is shouted in which high-flying movie?", "options": ["Top Gun", "Days of Thunder", "Fast & Furious", "Iron Eagle"], "answer": 0 },
+  { "category": "Movie Quotes: Easy", "question": "\"Say hello to my little friend!\" is shouted during the climax of which gangster film?", "options": ["The Godfather", "Scarface", "Goodfellas", "Casino"], "answer": 1 },
+  { "category": "Movie Quotes: Easy", "question": "\"You had me at 'hello'.\" is the emotional turning point in which sports-romance film?", "options": ["Jerry Maguire", "A League of Their Own", "As Good as It Gets", "Notting Hill"], "answer": 0 },
+  { "category": "Movie Quotes: Easy", "question": "\"My precious!\" is constantly hissed by Gollum in which epic fantasy franchise?", "options": ["Harry Potter", "The Chronicles of Narnia", "The Lord of the Rings", "Eragon"], "answer": 2 },
+  { "category": "Movie Quotes: Easy", "question": "\"Why so serious?\" is the chilling mantra of the Joker in which superhero film?", "options": ["Batman (1989)", "The Dark Knight", "Joker (2019)", "Batman Begins"], "answer": 1 },
+  { "category": "Movie Quotes: Easy", "question": "\"Wax on, wax off.\" is taught to Daniel LaRusso in which martial arts film?", "options": ["The Karate Kid", "Cobra Kai", "Bloodsport", "Kung Fu Panda"], "answer": 0 },
+  { "category": "Movie Quotes: Easy", "question": "\"I am your father.\" is revealed by Darth Vader in which Star Wars film?", "options": ["A New Hope", "The Empire Strikes Back", "Return of the Jedi", "Revenge of the Sith"], "answer": 1 },
+  { "category": "Movie Quotes: Easy", "question": "\"Nobody puts Baby in a corner.\" is spoken by Patrick Swayze in which dance romance?", "options": ["Footloose", "Dirty Dancing", "Flashdance", "Grease"], "answer": 1 },
+  { "category": "Movie Quotes: Easy", "question": "\"Keep the change, ya filthy animal!\" is watched by Kevin McCallister in which movie?", "options": ["Home Alone", "Elf", "The Santa Clause", "A Christmas Story"], "answer": 0 },
+  { "category": "Movie Quotes: Easy", "question": "\"I am Iron Man.\" concludes which 2008 Marvel blockbuster?", "options": ["The Avengers", "Iron Man", "Captain America", "Thor"], "answer": 1 },
+  { "category": "Movie Quotes: Easy", "question": "\"Show me the money!\" is screamed over the phone in which film?", "options": ["Wall Street", "Jerry Maguire", "Moneyball", "Boiler Room"], "answer": 1 },
+  { "category": "Movie Quotes: Easy", "question": "\"I'll have what she's having.\" is said in a deli in which iconic romantic comedy?", "options": ["When Harry Met Sally...", "Sleepless in Seattle", "Pretty Woman", "You've Got Mail"], "answer": 0 },
+  { "category": "Movie Quotes: Easy", "question": "\"Welcome to Jurassic Park!\" is announced by John Hammond in which 1993 sci-fi movie?", "options": ["King Kong", "The Lost World", "Jurassic Park", "Godzilla"], "answer": 2 },
+  { "category": "Movie Quotes: Easy", "question": "\"There's no crying in baseball!\" is hollered by Tom Hanks in which sports film?", "options": ["Field of Dreams", "A League of Their Own", "The Sandlot", "Major League"], "answer": 1 },
+  { "category": "Movie Quotes: Easy", "question": "\"Roads? Where we're going, we don't need roads.\" concludes which time-travel classic?", "options": ["Back to the Future", "Bill & Ted's Excellent Adventure", "The Terminator", "Timecop"], "answer": 0 },
+  { "category": "Movie Quotes: Easy", "question": "\"You're a wizard, Harry.\" is uttered by Hagrid in which movie?", "options": ["Harry Potter and the Chamber of Secrets", "Harry Potter and the Sorcerer's Stone", "Harry Potter and the Goblet of Fire", "The Lord of the Rings"], "answer": 1 },
+  { "category": "Movie Quotes: Easy", "question": "\"Elementary, my dear Watson.\" is culturally associated with which fictional detective?", "options": ["Hercule Poirot", "Sherlock Holmes", "Benoit Blanc", "Sam Spade"], "answer": 1 },
+  { "category": "Movie Quotes: Easy", "question": "\"Go ahead, make my day.\" was spoken by Clint Eastwood playing which cop?", "options": ["Dirty Harry", "Frank Bullitt", "Martin Riggs", "John McClane"], "answer": 0 },
+
+  { "category": "Movie Quotes: Medium", "question": "\"You can't handle the truth!\" is barked by Jack Nicholson in which courtroom drama?", "options": ["A Few Good Men", "The Verdict", "Primal Fear", "To Kill a Mockingbird"], "answer": 0 },
+  { "category": "Movie Quotes: Medium", "question": "\"Frankly, my dear, I don't give a damn.\" is the parting line in which historic epic?", "options": ["Casablanca", "Gone with the Wind", "Citizen Kane", "The African Queen"], "answer": 1 },
+  { "category": "Movie Quotes: Medium", "question": "\"Here's looking at you, kid.\" is murmured by Humphrey Bogart in which classic?", "options": ["The Maltese Falcon", "The Big Sleep", "Casablanca", "Sabrina"], "answer": 2 },
+  { "category": "Movie Quotes: Medium", "question": "\"The first rule of Fight Club is: you do not talk about Fight Club.\" was directed by whom?", "options": ["Christopher Nolan", "David Fincher", "Quentin Tarantino", "Martin Scorsese"], "answer": 1 },
+  { "category": "Movie Quotes: Medium", "question": "\"I love the smell of napalm in the morning.\" is spoken in which Vietnam War epic?", "options": ["Platoon", "Full Metal Jacket", "Apocalypse Now", "The Deer Hunter"], "answer": 2 },
+  { "category": "Movie Quotes: Medium", "question": "\"I'm going to make him an offer he can't refuse.\" is spoken by Don Corleone in which film?", "options": ["The Godfather", "Scarface", "Goodfellas", "The Untouchables"], "answer": 0 },
+  { "category": "Movie Quotes: Medium", "question": "\"Fasten your seatbelts. It's going to be a bumpy night.\" is from which 1950 drama?", "options": ["Sunset Boulevard", "All About Eve", "A Streetcar Named Desire", "Dial M for Murder"], "answer": 1 },
+  { "category": "Movie Quotes: Medium", "question": "\"You talkin' to me?\" was improvised by Robert De Niro in which 1976 movie?", "options": ["Raging Bull", "Taxi Driver", "Mean Streets", "The Deer Hunter"], "answer": 1 },
+  { "category": "Movie Quotes: Medium", "question": "\"What we've got here is failure to communicate.\" is spoken by the Captain in which film?", "options": ["Cool Hand Luke", "The Great Escape", "One Flew Over the Cuckoo's Nest", "Papillon"], "answer": 0 },
+  { "category": "Movie Quotes: Medium", "question": "\"I see dead people.\" is the famous confession made by Cole Sear in which thriller?", "options": ["The Sixth Sense", "The Others", "Unbreakable", "Signs"], "answer": 0 },
+  { "category": "Movie Quotes: Medium", "question": "\"My name is Inigo Montoya. You killed my father. Prepare to die.\" is from which adventure?", "options": ["The Princess Bride", "Robin Hood: Men in Tights", "Willow", "Stardust"], "answer": 0 },
+  { "category": "Movie Quotes: Medium", "question": "\"They may take our lives, but they'll never take our freedom!\" is yelled by William Wallace in:", "options": ["Gladiator", "Braveheart", "The Patriot", "Kingdom of Heaven"], "answer": 1 },
+  { "category": "Movie Quotes: Medium", "question": "\"Are you not entertained?! Is this not why you are here?!\" is bellowed in which movie?", "options": ["Troy", "300", "Gladiator", "Spartacus"], "answer": 2 },
+  { "category": "Movie Quotes: Medium", "question": "\"Bond. James Bond.\" was first spoken on film in which 007 installment?", "options": ["From Russia with Love", "Goldfinger", "Dr. No", "Casino Royale"], "answer": 2 },
+  { "category": "Movie Quotes: Medium", "question": "\"A census taker once tried to test me. I ate his liver with some fava beans and a nice Chianti.\" is from:", "options": ["The Silence of the Lambs", "Red Dragon", "Hannibal", "Se7en"], "answer": 0 },
+  { "category": "Movie Quotes: Medium", "question": "\"Carpe diem. Seize the day, boys. Make your lives extraordinary.\" is taught in which film?", "options": ["Good Will Hunting", "Dead Poets Society", "The Emperor's Club", "Finding Forrester"], "answer": 1 },
+  { "category": "Movie Quotes: Medium", "question": "\"I have always depended on the kindness of strangers.\" is spoken by Blanche DuBois in:", "options": ["Cat on a Hot Tin Roof", "A Streetcar Named Desire", "The Glass Menagerie", "Who's Afraid of Virginia Woolf?"], "answer": 1 },
+  { "category": "Movie Quotes: Medium", "question": "\"Greed, for lack of a better word, is good.\" is declared by Gordon Gekko in which film?", "options": ["Wall Street", "Glengarry Glen Ross", "Trading Places", "Margin Call"], "answer": 0 },
+  { "category": "Movie Quotes: Medium", "question": "\"As if!\" is the signature catchphrase of Cher Horowitz in which 1995 comedy?", "options": ["Mean Girls", "Clueless", "Heathers", "10 Things I Hate About You"], "answer": 1 },
+  { "category": "Movie Quotes: Medium", "question": "\"I drink your milkshake! I drink it up!\" is screamed by Daniel Plainview in which movie?", "options": ["There Will Be Blood", "No Country for Old Men", "The Master", "Gangs of New York"], "answer": 0 },
+  { "category": "Movie Quotes: Medium", "question": "\"You make me want to be a better man.\" is Jack Nicholson's compliment to Helen Hunt in:", "options": ["As Good as It Gets", "Terms of Endearment", "Something's Gotta Give", "About Schmidt"], "answer": 0 },
+  { "category": "Movie Quotes: Medium", "question": "\"Get busy livin', or get busy dyin'.\" is written in a letter by Andy Dufresne in which film?", "options": ["The Green Mile", "The Shawshank Redemption", "Stand by Me", "Papillon"], "answer": 1 },
+  { "category": "Movie Quotes: Medium", "question": "\"You're killin' me, Smalls!\" is the repeated frustration of Ham Porter in which film?", "options": ["Rookie of the Year", "The Sandlot", "Angels in the Outfield", "The Bad News Bears"], "answer": 1 },
+  { "category": "Movie Quotes: Medium", "question": "\"Look at me. I'm the captain now.\" is said during a hijacking in which film?", "options": ["Captain Phillips", "Black Hawk Down", "Cast Away", "White Squall"], "answer": 0 },
+  { "category": "Movie Quotes: Medium", "question": "\"Inconceivable!\" is repeatedly proclaimed by Vizzini in which fantasy comedy?", "options": ["The Princess Bride", "Labyrinth", "Monty Python and the Holy Grail", "Spaceballs"], "answer": 0 },
+  { "category": "Movie Quotes: Medium", "question": "\"I'm walking here! I'm walking here!\" was ad-libbed by Dustin Hoffman in which film?", "options": ["The Graduate", "Midnight Cowboy", "Rain Man", "Tootsie"], "answer": 1 },
+  { "category": "Movie Quotes: Medium", "question": "\"That'll do, pig. That'll do.\" is gently spoken by Farmer Hoggett in which film?", "options": ["Babe", "Charlotte's Web", "Animal Farm", "Gordy"], "answer": 0 },
+  { "category": "Movie Quotes: Medium", "question": "\"I am serious. And don't call me Shirley.\" is delivered deadpan by Leslie Nielsen in:", "options": ["The Naked Gun", "Airplane!", "Police Academy", "Top Secret!"], "answer": 1 },
+  { "category": "Movie Quotes: Medium", "question": "\"You either die a hero, or you live long enough to see yourself become the villain.\" is said by:", "options": ["Bruce Wayne", "Harvey Dent", "Jim Gordon", "Alfred Pennyworth"], "answer": 1 },
+  { "category": "Movie Quotes: Medium", "question": "\"Help me, Obi-Wan Kenobi. You're my only hope.\" was projected as a hologram by:", "options": ["Princess Leia", "Queen Amidala", "Mon Mothma", "Ahsoka Tano"], "answer": 0 },
+
+  { "category": "Movie Quotes: Hard", "question": "\"All those moments will be lost in time, like tears in rain.\" is Roy Batty's final monologue in:", "options": ["Total Recall", "Blade Runner", "Dark City", "Minority Report"], "answer": 1 },
+  { "category": "Movie Quotes: Hard", "question": "\"Forget it, Jake. It's Chinatown.\" was spoken to Jack Nicholson's character by which actor?", "options": ["Joe Mantell", "John Huston", "Perry Lopez", "Roman Polanski"], "answer": 0 },
+  { "category": "Movie Quotes: Hard", "question": "\"I'm as mad as hell, and I'm not going to take this anymore!\" is roared by Howard Beale in:", "options": ["Network", "Broadcast News", "Dog Day Afternoon", "All the President's Men"], "answer": 0 },
+  { "category": "Movie Quotes: Hard", "question": "\"Listen to them. Children of the night. What music they make.\" is spoken by Bela Lugosi in:", "options": ["Frankenstein (1931)", "Dracula (1931)", "The Mummy (1932)", "White Zombie (1932)"], "answer": 1 },
+  { "category": "Movie Quotes: Hard", "question": "\"Gentlemen, you can't fight in here! This is the War Room!\" is shouted in which satire?", "options": ["Catch-22", "M*A*S*H", "Dr. Strangelove", "The Great Dictator"], "answer": 2 },
+  { "category": "Movie Quotes: Hard", "question": "\"Badges? We ain't got no badges! We don't need no badges! I don't have to show you any stinkin' badges!\" is from:", "options": ["The Treasure of the Sierra Madre", "The Wild Bunch", "For a Few Dollars More", "High Noon"], "answer": 0 },
+  { "category": "Movie Quotes: Hard", "question": "\"One morning I shot an elephant in my pajamas. How he got in my pajamas, I don't know.\" was said by:", "options": ["W.C. Fields", "Groucho Marx", "Buster Keaton", "Charlie Chaplin"], "answer": 1 },
+  { "category": "Movie Quotes: Hard", "question": "\"It's alive! It's alive! In the name of God, now I know what it feels like to be God!\" was spoken by Colin Clive in:", "options": ["Frankenstein (1931)", "Bride of Frankenstein (1935)", "The Invisible Man (1933)", "Doctor X (1932)"], "answer": 0 },
+  { "category": "Movie Quotes: Hard", "question": "\"Rosebud.\" is the dying word of Charles Foster Kane in which landmark 1941 film?", "options": ["Citizen Kane", "The Magnificent Ambersons", "Touch of Evil", "The Third Man"], "answer": 0 },
+  { "category": "Movie Quotes: Hard", "question": "\"Made it, Ma! Top of the world!\" screams Cody Jarrett before exploding in which noir?", "options": ["White Heat", "The Public Enemy", "Angels with Dirty Faces", "The Maltese Falcon"], "answer": 0 },
+  { "category": "Movie Quotes: Hard", "question": "\"The stuff that dreams are made of.\" is Sam Spade's description of what artifact?", "options": ["The Hope Diamond", "The Maltese Falcon", "The Golden Fleece", "The Ark of the Covenant"], "answer": 1 },
+  { "category": "Movie Quotes: Hard", "question": "\"I am big. It's the pictures that got small.\" is Norma Desmond's defensive retort in:", "options": ["All About Eve", "Sunset Boulevard", "Whatever Happened to Baby Jane?", "The Bad and the Beautiful"], "answer": 1 },
+  { "category": "Movie Quotes: Hard", "question": "\"You've got to ask yourself one question: 'Do I feel lucky?' Well, do ya, punk?\" is spoken about which revolver?", "options": [".357 Magnum", ".44 Magnum", ".45 ACP Colt", ".38 Special"], "answer": 1 },
+  { "category": "Movie Quotes: Hard", "question": "\"You don't understand! I coulda had class. I coulda been a contender.\" is Marlon Brando in:", "options": ["The Godfather", "A Streetcar Named Desire", "On the Waterfront", "The Wild One"], "answer": 2 },
+  { "category": "Movie Quotes: Hard", "question": "\"A boy's best friend is his mother.\" is quietly noted by Norman Bates in which film?", "options": ["Psycho", "Rear Window", "Vertigo", "The Birds"], "answer": 0 },
+  { "category": "Movie Quotes: Hard", "question": "\"Open the pod bay doors, please, HAL.\" is commanded by Dave Bowman in which sci-fi epic?", "options": ["Solaris", "2001: A Space Odyssey", "Silent Running", "Alien"], "answer": 1 },
+  { "category": "Movie Quotes: Hard", "question": "\"Soylent Green is people!\" is screamed by Charlton Heston playing which detective?", "options": ["Robert Thorn", "George Taylor", "Harry Morgan", "Neville"], "answer": 0 },
+  { "category": "Movie Quotes: Hard", "question": "\"Look what they did to my boy.\" is mourned by Don Vito Corleone after the death of:", "options": ["Michael", "Fredo", "Sonny", "Tom Hagen"], "answer": 2 },
+  { "category": "Movie Quotes: Hard", "question": "\"I'm gonna steal the Declaration of Independence.\" is boldly declared by Nicolas Cage in:", "options": ["National Treasure", "The Rock", "Gone in 60 Seconds", "Con Air"], "answer": 0 },
+  { "category": "Movie Quotes: Hard", "question": "\"We rob banks.\" is the simple introduction used by Warren Beatty in which 1967 film?", "options": ["Bonnie and Clyde", "McCabe & Mrs. Miller", "Bugsy", "The Thomas Crown Affair"], "answer": 0 },
+  { "category": "Movie Quotes: Hard", "question": "\"Every time a bell rings, an angel gets his wings.\" is taught to George Bailey's daughter Zuzu in:", "options": ["Miracle on 34th Street", "It's a Wonderful Life", "A Christmas Carol", "Meet Me in St. Louis"], "answer": 1 },
+  { "category": "Movie Quotes: Hard", "question": "\"Mother of mercy, is this the end of Rico?\" is the dying gasp of Little Caesar, played by:", "options": ["James Cagney", "Edward G. Robinson", "Humphrey Bogart", "Paul Muni"], "answer": 1 },
+  { "category": "Movie Quotes: Hard", "question": "\"A day may come when the courage of men fails... but it is not this day!\" is rallied by Aragorn at:", "options": ["Helm's Deep", "The Black Gate", "Osgiliath", "Minas Tirith"], "answer": 1 },
+  { "category": "Movie Quotes: Hard", "question": "\"Wait a minute, wait a minute. You ain't heard nothin' yet!\" was the first spoken line in a talkie in:", "options": ["The Jazz Singer (1927)", "Lights of New York (1928)", "The Broadway Melody (1929)", "Applause (1929)"], "answer": 0 },
+  { "category": "Movie Quotes: Hard", "question": "\"You've got red on you.\" is a running joke spoken throughout which British zombie parody?", "options": ["28 Days Later", "Shaun of the Dead", "Hot Fuzz", "Cockneys vs Zombies"], "answer": 1 },
+  { "category": "Movie Quotes: Hard", "question": "\"Keep your friends close, but your enemies closer.\" was taught to Michael Corleone by whom?", "options": ["His father, Vito", "Peter Clemenza", "Hyman Roth", "Frank Pentangeli"], "answer": 0 },
+  { "category": "Movie Quotes: Hard", "question": "\"The greatest trick the Devil ever pulled was convincing the world he didn't exist.\" is from:", "options": ["Primal Fear", "The Usual Suspects", "Se7en", "Angel Heart"], "answer": 1 },
+  { "category": "Movie Quotes: Hard", "question": "\"I have a feeling we're not in Kansas anymore.\" is spoken to which character?", "options": ["The Scarecrow", "Toto", "The Tin Man", "Glinda"], "answer": 1 },
+  { "category": "Movie Quotes: Hard", "question": "\"Hello, gorgeous.\" were the first words spoken on-screen by Barbra Streisand in which movie?", "options": ["Funny Girl", "The Way We Were", "Hello, Dolly!", "A Star Is Born"], "answer": 0 },
+  { "category": "Movie Quotes: Hard", "question": "\"Game over, man! Game over!\" is panicked by Private Hudson in which film?", "options": ["Predator", "Aliens", "Starship Troopers", "The Abyss"], "answer": 1 },
+  { "category": "Movie Quotes: Hard", "question": "\"You met me at a very strange time in my life.\" is spoken right before skyscrapers implode in:", "options": ["Fight Club", "The Matrix", "Twelve Monkeys", "Vanilla Sky"], "answer": 0 },
+  { "category": "Movie Quotes: Hard", "question": "\"It's not who I am underneath, but what I do that defines me.\" is Batman's line whispered to:", "options": ["Jim Gordon", "Rachel Dawes", "Harvey Dent", "Lucius Fox"], "answer": 1 },
+  { "category": "Movie Quotes: Hard", "question": "\"I have come here to chew bubblegum and kick ass... and I'm all out of bubblegum.\" is from:", "options": ["Escape from New York", "They Live", "Big Trouble in Little China", "The Thing"], "answer": 1 },
+  { "category": "Movie Quotes: Hard", "question": "\"The spice must flow.\" is a pivotal phrase associated with Guild Navigators in which sci-fi work?", "options": ["Dune", "Chronicles of Riddick", "The Fifth Element", "Flash Gordon"], "answer": 0 },
+  { "category": "Movie Quotes: Hard", "question": "\"That is the last time you pinheads make a fool out of me!\" was screamed by Biff Tannen in:", "options": ["Back to the Future Part II", "Back to the Future", "Back to the Future Part III", "Who Framed Roger Rabbit"], "answer": 2 },
+  { "category": "Movie Quotes: Hard", "question": "\"You know how to whistle, don't you, Steve? You just put your lips together and blow.\" is from:", "options": ["To Have and Have Not", "The Big Sleep", "Dark Passage", "Key Largo"], "answer": 0 },
+  { "category": "Movie Quotes: Hard", "question": "\"I drink your blood!\" was the original mistranslation debated around which Bela Lugosi trailer?", "options": ["White Zombie", "Mark of the Vampire", "Dracula", "Island of Lost Souls"], "answer": 2 },
+  { "category": "Movie Quotes: Hard", "question": "\"I am big! It's the picture that got small!\" is delivered by which former silent screen star?", "options": ["Gloria Swanson", "Bette Davis", "Joan Crawford", "Barbara Stanwyck"], "answer": 0 },
+  { "category": "Movie Quotes: Hard", "question": "\"It's a trap!\" was blurted out by Admiral Ackbar during the Battle of Endor in which film?", "options": ["A New Hope", "The Empire Strikes Back", "Return of the Jedi", "Rogue One"], "answer": 2 },
+  { "category": "Movie Quotes: Hard", "question": "\"We'll always have Paris.\" is Rick Blaine reminiscing with Ilsa Lund in:", "options": ["The Maltese Falcon", "Casablanca", "Sabrina", "To Have and Have Not"], "answer": 1 }
 ]
