@@ -33,7 +33,7 @@ function shuffle(array) {
 }
 
 // Game State
-let players = {}; // socketId -> { name, score, currentAnswer, answerTimeLeft, roundPointsEarned }
+let players = {};
 let activeQuestions = [];
 let currentQuestionIndex = -1;
 let questionTimer = null;
@@ -59,12 +59,12 @@ io.on('connection', (socket) => {
   socket.on('player:submit_answer', (answerIndex) => {
     if (roundActive && players[socket.id] && players[socket.id].currentAnswer === null) {
       players[socket.id].currentAnswer = answerIndex;
-      players[socket.id].answerTimeLeft = timeLeft; // Capture the exact seconds remaining
+      players[socket.id].answerTimeLeft = timeLeft;
       socket.emit('player:answer_received', answerIndex);
     }
   });
 
-  // Host starts game with question count and difficulty
+  // Host starts game
   socket.on('host:start_game', (config) => {
     clearInterval(questionTimer);
     clearTimeout(intermissionTimer);
@@ -110,6 +110,14 @@ io.on('connection', (socket) => {
 
     currentQuestionIndex = -1;
     startNextQuestion();
+  });
+
+  // Host forces game to stop
+  socket.on('host:stop_game', () => {
+    clearInterval(questionTimer);
+    clearTimeout(intermissionTimer);
+    roundActive = false;
+    broadcastGameOver();
   });
 
   // Disconnect
@@ -168,9 +176,7 @@ function endRound() {
   const correctAnswerIndex = currentQ.answer;
   const correctAnswerText = currentQ.options[correctAnswerIndex];
 
-  // Speed-based scoring calculation:
-  // Base: 500 points for correct answer
-  // Speed bonus: up to 500 additional points based on remaining time
+  // Speed-based scoring
   Object.keys(players).forEach((id) => {
     const p = players[id];
     if (p.currentAnswer === correctAnswerIndex) {
@@ -185,7 +191,6 @@ function endRound() {
 
   const leaderboard = getLeaderboard();
 
-  // Send individualized payload to each socket so they know their personal rank & points
   io.sockets.sockets.forEach((socket) => {
     const player = players[socket.id];
     const rankIndex = leaderboard.findIndex((item) => item.id === socket.id);
@@ -202,7 +207,6 @@ function endRound() {
     });
   });
 
-  // Automatically advance after a 5-second results screen
   intermissionTimer = setTimeout(() => {
     startNextQuestion();
   }, 5000);
