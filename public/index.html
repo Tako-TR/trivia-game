@@ -6,6 +6,8 @@
   <title>Trivia Player</title>
   <link rel="stylesheet" href="style.css">
   <script src="/socket.io/socket.io.js"></script>
+  <!-- Confetti Canvas Library -->
+  <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.2/dist/confetti.browser.min.js"></script>
   <style>
     .auth-card {
       background-color: #0f172a;
@@ -107,6 +109,48 @@
       font-weight: 600;
       display: none;
     }
+
+    /* Player Mini Podium */
+    .player-podium {
+      display: flex;
+      justify-content: center;
+      align-items: flex-end;
+      gap: 0.5rem;
+      margin: 1rem auto 1.25rem;
+      max-width: 320px;
+      height: 160px;
+    }
+    .p-slot {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+    .p-slot.first { order: 2; }
+    .p-slot.second { order: 1; }
+    .p-slot.third { order: 3; }
+    .p-icon { font-size: 1.4rem; }
+    .p-name {
+      font-size: 0.8rem;
+      font-weight: 700;
+      color: #f8fafc;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      max-width: 80px;
+    }
+    .p-step {
+      width: 100%;
+      border-radius: 8px 8px 0 0;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      font-weight: 900;
+      color: #0f172a;
+    }
+    .p-slot.first .p-step { height: 80px; background: linear-gradient(180deg, #facc15, #ca8a04); }
+    .p-slot.second .p-step { height: 60px; background: linear-gradient(180deg, #cbd5e1, #64748b); }
+    .p-slot.third .p-step { height: 40px; background: linear-gradient(180deg, #fdba74, #c2410c); }
   </style>
 </head>
 <body>
@@ -135,7 +179,6 @@
     <div id="lobby-screen" class="hidden">
       <h1>Ready, <span id="display-player-name" style="color: #38bdf8;"></span>!</h1>
       
-      <!-- Personal Career Stats -->
       <div class="stats-card">
         <div class="stat-item">
           <h3>Single High Score</h3>
@@ -175,7 +218,10 @@
         <span id="player-rank-display" style="color:#38bdf8; font-size:1.3rem;">#--</span>
       </div>
 
-      <div class="player-answer-reveal">
+      <!-- Mini Podium for Final Match Standings -->
+      <div id="player-podium-area" class="player-podium hidden"></div>
+
+      <div class="player-answer-reveal" id="answer-reveal-wrapper">
         <div class="player-answer-label">Correct Answer</div>
         <div id="player-correct-answer" class="player-answer-text">---</div>
       </div>
@@ -188,6 +234,15 @@
   <script>
     const socket = io();
     let selectedAnswer = null;
+
+    // Tactile Vibration Helper (Safe for mobile browsers)
+    function haptic(pattern) {
+      if ('vibrate' in navigator) {
+        try {
+          navigator.vibrate(pattern);
+        } catch (e) {}
+      }
+    }
 
     const joinScreen = document.getElementById('join-screen');
     const lobbyScreen = document.getElementById('lobby-screen');
@@ -213,9 +268,10 @@
     const resultFeedback = document.getElementById('result-feedback');
     const playerRankDisplay = document.getElementById('player-rank-display');
     const playerCorrectAnswer = document.getElementById('player-correct-answer');
+    const answerRevealWrapper = document.getElementById('answer-reveal-wrapper');
+    const playerPodiumArea = document.getElementById('player-podium-area');
     const leaderboardList = document.getElementById('leaderboard-list');
 
-    // Auto-login from saved credentials
     const savedUser = localStorage.getItem('trivia_user');
     const savedPin = localStorage.getItem('trivia_pin');
     if (savedUser && savedPin) {
@@ -227,12 +283,14 @@
       authError.style.display = 'none';
       const username = usernameInput.value.trim();
       const pin = pinInput.value.trim();
+      haptic(30);
       socket.emit('player:auth', { username, pin });
     });
 
     socket.on('player:auth_error', (msg) => {
       authError.textContent = msg;
       authError.style.display = 'block';
+      haptic([80, 50, 80]); // Error vibration pattern
     });
 
     socket.on('player:authenticated', (data) => {
@@ -257,6 +315,8 @@
       selectedAnswer = null;
       lobbyScreen.classList.add('hidden');
       resultsScreen.classList.add('hidden');
+      playerPodiumArea.classList.add('hidden');
+      answerRevealWrapper.classList.remove('hidden');
       gameScreen.classList.remove('hidden');
 
       categoryBadge.textContent = `${data.category} (${data.questionNumber}/${data.totalQuestions})`;
@@ -279,6 +339,7 @@
         btn.addEventListener('click', () => {
           if (selectedAnswer !== null) return;
           selectedAnswer = index;
+          haptic(40); // Quick tactile confirmation tap
           btn.classList.add('selected');
           Array.from(optionsContainer.children).forEach(b => b.disabled = true);
           statusMessage.classList.remove('hidden');
@@ -302,12 +363,15 @@
       if (selectedAnswer === data.correctAnswer) {
         resultFeedback.textContent = `Correct! +${data.myPointsEarned} pts`;
         resultFeedback.style.color = "#10b981";
+        haptic([40, 60, 80]); // Positive feedback
       } else if (selectedAnswer === null) {
         resultFeedback.textContent = "Time's up! +0 pts";
         resultFeedback.style.color = "#f59e0b";
+        haptic([70, 40, 70]);
       } else {
         resultFeedback.textContent = "Incorrect! +0 pts";
         resultFeedback.style.color = "#ef4444";
+        haptic(150); // Negative feedback buzz
       }
 
       renderLeaderboard(data.leaderboard);
@@ -316,18 +380,52 @@
     socket.on('game:over', (data) => {
       gameScreen.classList.add('hidden');
       resultsScreen.classList.remove('hidden');
+      answerRevealWrapper.classList.add('hidden');
 
       const leaderboard = Array.isArray(data) ? data : data.leaderboard;
-      if (data.myRank) {
-        playerRankDisplay.textContent = `#${data.myRank}`;
-        resultFeedback.textContent = `Match Finished! You finished #${data.myRank}`;
+      const myRank = data.myRank;
+
+      if (myRank) {
+        playerRankDisplay.textContent = `#${myRank}`;
+        resultFeedback.textContent = `Match Finished! You finished #${myRank}`;
       } else {
-        resultFeedback.textContent = "Match Over! Final Standings:";
+        resultFeedback.textContent = "Match Finished! Final Standings:";
       }
       resultFeedback.style.color = "#38bdf8";
 
+      // Render player mini podium
+      renderPlayerPodium(leaderboard);
       renderLeaderboard(leaderboard);
+
+      // If user finished on the podium (top 3), celebrate with confetti & haptic pulses
+      if (myRank && myRank <= 3) {
+        haptic([80, 80, 80, 80, 200]);
+        if (typeof confetti === 'function') {
+          confetti({
+            particleCount: 80,
+            spread: 70,
+            origin: { y: 0.7 }
+          });
+        }
+      }
     });
+
+    function renderPlayerPodium(players) {
+      if (!players || players.length === 0) return;
+      playerPodiumArea.classList.remove('hidden');
+      playerPodiumArea.innerHTML = '';
+
+      const p1 = players[0] || null;
+      const p2 = players[1] || null;
+      const p3 = players[2] || null;
+
+      let html = '';
+      if (p2) html += `<div class="p-slot second"><span class="p-icon">🥈</span><span class="p-name">${p2.name}</span><div class="p-step">2</div></div>`;
+      if (p1) html += `<div class="p-slot first"><span class="p-icon">👑</span><span class="p-name">${p1.name}</span><div class="p-step">1</div></div>`;
+      if (p3) html += `<div class="p-slot third"><span class="p-icon">🥉</span><span class="p-name">${p3.name}</span><div class="p-step">3</div></div>`;
+
+      playerPodiumArea.innerHTML = html;
+    }
 
     function renderLeaderboard(players) {
       leaderboardList.innerHTML = '';
