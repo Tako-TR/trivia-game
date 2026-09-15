@@ -62,9 +62,7 @@
       align-items: flex-start;
       position: relative;
     }
-    .q-card:hover {
-      border-color: #475569;
-    }
+    .q-card:hover { border-color: #475569; }
     .q-info { flex: 1; }
     .q-badge {
       display: inline-block;
@@ -127,12 +125,45 @@
       flex-wrap: wrap;
       gap: 0.5rem;
     }
+
+    /* Modal Styles */
+    .modal-backdrop {
+      position: fixed;
+      top: 0; left: 0; width: 100%; height: 100%;
+      background: rgba(0, 0, 0, 0.75);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      z-index: 1000;
+    }
+    .modal-box {
+      background-color: #0f172a;
+      border: 1px solid #38bdf8;
+      border-radius: 12px;
+      width: 90%;
+      max-width: 600px;
+      padding: 1.5rem;
+      text-align: left;
+    }
+    .modal-box textarea {
+      width: 100%;
+      height: 160px;
+      background-color: #1e293b;
+      color: #f8fafc;
+      border: 1px solid #475569;
+      border-radius: 8px;
+      padding: 0.75rem;
+      font-family: monospace;
+      font-size: 0.85rem;
+      margin: 0.75rem 0;
+      box-sizing: border-box;
+    }
   </style>
 </head>
 <body>
   <div class="container">
     <h1>Question Manager</h1>
-    <p class="question-text" style="margin-bottom: 1.5rem;">Browse, inspect, filter, or delete questions live from your dataset</p>
+    <p class="question-text" style="margin-bottom: 1.5rem;">Browse, inspect, filter, delete, or bulk-import questions directly into your dataset</p>
 
     <!-- Passcode Authentication -->
     <div class="auth-banner">
@@ -141,17 +172,18 @@
       <button id="btn-load" style="background-color: #38bdf8; color: #0f172a; padding: 0.6rem 1.25rem; font-weight: 700; border-radius: 8px;">Unlock & Load</button>
     </div>
 
-    <!-- Manager Workspace (Hidden until logged in) -->
+    <!-- Manager Workspace -->
     <div id="manager-panel" class="hidden">
       <div class="top-actions">
         <span style="color: #94a3b8;">Total Questions: <strong id="total-count" style="color: #38bdf8;">0</strong></span>
-        <div style="display: flex; gap: 0.75rem;">
-          <a href="/add.html" style="background-color: #10b981; color: #fff; padding: 0.45rem 0.9rem; border-radius: 6px; text-decoration: none; font-weight: 700; font-size: 0.9rem;">+ Add New Question</a>
-          <a href="/host.html" style="border: 1px solid #475569; color: #94a3b8; padding: 0.45rem 0.9rem; border-radius: 6px; text-decoration: none; font-size: 0.9rem;">Back to Host Screen</a>
+        <div style="display: flex; gap: 0.5rem; flex-wrap: wrap;">
+          <button id="btn-open-import" style="background-color: #f59e0b; color: #0f172a; font-weight: 700; font-size: 0.85rem; padding: 0.45rem 0.85rem; border-radius: 6px; border: none; cursor: pointer;">📥 Bulk Import CSV</button>
+          <a href="/add.html" style="background-color: #10b981; color: #fff; padding: 0.45rem 0.85rem; border-radius: 6px; text-decoration: none; font-weight: 700; font-size: 0.85rem;">+ Add Single</a>
+          <a href="/host.html" style="border: 1px solid #475569; color: #94a3b8; padding: 0.45rem 0.85rem; border-radius: 6px; text-decoration: none; font-size: 0.85rem;">Back to Host</a>
         </div>
       </div>
 
-      <!-- Live Search & Category Filter -->
+      <!-- Live Search & Filter -->
       <div class="filter-bar">
         <input type="text" id="search-input" placeholder="Search by question text or option...">
         <select id="category-filter">
@@ -159,6 +191,7 @@
           <option value="logos">Brand Logos</option>
           <option value="bible">Bible</option>
           <option value="movie">Movie Quotes</option>
+          <option value="music">Music & Pop Culture</option>
           <option value="easy">Easy Only</option>
           <option value="medium">Medium Only</option>
           <option value="hard">Hard Only</option>
@@ -166,6 +199,26 @@
       </div>
 
       <div id="question-list" class="q-list"></div>
+    </div>
+  </div>
+
+  <!-- Bulk Import Modal -->
+  <div id="import-modal" class="modal-backdrop hidden">
+    <div class="modal-box">
+      <h2 style="margin-top: 0; color: #38bdf8; font-size: 1.3rem;">Bulk CSV / Spreadsheet Import</h2>
+      <p style="font-size: 0.85rem; color: #94a3b8; margin-bottom: 0.5rem;">
+        Paste CSV text (or select a <code>.csv</code> file). Format required per row:<br>
+        <code>Category: Difficulty, Question, Option1, Option2, Option3, Option4, AnswerIndex(0-3), OptionalImageUrl</code>
+      </p>
+
+      <input type="file" id="csv-file-input" accept=".csv, .txt" style="color: #94a3b8; font-size: 0.85rem; margin-bottom: 0.5rem;">
+
+      <textarea id="csv-text-input" placeholder="Pop Culture: Easy, What is Adele's debut album?, 19, 21, 25, 30, 0, "></textarea>
+
+      <div style="display: flex; justify-content: flex-end; gap: 0.75rem;">
+        <button id="btn-cancel-import" style="background: none; border: 1px solid #475569; color: #94a3b8; padding: 0.5rem 1rem; border-radius: 6px; cursor: pointer;">Cancel</button>
+        <button id="btn-submit-import" style="background-color: #10b981; color: #fff; font-weight: 700; border: none; padding: 0.5rem 1.25rem; border-radius: 6px; cursor: pointer;">Process & Import</button>
+      </div>
     </div>
   </div>
 
@@ -178,9 +231,15 @@
     const searchInput = document.getElementById('search-input');
     const categoryFilter = document.getElementById('category-filter');
 
+    const importModal = document.getElementById('import-modal');
+    const btnOpenImport = document.getElementById('btn-open-import');
+    const btnCancelImport = document.getElementById('btn-cancel-import');
+    const btnSubmitImport = document.getElementById('btn-submit-import');
+    const csvFileInput = document.getElementById('csv-file-input');
+    const csvTextInput = document.getElementById('csv-text-input');
+
     let allQuestions = [];
 
-    // Load questions using password
     btnLoad.addEventListener('click', loadQuestions);
     adminPassInput.addEventListener('keypress', (e) => { if (e.key === 'Enter') loadQuestions(); });
 
@@ -209,7 +268,6 @@
       }
     }
 
-    // Filter & Search listener
     searchInput.addEventListener('input', renderList);
     categoryFilter.addEventListener('change', renderList);
 
@@ -262,7 +320,90 @@
       });
     }
 
-    // Delete question handler
+    // Modal Operations
+    btnOpenImport.addEventListener('click', () => { importModal.classList.remove('hidden'); });
+    btnCancelImport.addEventListener('click', () => { importModal.classList.add('hidden'); });
+
+    csvFileInput.addEventListener('change', (e) => {
+      const file = e.target.files[0];
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = (event) => {
+        csvTextInput.value = event.target.result;
+      };
+      reader.readAsText(file);
+    });
+
+    // Parse CSV line safely
+    function parseCSVLine(line) {
+      const regex = /(?:^|,)(?:"([^"]*(?:""[^"]*)*)"|([^,]*))/g;
+      const matches = [];
+      let match;
+      while ((match = regex.exec(line)) !== null) {
+        if (match[1] !== undefined) {
+          matches.push(match[1].replace(/""/g, '"').trim());
+        } else if (match[2] !== undefined) {
+          matches.push(match[2].trim());
+        }
+      }
+      return matches;
+    }
+
+    btnSubmitImport.addEventListener('click', async () => {
+      const text = csvTextInput.value.trim();
+      if (!text) return alert('Please paste CSV text or select a file.');
+
+      const lines = text.split(/\r?\n/).map(l => l.trim()).filter(l => l.length > 0);
+      const parsedQuestions = [];
+
+      for (let i = 0; i < lines.length; i++) {
+        // Skip header row if user leaves one in
+        if (i === 0 && lines[i].toLowerCase().startsWith('category')) continue;
+
+        const cols = parseCSVLine(lines[i]);
+        if (cols.length >= 7) {
+          const [cat, quest, o1, o2, o3, o4, ans, img] = cols;
+          const answerNum = parseInt(ans, 10);
+          if (!isNaN(answerNum) && answerNum >= 0 && answerNum <= 3) {
+            parsedQuestions.push({
+              category: cat,
+              question: quest,
+              options: [o1, o2, o3, o4],
+              answer: answerNum,
+              image: img || null
+            });
+          }
+        }
+      }
+
+      if (parsedQuestions.length === 0) {
+        return alert('No rows matched the 7-column CSV requirement.');
+      }
+
+      const password = adminPassInput.value.trim();
+
+      try {
+        const res = await fetch('/api/questions/bulk', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ password, questions: parsedQuestions })
+        });
+        const data = await res.json();
+
+        if (res.ok && data.success) {
+          alert(`Successfully imported ${data.addedCount} new questions!`);
+          importModal.classList.add('hidden');
+          csvTextInput.value = '';
+          csvFileInput.value = '';
+          loadQuestions();
+        } else {
+          alert(data.message || 'Import failed.');
+        }
+      } catch (err) {
+        alert('Server communication error.');
+      }
+    });
+
     window.deleteQuestion = async function(index) {
       const q = allQuestions[index];
       if (!confirm(`Are you sure you want to permanently delete:\n\n"${q.question}"?`)) return;
