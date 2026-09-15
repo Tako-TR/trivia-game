@@ -41,7 +41,6 @@
     }
     .toggle-pill.off { color: #94a3b8; border-color: #334155; }
     
-    /* Dynamic Countdown Meter */
     .timer-meter-wrapper {
       width: 100%;
       height: 12px;
@@ -58,9 +57,7 @@
       border-radius: 9999px;
       transition: width 1s linear, background 0.4s ease-out;
     }
-    .timer-meter-bar.warning {
-      background: linear-gradient(90deg, #d97706, #f59e0b);
-    }
+    .timer-meter-bar.warning { background: linear-gradient(90deg, #d97706, #f59e0b); }
     .timer-meter-bar.danger {
       background: linear-gradient(90deg, #dc2626, #ef4444);
       animation: pulseBar 0.5s infinite alternate;
@@ -70,7 +67,6 @@
       to { filter: drop-shadow(0 0 12px #ef4444); }
     }
 
-    /* Spotlights */
     .spotlights-container {
       display: grid;
       grid-template-columns: 1fr 1fr;
@@ -375,7 +371,7 @@
 <body>
   <div class="container">
     <div class="top-bar-controls">
-      <div class="room-badge" id="host-room-badge">ROOM: ROOM1</div>
+      <div class="room-badge" id="host-room-badge">ROOM: Room 1</div>
       <div class="top-toggles">
         <button id="btn-toggle-sound" class="toggle-pill">🔊 Sound: ON</button>
         <button id="btn-toggle-autopilot" class="toggle-pill">⚡ Auto-Pilot: ON</button>
@@ -393,7 +389,7 @@
       <div id="host-lobby">
         <div class="lobby-header-card">
           <div class="qr-card">
-            <h2>Scan to Join Room: <span id="qr-room-label" style="color:#38bdf8;">ROOM1</span></h2>
+            <h2>Scan to Join: <span id="qr-room-label" style="color:#38bdf8;">Room 1</span></h2>
             <p>Pick avatar & battle for top rank</p>
             <div id="qrcode"></div>
           </div>
@@ -402,13 +398,16 @@
         <div style="color: #94a3b8;">Players in this room: <strong id="player-count" style="color: #38bdf8;">0</strong></div>
         
         <div class="settings-panel">
+          <!-- Room Selector (All 6 Named Rooms) -->
           <div class="setting-row">
-            <label for="host-room-select" style="color: #f59e0b;">Select Game Room (1 of 4)</label>
+            <label for="host-room-select" style="color: #f59e0b;">Select Game Room (1 of 6)</label>
             <select id="host-room-select">
               <option value="ROOM1" selected>Room 1 (Default)</option>
-              <option value="ROOM2">Room 2</option>
-              <option value="ROOM3">Room 3</option>
-              <option value="ROOM4">Room 4</option>
+              <option value="ROOM2">Room 2 Fremont</option>
+              <option value="ROOM3">Room 3 Fremont HS</option>
+              <option value="ROOM4">Room 4 Fremont MS</option>
+              <option value="ROOM5">Room 5 Sandusky</option>
+              <option value="ROOM6">Room 6 Northwood</option>
             </select>
           </div>
 
@@ -472,7 +471,6 @@
       <div id="host-game" class="hidden">
         <div id="host-category" class="badge">Category</div>
         
-        <!-- Animated Countdown Bar & Timer -->
         <div class="timer-meter-wrapper">
           <div id="timer-bar" class="timer-meter-bar"></div>
         </div>
@@ -506,7 +504,7 @@
         <button class="btn-danger stop-game-btn">Stop / End Game</button>
       </div>
 
-      <!-- Round End Screen with Speed Demon & Snail Awards -->
+      <!-- Round End Screen -->
       <div id="host-round-end" class="hidden">
         <h1>Round Results</h1>
 
@@ -515,7 +513,7 @@
           <div id="host-correct-answer" class="answer-reveal-text">---</div>
         </div>
 
-        <!-- Spotlight Awards -->
+        <!-- Spotlights: Speed Demon & Snail -->
         <div class="spotlights-container" id="spotlights-box">
           <div class="spotlight-card speed" id="card-speed-demon">
             <div class="spotlight-icon">⚡</div>
@@ -549,7 +547,7 @@
         <button class="btn-danger stop-game-btn">Stop / End Game</button>
       </div>
 
-      <!-- Game Over Screen with CSV Recap Export -->
+      <!-- Game Over Screen -->
       <div id="host-game-over" class="hidden">
         <h1 style="color: #facc15; font-size: 2.2rem; margin-bottom: 0.25rem;">Champion Crowned!</h1>
         <p class="question-text">Final Podium Standings</p>
@@ -595,9 +593,15 @@
   </div>
 
   <script>
-    /* =========================================================
-       AUDIO & AUTO-PILOT SETTINGS
-    ========================================================= */
+    const ROOM_NAMES = {
+      'ROOM1': 'Room 1',
+      'ROOM2': 'Room 2 Fremont',
+      'ROOM3': 'Room 3 Fremont HS',
+      'ROOM4': 'Room 4 Fremont MS',
+      'ROOM5': 'Room 5 Sandusky',
+      'ROOM6': 'Room 6 Northwood'
+    };
+
     let audioCtx = null;
     let isSoundMuted = false;
     let isAutoPilot = true;
@@ -717,8 +721,9 @@
         colorLight: "#0f172a",
         correctLevel: QRCode.CorrectLevel.M
       });
-      qrRoomLabel.textContent = roomCode;
-      hostRoomBadge.textContent = `ROOM: ${roomCode}`;
+      const displayName = ROOM_NAMES[roomCode] || roomCode;
+      qrRoomLabel.textContent = displayName;
+      hostRoomBadge.textContent = `ROOM: ${displayName}`;
     }
 
     function switchRoom(newRoomCode) {
@@ -852,7 +857,6 @@
     const hostLeaderboard = document.getElementById('host-leaderboard');
     const hostFinalLeaderboard = document.getElementById('host-final-leaderboard');
 
-    // Spotlight Elements
     const speedName = document.getElementById('speed-name');
     const speedTime = document.getElementById('speed-time');
     const snailName = document.getElementById('snail-name');
@@ -883,7 +887,8 @@
 
     document.querySelectorAll('.stop-game-btn').forEach(btn => {
       btn.addEventListener('click', () => {
-        if (confirm(`End match in ${currentRoomCode}? Final scores will be saved.`)) {
+        const displayName = ROOM_NAMES[currentRoomCode] || currentRoomCode;
+        if (confirm(`End match in ${displayName}? Final scores will be saved.`)) {
           socket.emit('host:stop_game', currentRoomCode);
         }
       });
@@ -913,7 +918,8 @@
     });
 
     window.kickPlayer = function(username) {
-      if (confirm(`Kick ${username} from ${currentRoomCode}?`)) {
+      const displayName = ROOM_NAMES[currentRoomCode] || currentRoomCode;
+      if (confirm(`Kick ${username} from ${displayName}?`)) {
         socket.emit('host:kick_player', username);
       }
     };
@@ -929,7 +935,6 @@
       hostTimer.textContent = data.timeLeft;
       hostQuestion.textContent = data.question;
 
-      // Reset Live Countdown Bar
       timerBar.style.width = '100%';
       timerBar.className = 'timer-meter-bar';
 
@@ -971,7 +976,6 @@
       submissionCounterLabel.textContent = `${data.submittedCount} / ${data.totalCount} Answered`;
     });
 
-    // Dynamic TV Answer Countdown Engine
     socket.on('game:timer_tick', (data) => {
       const timeLeft = typeof data === 'object' ? data.timeLeft : data;
       const totalDuration = typeof data === 'object' ? data.duration : 15;
@@ -1001,7 +1005,6 @@
       playRevealSound();
       hostCorrectAnswer.textContent = data.correctAnswerText;
 
-      // Populate Speed Demon & Snail Spotlights
       if (data.fastestPlayer) {
         speedName.textContent = `${data.fastestPlayer.avatar || '⚡'} ${data.fastestPlayer.name}`;
         speedTime.textContent = `Answered in ${data.fastestPlayer.time}s!`;
@@ -1106,7 +1109,6 @@
       triggerVictoryConfetti();
     });
 
-    // CSV Match Recap Export Feature
     btnExportRecap.addEventListener('click', () => {
       if (!lastCompletedMatchData || !lastCompletedMatchData.leaderboard) {
         return alert('No match data available to export.');
@@ -1116,7 +1118,8 @@
         ['Rank', 'Avatar', 'Username', 'Score (PTS)', 'Final Streak', 'Room', 'Category', 'Timestamp']
       ];
 
-      const room = lastCompletedMatchData.roomCode || currentRoomCode;
+      const roomCode = lastCompletedMatchData.roomCode || currentRoomCode;
+      const roomDisplayName = ROOM_NAMES[roomCode] || lastCompletedMatchData.roomName || roomCode;
       const cat = lastCompletedMatchData.category || 'Mixed';
       const timeStr = new Date().toLocaleString();
 
@@ -1127,7 +1130,7 @@
           `"${p.name}"`,
           p.score,
           p.streak || 0,
-          `"${room}"`,
+          `"${roomDisplayName}"`,
           `"${cat}"`,
           `"${timeStr}"`
         ]);
@@ -1137,7 +1140,7 @@
       const encodedUri = encodeURI(csvContent);
       const link = document.createElement('a');
       link.setAttribute('href', encodedUri);
-      link.setAttribute('download', `Trivia_Match_Recap_${room}_${Date.now()}.csv`);
+      link.setAttribute('download', `Trivia_Match_Recap_${roomCode}_${Date.now()}.csv`);
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);
