@@ -95,7 +95,7 @@
       border: 2px solid #10b981;
       padding: 1.25rem;
       border-radius: 10px;
-      margin: 1.25rem 0;
+      margin: 1rem 0;
     }
     .answer-reveal-label { font-size: 0.8rem; text-transform: uppercase; color: #6ee7b7; margin-bottom: 0.25rem; }
     .answer-reveal-text { font-size: 1.5rem; font-weight: 800; color: #fff; }
@@ -133,6 +133,72 @@
       font-weight: 700;
     }
     .btn-kick:hover { background-color: #dc2626; color: #fff; }
+
+    /* Answer Distribution Bar Chart Styles */
+    .chart-container {
+      background-color: #0f172a;
+      border: 1px solid #334155;
+      border-radius: 12px;
+      padding: 1.25rem;
+      margin: 1.25rem 0;
+      text-align: left;
+    }
+    .chart-header {
+      font-size: 0.95rem;
+      font-weight: 700;
+      color: #94a3b8;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      margin-bottom: 1rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .chart-bars {
+      display: flex;
+      flex-direction: column;
+      gap: 0.75rem;
+    }
+    .chart-row {
+      display: flex;
+      flex-direction: column;
+      gap: 0.25rem;
+    }
+    .chart-row-meta {
+      display: flex;
+      justify-content: space-between;
+      font-size: 0.9rem;
+      font-weight: 600;
+      color: #f8fafc;
+    }
+    .chart-track {
+      background-color: #1e293b;
+      height: 22px;
+      border-radius: 6px;
+      overflow: hidden;
+      display: flex;
+    }
+    .chart-fill {
+      height: 100%;
+      border-radius: 6px;
+      transition: width 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+      display: flex;
+      align-items: center;
+      justify-content: flex-end;
+      padding-right: 8px;
+      font-size: 0.75rem;
+      font-weight: 800;
+      color: #ffffff;
+      box-sizing: border-box;
+      min-width: 8px;
+    }
+    .chart-fill.correct-bar {
+      background: linear-gradient(90deg, #059669, #10b981);
+      box-shadow: 0 0 10px rgba(16, 185, 129, 0.4);
+    }
+    .chart-fill.incorrect-bar {
+      background: linear-gradient(90deg, #475569, #64748b);
+    }
 
     /* Podium Styles */
     .podium-container {
@@ -275,14 +341,25 @@
         <button class="btn-danger stop-game-btn">Stop / End Game</button>
       </div>
 
-      <!-- Round End Screen -->
+      <!-- Round End Screen with Chart -->
       <div id="host-round-end" class="hidden">
         <h1>Round Results</h1>
+
         <div class="answer-reveal-box">
           <div class="answer-reveal-label">Correct Answer</div>
           <div id="host-correct-answer" class="answer-reveal-text">---</div>
         </div>
-        <p style="color: #f59e0b; font-weight: 600;">Loading standings...</p>
+
+        <!-- Crowd Answer Distribution Chart -->
+        <div class="chart-container">
+          <div class="chart-header">
+            <span>Crowd Answer Breakdown</span>
+            <span id="chart-total-label" style="font-size: 0.8rem; color: #38bdf8;">0 Responses</span>
+          </div>
+          <div id="chart-bars-wrapper" class="chart-bars"></div>
+        </div>
+
+        <p style="color: #f59e0b; font-weight: 600;">Next question loading shortly...</p>
         <h2>Current Standings</h2>
         <ul id="host-leaderboard" class="leaderboard"></ul>
         <button class="btn-danger stop-game-btn">Stop / End Game</button>
@@ -430,6 +507,10 @@
     const hostCorrectAnswer = document.getElementById('host-correct-answer');
     const hostLeaderboard = document.getElementById('host-leaderboard');
     const hostFinalLeaderboard = document.getElementById('host-final-leaderboard');
+
+    const chartTotalLabel = document.getElementById('chart-total-label');
+    const chartBarsWrapper = document.getElementById('chart-bars-wrapper');
+
     const btnStart = document.getElementById('btn-start');
     const btnRestart = document.getElementById('btn-restart');
     const categorySelect = document.getElementById('category-select');
@@ -516,7 +597,11 @@
       hostGame.classList.add('hidden');
       hostMilestone.classList.add('hidden');
       hostRoundEnd.classList.remove('hidden');
+
       hostCorrectAnswer.textContent = data.correctAnswerText;
+
+      // Render the Answer Distribution Bar Chart
+      renderDistributionChart(data);
 
       hostLeaderboard.innerHTML = '';
       data.leaderboard.forEach(p => {
@@ -526,7 +611,39 @@
       });
     });
 
-    // Milestone Handler (Every 10 questions)
+    function renderDistributionChart(data) {
+      chartBarsWrapper.innerHTML = '';
+      const total = data.totalResponders || 0;
+      chartTotalLabel.textContent = `${total} ${total === 1 ? 'Player' : 'Players'} Answered`;
+
+      if (!data.options || !data.distribution) return;
+
+      data.options.forEach((optText, idx) => {
+        const count = data.distribution[idx] || 0;
+        const pct = total > 0 ? Math.round((count / total) * 100) : 0;
+        const isCorrect = idx === data.correctAnswer;
+
+        const row = document.createElement('div');
+        row.className = 'chart-row';
+        row.innerHTML = `
+          <div class="chart-row-meta">
+            <span style="${isCorrect ? 'color: #10b981; font-weight: 800;' : ''}">${isCorrect ? '✓ ' : ''}${optText}</span>
+            <span style="color: #94a3b8;">${count} (${pct}%)</span>
+          </div>
+          <div class="chart-track">
+            <div class="chart-fill ${isCorrect ? 'correct-bar' : 'incorrect-bar'}" style="width: 0%;"></div>
+          </div>
+        `;
+        chartBarsWrapper.appendChild(row);
+
+        // Animate bar width in after brief paint delay
+        setTimeout(() => {
+          const fill = row.querySelector('.chart-fill');
+          if (fill) fill.style.width = `${Math.max(pct, count > 0 ? 8 : 0)}%`;
+        }, 50);
+      });
+    }
+
     socket.on('game:milestone_leaderboard', (data) => {
       hostRoundEnd.classList.add('hidden');
       hostGame.classList.add('hidden');
@@ -569,6 +686,7 @@
       const p3 = players[2] || null;
 
       let html = '';
+
       if (p2) {
         html += `
           <div class="podium-slot second">
@@ -579,6 +697,7 @@
           </div>
         `;
       }
+
       if (p1) {
         html += `
           <div class="podium-slot first">
@@ -589,6 +708,7 @@
           </div>
         `;
       }
+
       if (p3) {
         html += `
           <div class="podium-slot third">
@@ -599,6 +719,7 @@
           </div>
         `;
       }
+
       podiumArea.innerHTML = html;
     }
 
