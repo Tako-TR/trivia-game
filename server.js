@@ -17,6 +17,9 @@ const pool = process.env.DATABASE_URL
   ? new Pool({ connectionString: process.env.DATABASE_URL, ssl: { rejectUnauthorized: false } })
   : null;
 
+// In-memory player registry fallback if running without database
+const memoryPlayers = {}; // username -> { pin, high_score, career_score, games_played }
+
 async function initDb() {
   if (!pool) {
     console.warn('DATABASE_URL not detected. Persistent stats running in memory only.');
@@ -97,18 +100,17 @@ function shuffle(array) {
    MULTI-ROOM STATE ARCHITECTURE (UP TO 4 ROOMS)
 ========================================================= */
 const MAX_ROOMS = 4;
-// roomCode -> Room Object
 const rooms = {};
 
 function getOrCreateRoom(rawRoomCode) {
   const code = (rawRoomCode || 'ROOM1').trim().toUpperCase();
   if (!rooms[code]) {
     if (Object.keys(rooms).length >= MAX_ROOMS) {
-      return null; // Room limit reached
+      return null;
     }
     rooms[code] = {
       code: code,
-      activeSockets: {}, // socketId -> player state
+      activeSockets: {},
       activeQuestions: [],
       currentQuestionIndex: -1,
       questionTimer: null,
@@ -128,6 +130,18 @@ function getSocketRoom(socket) {
     }
   }
   return null;
+}
+
+// Check if a player username is currently active online in ANY room
+function isPlayerCurrentlyOnline(username) {
+  for (const code of Object.keys(rooms)) {
+    for (const id of Object.keys(rooms[code].activeSockets)) {
+      if (rooms[code].activeSockets[id].username === username) {
+        return true;
+      }
+    }
+  }
+  return false;
 }
 
 /* =========================================================
@@ -261,7 +275,10 @@ app.post('/api/presets/delete', (req, res) => {
 app.post('/api/players/list', async (req, res) => {
   const { password } = req.body;
   if (password !== ADMIN_PASSWORD) return res.status(401).json({ success: false, message: 'Invalid admin passcode.' });
-  if (!pool) return res.json({ success: true, players: [] });
+  if (!pool) {
+    const list = Object.values(memoryPlayers).sort((a, b) => b.career_score - a.career_score);
+    return res.json({ success: true, players: list });
+  }
 
   try {
     const result = await pool.query('SELECT username, high_score, career_score, games_played, updated_at FROM players ORDER BY career_score DESC;');
@@ -283,6 +300,10 @@ app.post('/api/players/action', async (req, res) => {
       if (pool) {
         await pool.query('UPDATE players SET high_score = 0, career_score = 0, games_played = 0, updated_at = NOW() WHERE username = $1;', [cleanUser]);
         await pool.query('UPDATE category_scores SET high_score = 0, career_score = 0, games_played = 0 WHERE username = $1;', [cleanUser]);
+      } else if (memoryPlayers[cleanUser]) {
+        memoryPlayers[cleanUser].high_score = 0;
+        memoryPlayers[cleanUser].career_score = 0;
+        memoryPlayers[cleanUser].games_played = 0;
       }
       return res.json({ success: true, message: `Scores reset for ${cleanUser}.` });
     } else if (action === 'delete_ban') {
@@ -290,7 +311,8 @@ app.post('/api/players/action', async (req, res) => {
         await pool.query('DELETE FROM players WHERE username = $1;', [cleanUser]);
         await pool.query('DELETE FROM category_scores WHERE username = $1;', [cleanUser]);
       }
-      // Kick across any room they are in
+      delete memoryPlayers[cleanUser];
+
       for (const code of Object.keys(rooms)) {
         disconnectPlayerByUsername(rooms[code], cleanUser, 'Your profile was removed by the administrator.');
       }
@@ -312,12 +334,19 @@ app.post('/api/players/bulk', async (req, res) => {
         await pool.query('UPDATE players SET high_score = 0, career_score = 0, games_played = 0, updated_at = NOW();');
         await pool.query('UPDATE category_scores SET high_score = 0, career_score = 0, games_played = 0;');
       }
+      Object.keys(memoryPlayers).forEach(u => {
+        memoryPlayers[u].high_score = 0;
+        memoryPlayers[u].career_score = 0;
+        memoryPlayers[u].games_played = 0;
+      });
       return res.json({ success: true, message: 'All player scores reset to 0.' });
     } else if (action === 'wipe_all_players') {
       if (pool) {
         await pool.query('TRUNCATE TABLE category_scores;');
         await pool.query('TRUNCATE TABLE players;');
       }
+      Object.keys(memoryPlayers).forEach(k => delete memoryPlayers[k]);
+
       for (const code of Object.keys(rooms)) {
         Object.keys(rooms[code].activeSockets).forEach((id) => {
           const sock = io.sockets.sockets.get(id);
@@ -352,9 +381,16 @@ function disconnectPlayerByUsername(room, username, reason) {
   io.to(room.code).emit('game:player_list', getLobbyPlayers(room));
 }
 
+// Global Leaderboard across all rooms
 app.get('/api/leaderboards', async (req, res) => {
-  if (!pool) return res.json({ highScores: [], careerScores: [] });
   const category = (req.query.category || 'all').toLowerCase();
+
+  if (!pool) {
+    const list = Object.values(memoryPlayers);
+    const highScores = [...list].sort((a, b) => b.high_score - a.high_score).slice(0, 100).map(p => ({ username: p.username, score: p.high_score, games_played: p.games_played }));
+    const careerScores = [...list].sort((a, b) => b.career_score - a.career_score).slice(0, 100).map(p => ({ username: p.username, score: p.career_score, games_played: p.games_played }));
+    return res.json({ highScores, careerScores });
+  }
 
   try {
     if (category === 'all') {
@@ -395,7 +431,6 @@ function getStreakLabel(streak) {
 ========================================================= */
 
 io.on('connection', (socket) => {
-  // Host announces connection to a specific room
   socket.on('host:join_room', (roomCode) => {
     const room = getOrCreateRoom(roomCode);
     if (!room) {
@@ -408,36 +443,58 @@ io.on('connection', (socket) => {
     });
   });
 
-  // Player joins with username, PIN, and roomCode
+  // Player authentication: Enforces globally unique usernames & matching PIN
   socket.on('player:auth', async ({ username, pin, roomCode }) => {
     const cleanUser = (username || '').trim().toLowerCase();
     const cleanPin = (pin || '').trim();
     const targetRoomCode = (roomCode || 'ROOM1').trim().toUpperCase();
 
-    const room = getOrCreateRoom(targetRoomCode);
-    if (!room) {
-      return socket.emit('player:auth_error', `Room ${targetRoomCode} is not available.`);
-    }
-
     if (!cleanUser || !cleanPin || cleanUser.length < 2 || cleanPin.length < 4) {
       return socket.emit('player:auth_error', 'Username (2+ chars) and 4-digit PIN required.');
     }
 
+    const room = getOrCreateRoom(targetRoomCode);
+    if (!room) {
+      return socket.emit('player:auth_error', `Room ${targetRoomCode} is full or unavailable.`);
+    }
+
+    // Check if the user is already actively connected in any room
+    if (isPlayerCurrentlyOnline(cleanUser)) {
+      return socket.emit('player:auth_error', `"${cleanUser}" is already active in a room right now.`);
+    }
+
     try {
-      let playerProfile = { username: cleanUser, high_score: 0, career_score: 0, games_played: 0 };
+      let playerProfile = { username: cleanUser, pin: cleanPin, high_score: 0, career_score: 0, games_played: 0 };
 
       if (pool) {
         const existing = await pool.query('SELECT * FROM players WHERE username = $1;', [cleanUser]);
         if (existing.rows.length > 0) {
+          // If username already exists in database, PIN must match exactly
           if (existing.rows[0].pin !== cleanPin) {
-            return socket.emit('player:auth_error', 'Incorrect PIN for this username.');
+            return socket.emit(
+              'player:auth_error',
+              `Username "${cleanUser}" is already taken. Choose a different name, or enter the correct PIN.`
+            );
           }
           playerProfile = existing.rows[0];
         } else {
+          // New unique registration
           await pool.query(
             'INSERT INTO players (username, pin, high_score, career_score, games_played) VALUES ($1, $2, 0, 0, 0);',
             [cleanUser, cleanPin]
           );
+        }
+      } else {
+        if (memoryPlayers[cleanUser]) {
+          if (memoryPlayers[cleanUser].pin !== cleanPin) {
+            return socket.emit(
+              'player:auth_error',
+              `Username "${cleanUser}" is already taken. Choose a different name, or enter the correct PIN.`
+            );
+          }
+          playerProfile = memoryPlayers[cleanUser];
+        } else {
+          memoryPlayers[cleanUser] = playerProfile;
         }
       }
 
@@ -466,7 +523,6 @@ io.on('connection', (socket) => {
     }
   });
 
-  // Player submits answer
   socket.on('player:submit_answer', (answerIndex) => {
     const room = getSocketRoom(socket);
     if (!room) return;
@@ -483,7 +539,6 @@ io.on('connection', (socket) => {
         totalCount: Object.keys(room.activeSockets).length
       });
 
-      // SMART FAST-FORWARD for this room
       const totalPlayers = Object.keys(room.activeSockets).length;
       const answeredPlayers = Object.values(room.activeSockets).filter(p => p.currentAnswer !== null).length;
 
@@ -668,7 +723,6 @@ function endRound(room) {
 
   const isMilestone = totalQuestions > 10 && finishedQuestionNum % 10 === 0 && finishedQuestionNum < totalQuestions;
 
-  // Emit to sockets in this room only
   Object.keys(room.activeSockets).forEach((sockId) => {
     const socket = io.sockets.sockets.get(sockId);
     if (socket) {
@@ -718,10 +772,11 @@ function endRound(room) {
 async function finishGameAndSaveStats(room) {
   const standings = getCurrentGameStandings(room);
 
-  if (pool) {
-    for (const p of Object.values(room.activeSockets)) {
-      if (p.username) {
+  for (const p of Object.values(room.activeSockets)) {
+    if (p.username) {
+      if (pool) {
         try {
+          // 1. Update overall player record (Global across all rooms)
           await pool.query(
             `UPDATE players 
              SET high_score = GREATEST(high_score, $1),
@@ -732,6 +787,7 @@ async function finishGameAndSaveStats(room) {
             [p.score, p.username]
           );
 
+          // 2. Update category record
           if (room.currentGameCategory && !room.currentGameCategory.startsWith('Preset:') && room.currentGameCategory !== 'all') {
             await pool.query(
               `INSERT INTO category_scores (username, category, high_score, career_score, games_played)
@@ -747,6 +803,10 @@ async function finishGameAndSaveStats(room) {
         } catch (err) {
           console.error(`Error saving stats for ${p.username}:`, err);
         }
+      } else if (memoryPlayers[p.username]) {
+        memoryPlayers[p.username].high_score = Math.max(memoryPlayers[p.username].high_score, p.score);
+        memoryPlayers[p.username].career_score += p.score;
+        memoryPlayers[p.username].games_played += 1;
       }
     }
   }
