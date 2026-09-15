@@ -93,10 +93,10 @@
     }
     .host-controls {
       display: flex;
-      justify-content: center;
-      gap: 1rem;
+      flex-direction: column;
+      align-items: center;
+      gap: 0.75rem;
       margin-top: 1rem;
-      flex-wrap: wrap;
     }
     .btn-danger {
       background-color: #dc2626 !important;
@@ -152,6 +152,19 @@
       max-width: 100%;
       object-fit: contain;
       display: block;
+    }
+    .add-link-btn {
+      color: #38bdf8;
+      font-size: 1rem;
+      font-weight: 600;
+      text-decoration: none;
+      padding: 0.5rem 1rem;
+      border: 1px dashed #38bdf8;
+      border-radius: 8px;
+      transition: background 0.2s;
+    }
+    .add-link-btn:hover {
+      background-color: rgba(56, 189, 248, 0.1);
     }
   </style>
 </head>
@@ -214,7 +227,8 @@
       </div>
 
       <div class="host-controls">
-        <button id="btn-start" style="background-color: #10b981; min-width: 200px;">Start Game</button>
+        <button id="btn-start" style="background-color: #10b981; min-width: 220px;">Start Game</button>
+        <a href="/add.html" class="add-link-btn">+ Add Custom Questions</a>
       </div>
 
       <h2 style="margin-top: 1.5rem; font-size: 1.2rem;">Connected Players</h2>
@@ -267,14 +281,14 @@
   <script>
     const socket = io();
 
-    // Generate dynamic QR Code for the base player URL
-    const playerUrl = window.location.origin; // Generates base link without /host.html
+    // Generate dynamic QR Code for base URL
+    const playerUrl = window.location.origin;
     new QRCode(document.getElementById("qrcode"), {
       text: playerUrl,
       width: 170,
       height: 170,
-      colorDark: "#38bdf8",     // Sleek electric cyan
-      colorLight: "#0f172a",    // Deep slate background that blends with your theme
+      colorDark: "#38bdf8",
+      colorLight: "#0f172a",
       correctLevel: QRCode.CorrectLevel.M
     });
 
