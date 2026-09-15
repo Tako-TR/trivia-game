@@ -265,6 +265,16 @@
         <button class="btn-danger stop-game-btn">Stop / End Game</button>
       </div>
 
+      <!-- Milestone Intermission Screen (Every 10 Questions) -->
+      <div id="host-milestone" class="hidden">
+        <h1 style="color: #38bdf8;">Checkpoint Standings!</h1>
+        <p id="host-milestone-text" class="question-text" style="color: #f59e0b; font-weight: 700;">After 10 Questions</p>
+        <h2>Current Match Leaderboard</h2>
+        <ul id="host-milestone-leaderboard" class="leaderboard"></ul>
+        <p style="color: #94a3b8; font-size: 0.95rem; margin-top: 1rem;">Resuming in 10 seconds...</p>
+        <button class="btn-danger stop-game-btn">Stop / End Game</button>
+      </div>
+
       <!-- Round End Screen -->
       <div id="host-round-end" class="hidden">
         <h1>Round Results</h1>
@@ -272,7 +282,7 @@
           <div class="answer-reveal-label">Correct Answer</div>
           <div id="host-correct-answer" class="answer-reveal-text">---</div>
         </div>
-        <p style="color: #f59e0b; font-weight: 600;">Next question loading in 5 seconds...</p>
+        <p style="color: #f59e0b; font-weight: 600;">Loading standings...</p>
         <h2>Current Standings</h2>
         <ul id="host-leaderboard" class="leaderboard"></ul>
         <button class="btn-danger stop-game-btn">Stop / End Game</button>
@@ -295,7 +305,6 @@
     <!-- Hall of Fame Tab -->
     <div id="host-hall-view" class="hidden">
       <div class="hall-filter-row">
-        <!-- Category Switcher for Leaderboard -->
         <div style="display: flex; align-items: center; gap: 0.5rem;">
           <label for="hall-category-select" style="font-size: 0.85rem; color: #94a3b8; font-weight: 700; text-transform: uppercase;">Category:</label>
           <select id="hall-category-select" style="padding: 0.4rem 0.8rem; font-size: 0.9rem;">
@@ -404,6 +413,9 @@
 
     const hostLobby = document.getElementById('host-lobby');
     const hostGame = document.getElementById('host-game');
+    const hostMilestone = document.getElementById('host-milestone');
+    const hostMilestoneText = document.getElementById('host-milestone-text');
+    const hostMilestoneLeaderboard = document.getElementById('host-milestone-leaderboard');
     const hostRoundEnd = document.getElementById('host-round-end');
     const hostGameOver = document.getElementById('host-game-over');
     const podiumArea = document.getElementById('podium-area');
@@ -470,6 +482,7 @@
 
     socket.on('game:new_question', (data) => {
       hostLobby.classList.add('hidden');
+      hostMilestone.classList.add('hidden');
       hostRoundEnd.classList.add('hidden');
       hostGameOver.classList.add('hidden');
       hostGame.classList.remove('hidden');
@@ -501,6 +514,7 @@
 
     socket.on('game:round_ended', (data) => {
       hostGame.classList.add('hidden');
+      hostMilestone.classList.add('hidden');
       hostRoundEnd.classList.remove('hidden');
       hostCorrectAnswer.textContent = data.correctAnswerText;
 
@@ -512,8 +526,24 @@
       });
     });
 
+    // Milestone Handler (Every 10 questions)
+    socket.on('game:milestone_leaderboard', (data) => {
+      hostRoundEnd.classList.add('hidden');
+      hostGame.classList.add('hidden');
+      hostMilestone.classList.remove('hidden');
+
+      hostMilestoneText.textContent = `Standings After ${data.questionNumber} Questions`;
+      hostMilestoneLeaderboard.innerHTML = '';
+      data.leaderboard.forEach((p, idx) => {
+        const li = document.createElement('li');
+        li.innerHTML = `<span>#${idx + 1} ${p.name}</span><strong>${p.score} pts</strong>`;
+        hostMilestoneLeaderboard.appendChild(li);
+      });
+    });
+
     socket.on('game:over', (data) => {
       hostGame.classList.add('hidden');
+      hostMilestone.classList.add('hidden');
       hostRoundEnd.classList.add('hidden');
       hostGameOver.classList.remove('hidden');
 
@@ -539,7 +569,6 @@
       const p3 = players[2] || null;
 
       let html = '';
-
       if (p2) {
         html += `
           <div class="podium-slot second">
@@ -550,7 +579,6 @@
           </div>
         `;
       }
-
       if (p1) {
         html += `
           <div class="podium-slot first">
@@ -561,7 +589,6 @@
           </div>
         `;
       }
-
       if (p3) {
         html += `
           <div class="podium-slot third">
@@ -572,7 +599,6 @@
           </div>
         `;
       }
-
       podiumArea.innerHTML = html;
     }
 
