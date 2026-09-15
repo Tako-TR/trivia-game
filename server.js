@@ -51,7 +51,6 @@ initDb();
 app.use(express.json({ limit: '10mb' }));
 app.use(express.static(path.join(__dirname, 'public')));
 
-// Questions & Presets persistence
 const questionsFilePath = path.join(__dirname, 'questions.json');
 const presetsFilePath = path.join(__dirname, 'presets.json');
 
@@ -95,7 +94,7 @@ function shuffle(array) {
 }
 
 // Active Game State
-let activeSockets = {};
+let activeSockets = {}; // socketId -> { username, score, currentAnswer, answerTimeLeft, roundPointsEarned, streak }
 let activeQuestions = [];
 let currentQuestionIndex = -1;
 let questionTimer = null;
@@ -133,7 +132,6 @@ app.post('/api/questions/add', (req, res) => {
   saveQuestionsToFile(res, { success: true, totalQuestions: masterQuestions.length });
 });
 
-// Direct In-Place Edit Endpoint
 app.post('/api/questions/edit', (req, res) => {
   const { password, index, category, question, options, answer, image } = req.body;
   if (password !== ADMIN_PASSWORD) return res.status(401).json({ success: false, message: 'Invalid admin passcode.' });
@@ -143,7 +141,7 @@ app.post('/api/questions/edit', (req, res) => {
     return res.status(400).json({ success: false, message: 'Invalid question index.' });
   }
   if (!category || !question || !Array.isArray(options) || options.length !== 4 || answer === undefined) {
-    return res.status(400).json({ success: false, message: 'Missing required fields for update.' });
+    return res.status(400).json({ success: false, message: 'Missing required fields.' });
   }
 
   const updatedQ = {
@@ -173,7 +171,7 @@ app.post('/api/questions/bulk', (req, res) => {
       const formatted = {
         category: q.category.trim(),
         question: q.question.trim(),
-        options: q.options.map((opt) => String(opt).trim()),
+        options: q.options.map(opt => String(opt).trim()),
         answer: parseInt(q.answer, 10)
       };
       if (q.image && String(q.image).trim() !== '') formatted.image = String(q.image).trim();
@@ -199,7 +197,6 @@ app.post('/api/questions/delete', (req, res) => {
   saveQuestionsToFile(res, { success: true, totalQuestions: masterQuestions.length });
 });
 
-// Custom Game Pack Presets Endpoints
 app.get('/api/presets/list', (req, res) => {
   return res.json({ success: true, presets: gamePresets });
 });
@@ -210,17 +207,16 @@ app.post('/api/presets/save', (req, res) => {
 
   const cleanName = (name || '').trim();
   if (!cleanName || !Array.isArray(questionIndices) || questionIndices.length === 0) {
-    return res.status(400).json({ success: false, message: 'Name and non-empty question selection required.' });
+    return res.status(400).json({ success: false, message: 'Name and questions required.' });
   }
 
-  // Store actual question copies to keep presets resilient against list index shifts
   const presetQuestions = [];
   questionIndices.forEach((idx) => {
     if (masterQuestions[idx]) presetQuestions.push(masterQuestions[idx]);
   });
 
   if (presetQuestions.length === 0) {
-    return res.status(400).json({ success: false, message: 'Selected indices yielded no valid questions.' });
+    return res.status(400).json({ success: false, message: 'No valid questions found.' });
   }
 
   gamePresets[cleanName] = presetQuestions;
@@ -346,7 +342,29 @@ app.get('/api/leaderboards', async (req, res) => {
   }
 });
 
-// Socket.io Game Events
+/* =========================================================
+   STREAK MULTIPLIER HELPER
+========================================================= */
+function getStreakMultiplier(streak) {
+  if (streak >= 20) return 3.0;
+  if (streak >= 10) return 2.0;
+  if (streak >= 5) return 1.5;
+  if (streak >= 2) return 1.2;
+  return 1.0;
+}
+
+function getStreakLabel(streak) {
+  if (streak >= 20) return '👑 Trivia Deity (3.0x)';
+  if (streak >= 10) return '🚀 Unstoppable (2.0x)';
+  if (streak >= 5) return '⚡ On Fire! (1.5x)';
+  if (streak >= 2) return '🔥 Warm Up (1.2x)';
+  return '';
+}
+
+/* =========================================================
+   SOCKET.IO REAL-TIME LOGIC
+========================================================= */
+
 io.on('connection', (socket) => {
   socket.on('player:auth', async ({ username, pin }) => {
     const cleanUser = (username || '').trim().toLowerCase();
@@ -379,7 +397,8 @@ io.on('connection', (socket) => {
         score: 0,
         currentAnswer: null,
         answerTimeLeft: 0,
-        roundPointsEarned: 0
+        roundPointsEarned: 0,
+        streak: 0
       };
 
       socket.emit('player:authenticated', {
@@ -395,11 +414,29 @@ io.on('connection', (socket) => {
     }
   });
 
+  // Player answer submission with SMART FAST-FORWARD check
   socket.on('player:submit_answer', (answerIndex) => {
     if (roundActive && activeSockets[socket.id] && activeSockets[socket.id].currentAnswer === null) {
       activeSockets[socket.id].currentAnswer = answerIndex;
       activeSockets[socket.id].answerTimeLeft = timeLeft;
       socket.emit('player:answer_received', answerIndex);
+
+      // Broadcast live submission to host for real-time checkmark updates
+      io.emit('game:submission_update', {
+        username: activeSockets[socket.id].username,
+        socketId: socket.id,
+        submittedCount: Object.values(activeSockets).filter(p => p.currentAnswer !== null).length,
+        totalCount: Object.keys(activeSockets).length
+      });
+
+      // SMART FAST-FORWARD: If all connected players have answered, cut the clock!
+      const totalPlayers = Object.keys(activeSockets).length;
+      const answeredPlayers = Object.values(activeSockets).filter(p => p.currentAnswer !== null).length;
+
+      if (totalPlayers > 0 && answeredPlayers >= totalPlayers) {
+        clearInterval(questionTimer);
+        endRound();
+      }
     }
   });
 
@@ -416,6 +453,7 @@ io.on('connection', (socket) => {
       activeSockets[id].currentAnswer = null;
       activeSockets[id].answerTimeLeft = 0;
       activeSockets[id].roundPointsEarned = 0;
+      activeSockets[id].streak = 0;
     });
 
     const chosenPreset = config.preset && config.preset !== 'none' ? gamePresets[config.preset] : null;
@@ -471,6 +509,16 @@ io.on('connection', (socket) => {
     if (activeSockets[socket.id]) {
       delete activeSockets[socket.id];
       io.emit('game:player_list', getLobbyPlayers());
+
+      // If during an active round a player disconnects, check if all remaining answered
+      if (roundActive) {
+        const totalPlayers = Object.keys(activeSockets).length;
+        const answeredPlayers = Object.values(activeSockets).filter(p => p.currentAnswer !== null).length;
+        if (totalPlayers > 0 && answeredPlayers >= totalPlayers) {
+          clearInterval(questionTimer);
+          endRound();
+        }
+      }
     }
   });
 });
@@ -493,6 +541,8 @@ function startNextQuestion() {
   roundActive = true;
   timeLeft = QUESTION_DURATION;
 
+  const connectedList = Object.values(activeSockets).map(p => ({ name: p.username, answered: false }));
+
   io.emit('game:new_question', {
     category: currentQ.category,
     question: currentQ.question,
@@ -500,7 +550,8 @@ function startNextQuestion() {
     options: currentQ.options,
     questionNumber: currentQuestionIndex + 1,
     totalQuestions: activeQuestions.length,
-    timeLeft: timeLeft
+    timeLeft: timeLeft,
+    connectedPlayers: connectedList
   });
 
   clearInterval(questionTimer);
@@ -524,12 +575,21 @@ function endRound() {
 
   Object.keys(activeSockets).forEach((id) => {
     const p = activeSockets[id];
+
     if (p.currentAnswer === correctIdx) {
-      const bonus = Math.round((Math.max(1, p.answerTimeLeft) / QUESTION_DURATION) * 500);
-      const earned = 500 + bonus;
+      // Increment streak
+      p.streak = (p.streak || 0) + 1;
+      const multiplier = getStreakMultiplier(p.streak);
+
+      const baseSpeedBonus = Math.round((Math.max(1, p.answerTimeLeft) / QUESTION_DURATION) * 500);
+      const rawPoints = 500 + baseSpeedBonus;
+      const earned = Math.round(rawPoints * multiplier);
+
       p.roundPointsEarned = earned;
       p.score += earned;
     } else {
+      // Streak broken
+      p.streak = 0;
       p.roundPointsEarned = 0;
     }
 
@@ -562,6 +622,9 @@ function endRound() {
       myRank: rankIndex !== -1 ? rankIndex + 1 : null,
       myPointsEarned: p ? p.roundPointsEarned : 0,
       myTotalScore: p ? p.score : 0,
+      myStreak: p ? p.streak : 0,
+      streakMultiplier: p ? getStreakMultiplier(p.streak) : 1.0,
+      streakLabel: p ? getStreakLabel(p.streak) : '',
       isMilestone: isMilestone,
       milestoneNumber: finishedQuestionNum
     });
@@ -637,7 +700,8 @@ function getCurrentGameStandings() {
     .map((id) => ({
       id: id,
       name: activeSockets[id].username,
-      score: activeSockets[id].score
+      score: activeSockets[id].score,
+      streak: activeSockets[id].streak || 0
     }))
     .sort((a, b) => b.score - a.score);
 }
