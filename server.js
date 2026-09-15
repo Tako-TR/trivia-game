@@ -51,12 +51,38 @@ initDb();
 app.use(express.json({ limit: '10mb' }));
 app.use(express.static(path.join(__dirname, 'public')));
 
+// Questions & Presets persistence
 const questionsFilePath = path.join(__dirname, 'questions.json');
+const presetsFilePath = path.join(__dirname, 'presets.json');
+
 let masterQuestions = [];
 try {
   masterQuestions = JSON.parse(fs.readFileSync(questionsFilePath, 'utf8'));
 } catch (err) {
   console.error('Error loading questions.json:', err);
+}
+
+let gamePresets = {};
+try {
+  if (fs.existsSync(presetsFilePath)) {
+    gamePresets = JSON.parse(fs.readFileSync(presetsFilePath, 'utf8'));
+  }
+} catch (err) {
+  console.error('Error loading presets.json:', err);
+}
+
+function saveQuestionsToFile(res, successPayload) {
+  fs.writeFile(questionsFilePath, JSON.stringify(masterQuestions, null, 2), 'utf8', (err) => {
+    if (err) return res.status(500).json({ success: false, message: 'Failed to write questions.json' });
+    return res.json(successPayload);
+  });
+}
+
+function savePresetsToFile(res, successPayload) {
+  fs.writeFile(presetsFilePath, JSON.stringify(gamePresets, null, 2), 'utf8', (err) => {
+    if (err) return res.status(500).json({ success: false, message: 'Failed to write presets.json' });
+    return res.json(successPayload);
+  });
 }
 
 function shuffle(array) {
@@ -78,7 +104,10 @@ let timeLeft = QUESTION_DURATION;
 let roundActive = false;
 let currentGameCategory = 'all';
 
-// Admin API
+/* =========================================================
+   ADMIN API: QUESTIONS, PRESETS & PLAYERS
+========================================================= */
+
 app.post('/api/questions/list', (req, res) => {
   const { password } = req.body;
   if (password !== ADMIN_PASSWORD) return res.status(401).json({ success: false, message: 'Invalid admin passcode.' });
@@ -101,10 +130,34 @@ app.post('/api/questions/add', (req, res) => {
   if (image && image.trim() !== '') newQuestion.image = image.trim();
 
   masterQuestions.push(newQuestion);
-  fs.writeFile(questionsFilePath, JSON.stringify(masterQuestions, null, 2), 'utf8', (err) => {
-    if (err) return res.status(500).json({ success: false, message: 'Error saving file.' });
-    return res.json({ success: true, totalQuestions: masterQuestions.length });
-  });
+  saveQuestionsToFile(res, { success: true, totalQuestions: masterQuestions.length });
+});
+
+// Direct In-Place Edit Endpoint
+app.post('/api/questions/edit', (req, res) => {
+  const { password, index, category, question, options, answer, image } = req.body;
+  if (password !== ADMIN_PASSWORD) return res.status(401).json({ success: false, message: 'Invalid admin passcode.' });
+
+  const qIndex = parseInt(index, 10);
+  if (isNaN(qIndex) || qIndex < 0 || qIndex >= masterQuestions.length) {
+    return res.status(400).json({ success: false, message: 'Invalid question index.' });
+  }
+  if (!category || !question || !Array.isArray(options) || options.length !== 4 || answer === undefined) {
+    return res.status(400).json({ success: false, message: 'Missing required fields for update.' });
+  }
+
+  const updatedQ = {
+    category: category.trim(),
+    question: question.trim(),
+    options: options.map((opt) => String(opt).trim()),
+    answer: parseInt(answer, 10)
+  };
+  if (image && String(image).trim() !== '') {
+    updatedQ.image = String(image).trim();
+  }
+
+  masterQuestions[qIndex] = updatedQ;
+  saveQuestionsToFile(res, { success: true, message: 'Question updated successfully.' });
 });
 
 app.post('/api/questions/bulk', (req, res) => {
@@ -120,7 +173,7 @@ app.post('/api/questions/bulk', (req, res) => {
       const formatted = {
         category: q.category.trim(),
         question: q.question.trim(),
-        options: q.options.map(opt => String(opt).trim()),
+        options: q.options.map((opt) => String(opt).trim()),
         answer: parseInt(q.answer, 10)
       };
       if (q.image && String(q.image).trim() !== '') formatted.image = String(q.image).trim();
@@ -131,10 +184,7 @@ app.post('/api/questions/bulk', (req, res) => {
   if (validQuestions.length === 0) return res.status(400).json({ success: false, message: 'No valid rows found.' });
 
   masterQuestions.push(...validQuestions);
-  fs.writeFile(questionsFilePath, JSON.stringify(masterQuestions, null, 2), 'utf8', (err) => {
-    if (err) return res.status(500).json({ success: false, message: 'Error saving file.' });
-    return res.json({ success: true, addedCount: validQuestions.length, totalQuestions: masterQuestions.length });
-  });
+  saveQuestionsToFile(res, { success: true, addedCount: validQuestions.length, totalQuestions: masterQuestions.length });
 });
 
 app.post('/api/questions/delete', (req, res) => {
@@ -146,10 +196,47 @@ app.post('/api/questions/delete', (req, res) => {
   }
 
   masterQuestions.splice(qIndex, 1);
-  fs.writeFile(questionsFilePath, JSON.stringify(masterQuestions, null, 2), 'utf8', (err) => {
-    if (err) return res.status(500).json({ success: false, message: 'Error writing file.' });
-    return res.json({ success: true, totalQuestions: masterQuestions.length });
+  saveQuestionsToFile(res, { success: true, totalQuestions: masterQuestions.length });
+});
+
+// Custom Game Pack Presets Endpoints
+app.get('/api/presets/list', (req, res) => {
+  return res.json({ success: true, presets: gamePresets });
+});
+
+app.post('/api/presets/save', (req, res) => {
+  const { password, name, questionIndices } = req.body;
+  if (password !== ADMIN_PASSWORD) return res.status(401).json({ success: false, message: 'Invalid admin passcode.' });
+
+  const cleanName = (name || '').trim();
+  if (!cleanName || !Array.isArray(questionIndices) || questionIndices.length === 0) {
+    return res.status(400).json({ success: false, message: 'Name and non-empty question selection required.' });
+  }
+
+  // Store actual question copies to keep presets resilient against list index shifts
+  const presetQuestions = [];
+  questionIndices.forEach((idx) => {
+    if (masterQuestions[idx]) presetQuestions.push(masterQuestions[idx]);
   });
+
+  if (presetQuestions.length === 0) {
+    return res.status(400).json({ success: false, message: 'Selected indices yielded no valid questions.' });
+  }
+
+  gamePresets[cleanName] = presetQuestions;
+  savePresetsToFile(res, { success: true, name: cleanName, count: presetQuestions.length, presets: gamePresets });
+});
+
+app.post('/api/presets/delete', (req, res) => {
+  const { password, name } = req.body;
+  if (password !== ADMIN_PASSWORD) return res.status(401).json({ success: false, message: 'Invalid admin passcode.' });
+
+  if (!name || !gamePresets[name]) {
+    return res.status(400).json({ success: false, message: 'Preset not found.' });
+  }
+
+  delete gamePresets[name];
+  savePresetsToFile(res, { success: true, presets: gamePresets });
 });
 
 app.post('/api/players/list', async (req, res) => {
@@ -331,34 +418,43 @@ io.on('connection', (socket) => {
       activeSockets[id].roundPointsEarned = 0;
     });
 
-    currentGameCategory = config.category || 'all';
-    const requestedDifficulty = config.difficulty || 'all';
-    const requestedCount = parseInt(config.count, 10) || 10;
+    const chosenPreset = config.preset && config.preset !== 'none' ? gamePresets[config.preset] : null;
 
-    let eligible = masterQuestions.filter((q) => {
-      const cat = (q.category || '').toLowerCase();
-      let matchCat = false;
-      if (currentGameCategory === 'all') matchCat = true;
-      else if (currentGameCategory === 'bible') matchCat = cat.includes('bible');
-      else if (currentGameCategory === 'movie') matchCat = cat.includes('movie');
-      else if (currentGameCategory === 'logos') matchCat = cat.includes('logo');
-      else if (currentGameCategory === 'music') matchCat = cat.includes('music') || cat.includes('pop culture');
-      if (!matchCat) return false;
+    if (chosenPreset && chosenPreset.length > 0) {
+      currentGameCategory = `Preset: ${config.preset}`;
+      const shuffled = shuffle(chosenPreset);
+      const requestedCount = parseInt(config.count, 10) || shuffled.length;
+      activeQuestions = shuffled.slice(0, Math.min(requestedCount, shuffled.length));
+    } else {
+      currentGameCategory = config.category || 'all';
+      const requestedDifficulty = config.difficulty || 'all';
+      const requestedCount = parseInt(config.count, 10) || 10;
 
-      switch (requestedDifficulty) {
-        case 'easy': return cat.includes('easy');
-        case 'medium': return cat.includes('medium');
-        case 'hard': return cat.includes('hard');
-        case 'easy_medium': return cat.includes('easy') || cat.includes('medium');
-        case 'medium_hard': return cat.includes('medium') || cat.includes('hard');
-        default: return true;
-      }
-    });
+      let eligible = masterQuestions.filter((q) => {
+        const cat = (q.category || '').toLowerCase();
+        let matchCat = false;
+        if (currentGameCategory === 'all') matchCat = true;
+        else if (currentGameCategory === 'bible') matchCat = cat.includes('bible');
+        else if (currentGameCategory === 'movie') matchCat = cat.includes('movie');
+        else if (currentGameCategory === 'logos') matchCat = cat.includes('logo');
+        else if (currentGameCategory === 'music') matchCat = cat.includes('music') || cat.includes('pop culture');
+        if (!matchCat) return false;
 
-    if (eligible.length === 0) eligible = masterQuestions;
+        switch (requestedDifficulty) {
+          case 'easy': return cat.includes('easy');
+          case 'medium': return cat.includes('medium');
+          case 'hard': return cat.includes('hard');
+          case 'easy_medium': return cat.includes('easy') || cat.includes('medium');
+          case 'medium_hard': return cat.includes('medium') || cat.includes('hard');
+          default: return true;
+        }
+      });
 
-    const shuffled = shuffle(eligible);
-    activeQuestions = shuffled.slice(0, Math.min(requestedCount, shuffled.length));
+      if (eligible.length === 0) eligible = masterQuestions;
+
+      const shuffled = shuffle(eligible);
+      activeQuestions = shuffled.slice(0, Math.min(requestedCount, shuffled.length));
+    }
 
     currentQuestionIndex = -1;
     startNextQuestion();
@@ -423,7 +519,6 @@ function endRound() {
   const currentQ = activeQuestions[currentQuestionIndex];
   const correctIdx = currentQ.answer;
 
-  // Calculate answer distribution counts: [opt0Count, opt1Count, opt2Count, opt3Count]
   const distribution = [0, 0, 0, 0];
   let unansweredCount = 0;
 
@@ -472,7 +567,6 @@ function endRound() {
     });
   });
 
-  // Give 7 seconds on results screen so the host can view the bar chart
   const revealDuration = 7000;
 
   if (isMilestone) {
@@ -510,7 +604,7 @@ async function finishGameAndSaveStats() {
             [p.score, p.username]
           );
 
-          if (currentGameCategory && currentGameCategory !== 'all') {
+          if (currentGameCategory && !currentGameCategory.startsWith('Preset:') && currentGameCategory !== 'all') {
             await pool.query(
               `INSERT INTO category_scores (username, category, high_score, career_score, games_played)
                VALUES ($1, $2, $3, $3, 1)
