@@ -9,7 +9,7 @@
   <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.2/dist/confetti.browser.min.js"></script>
   <style>
-    .container { max-width: 860px; position: relative; }
+    .container { max-width: 880px; position: relative; }
     .top-bar-controls {
       display: flex;
       justify-content: space-between;
@@ -27,10 +27,7 @@
       font-weight: 800;
       font-size: 0.85rem;
     }
-    .top-toggles {
-      display: flex;
-      gap: 0.5rem;
-    }
+    .top-toggles { display: flex; gap: 0.5rem; }
     .toggle-pill {
       background-color: #1e293b;
       border: 1px solid #475569;
@@ -43,12 +40,74 @@
       user-select: none;
     }
     .toggle-pill.off { color: #94a3b8; border-color: #334155; }
-    .tab-bar {
-      display: flex;
-      justify-content: center;
-      gap: 0.5rem;
-      margin: 1rem 0;
+    
+    /* Dynamic Countdown Meter */
+    .timer-meter-wrapper {
+      width: 100%;
+      height: 12px;
+      background-color: #1e293b;
+      border-radius: 9999px;
+      overflow: hidden;
+      margin: 0.85rem 0 1.25rem 0;
+      border: 1px solid #334155;
     }
+    .timer-meter-bar {
+      height: 100%;
+      width: 100%;
+      background: linear-gradient(90deg, #0284c7, #38bdf8);
+      border-radius: 9999px;
+      transition: width 1s linear, background 0.4s ease-out;
+    }
+    .timer-meter-bar.warning {
+      background: linear-gradient(90deg, #d97706, #f59e0b);
+    }
+    .timer-meter-bar.danger {
+      background: linear-gradient(90deg, #dc2626, #ef4444);
+      animation: pulseBar 0.5s infinite alternate;
+    }
+    @keyframes pulseBar {
+      from { filter: drop-shadow(0 0 4px #ef4444); }
+      to { filter: drop-shadow(0 0 12px #ef4444); }
+    }
+
+    /* Spotlights */
+    .spotlights-container {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1rem;
+      margin: 1.25rem 0;
+    }
+    .spotlight-card {
+      background-color: #0f172a;
+      border-radius: 12px;
+      padding: 0.85rem 1rem;
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      text-align: left;
+    }
+    .spotlight-card.speed {
+      border: 1px solid #10b981;
+      background: linear-gradient(135deg, rgba(16, 185, 129, 0.1), #0f172a);
+    }
+    .spotlight-card.snail {
+      border: 1px solid #f59e0b;
+      background: linear-gradient(135deg, rgba(245, 158, 11, 0.1), #0f172a);
+    }
+    .spotlight-icon { font-size: 2rem; }
+    .spotlight-title {
+      font-size: 0.75rem;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      margin-bottom: 0.15rem;
+    }
+    .speed .spotlight-title { color: #10b981; }
+    .snail .spotlight-title { color: #f59e0b; }
+    .spotlight-name { font-size: 1.05rem; font-weight: 800; color: #f8fafc; }
+    .spotlight-stat { font-size: 0.8rem; color: #94a3b8; }
+
+    .tab-bar { display: flex; justify-content: center; gap: 0.5rem; margin: 1rem 0; }
     .tab-btn {
       background-color: #1e293b;
       color: #94a3b8;
@@ -140,12 +199,7 @@
       display: inline-block;
     }
     .trivia-image { max-height: 180px; max-width: 100%; object-fit: contain; display: block; }
-    .host-links {
-      display: flex;
-      gap: 0.75rem;
-      justify-content: center;
-      flex-wrap: wrap;
-    }
+    .host-links { display: flex; gap: 0.75rem; justify-content: center; flex-wrap: wrap; }
     .host-link-btn {
       color: #38bdf8;
       font-size: 0.85rem;
@@ -167,7 +221,6 @@
     }
     .btn-kick:hover { background-color: #dc2626; color: #fff; }
 
-    /* Live Player Submission Status Tray */
     .submission-tray {
       background-color: #0f172a;
       border: 1px solid #334155;
@@ -187,11 +240,7 @@
       color: #94a3b8;
       text-transform: uppercase;
     }
-    .submission-chips {
-      display: flex;
-      gap: 0.5rem;
-      flex-wrap: wrap;
-    }
+    .submission-chips { display: flex; gap: 0.5rem; flex-wrap: wrap; }
     .sub-chip {
       background-color: #1e293b;
       border: 1px solid #475569;
@@ -212,7 +261,6 @@
       transform: scale(1.05);
     }
 
-    /* Rank Movement Badges */
     .delta-badge {
       font-size: 0.75rem;
       font-weight: 800;
@@ -226,7 +274,6 @@
     .delta-down { background-color: #7f1d1d; color: #fca5a5; }
     .delta-same { background-color: #1e293b; color: #64748b; }
 
-    /* Distribution Bar Chart */
     .chart-container {
       background-color: #0f172a;
       border: 1px solid #334155;
@@ -246,16 +293,8 @@
       justify-content: space-between;
       align-items: center;
     }
-    .chart-bars {
-      display: flex;
-      flex-direction: column;
-      gap: 0.75rem;
-    }
-    .chart-row {
-      display: flex;
-      flex-direction: column;
-      gap: 0.25rem;
-    }
+    .chart-bars { display: flex; flex-direction: column; gap: 0.75rem; }
+    .chart-row { display: flex; flex-direction: column; gap: 0.25rem; }
     .chart-row-meta {
       display: flex;
       justify-content: space-between;
@@ -288,11 +327,8 @@
       background: linear-gradient(90deg, #059669, #10b981);
       box-shadow: 0 0 10px rgba(16, 185, 129, 0.4);
     }
-    .chart-fill.incorrect-bar {
-      background: linear-gradient(90deg, #475569, #64748b);
-    }
+    .chart-fill.incorrect-bar { background: linear-gradient(90deg, #475569, #64748b); }
 
-    /* Podium */
     .podium-container {
       display: flex;
       justify-content: center;
@@ -353,7 +389,6 @@
       <button id="tab-btn-hall" class="tab-btn">All-Time Hall of Fame</button>
     </div>
 
-    <!-- Main Host Game Lobby -->
     <div id="host-lobby-view">
       <div id="host-lobby">
         <div class="lobby-header-card">
@@ -425,7 +460,7 @@
           <button id="btn-start" style="background-color: #10b981; min-width: 220px;">Start Game</button>
           <div class="host-links">
             <a href="/add.html" class="host-link-btn">+ Add Questions</a>
-            <a href="/manage.html" class="host-link-btn">⚙ Question Editor & Presets</a>
+            <a href="/manage.html" class="host-link-btn">⚙ Question Editor & Generator</a>
           </div>
         </div>
 
@@ -436,6 +471,11 @@
       <!-- Live Game Screen -->
       <div id="host-game" class="hidden">
         <div id="host-category" class="badge">Category</div>
+        
+        <!-- Animated Countdown Bar & Timer -->
+        <div class="timer-meter-wrapper">
+          <div id="timer-bar" class="timer-meter-bar"></div>
+        </div>
         <div id="host-timer" class="timer">15</div>
 
         <div id="host-image-container" class="trivia-image-box hidden">
@@ -456,7 +496,7 @@
         <button class="btn-danger stop-game-btn">Stop / End Game</button>
       </div>
 
-      <!-- Milestone Intermission Screen (Every 10 Questions) -->
+      <!-- Milestone Intermission Screen -->
       <div id="host-milestone" class="hidden">
         <h1 style="color: #38bdf8;">Checkpoint Standings!</h1>
         <p id="host-milestone-text" class="question-text" style="color: #f59e0b; font-weight: 700;">After 10 Questions</p>
@@ -466,13 +506,33 @@
         <button class="btn-danger stop-game-btn">Stop / End Game</button>
       </div>
 
-      <!-- Round End Screen with Chart & Animated Ranks -->
+      <!-- Round End Screen with Speed Demon & Snail Awards -->
       <div id="host-round-end" class="hidden">
         <h1>Round Results</h1>
 
         <div class="answer-reveal-box">
           <div class="answer-reveal-label">Correct Answer</div>
           <div id="host-correct-answer" class="answer-reveal-text">---</div>
+        </div>
+
+        <!-- Spotlight Awards -->
+        <div class="spotlights-container" id="spotlights-box">
+          <div class="spotlight-card speed" id="card-speed-demon">
+            <div class="spotlight-icon">⚡</div>
+            <div>
+              <div class="spotlight-title">Speed Demon (Fastest)</div>
+              <div class="spotlight-name" id="speed-name">--</div>
+              <div class="spotlight-stat" id="speed-time">Locked in fast!</div>
+            </div>
+          </div>
+          <div class="spotlight-card snail" id="card-snail-award">
+            <div class="spotlight-icon">🐢</div>
+            <div>
+              <div class="spotlight-title">Snail Award (Slowest)</div>
+              <div class="spotlight-name" id="snail-name">--</div>
+              <div class="spotlight-stat" id="snail-time">Taking their time!</div>
+            </div>
+          </div>
         </div>
 
         <div class="chart-container">
@@ -489,17 +549,20 @@
         <button class="btn-danger stop-game-btn">Stop / End Game</button>
       </div>
 
-      <!-- Game Over Podium Screen -->
+      <!-- Game Over Screen with CSV Recap Export -->
       <div id="host-game-over" class="hidden">
         <h1 style="color: #facc15; font-size: 2.2rem; margin-bottom: 0.25rem;">Champion Crowned!</h1>
         <p class="question-text">Final Podium Standings</p>
 
         <div id="podium-area" class="podium-container"></div>
 
+        <div style="display:flex; justify-content:center; gap:0.75rem; margin: 1.25rem 0;">
+          <button id="btn-export-recap" style="background-color: #10b981; color:#fff; font-weight:700; border:none; padding:0.6rem 1.25rem; border-radius:8px; cursor:pointer;">📥 Export Match Recap (CSV)</button>
+          <button id="btn-restart" style="background-color: #3b82f6; color:#fff; font-weight:700; border:none; padding:0.6rem 1.25rem; border-radius:8px; cursor:pointer;">Back to Lobby</button>
+        </div>
+
         <h2 style="font-size: 1.1rem; color: #94a3b8; margin-top: 1rem;">Complete Rankings</h2>
         <ul id="host-final-leaderboard" class="leaderboard"></ul>
-        
-        <button id="btn-restart" style="background-color: #3b82f6; margin-top: 1.25rem;">Back to Lobby</button>
       </div>
     </div>
 
@@ -538,6 +601,7 @@
     let audioCtx = null;
     let isSoundMuted = false;
     let isAutoPilot = true;
+    let lastCompletedMatchData = null;
 
     function initAudio() {
       if (!audioCtx) {
@@ -640,6 +704,7 @@
     const hostRoomBadge = document.getElementById('host-room-badge');
     const qrRoomLabel = document.getElementById('qr-room-label');
     const qrcodeContainer = document.getElementById("qrcode");
+    const timerBar = document.getElementById('timer-bar');
 
     function renderQRCode(roomCode) {
       qrcodeContainer.innerHTML = '';
@@ -787,14 +852,20 @@
     const hostLeaderboard = document.getElementById('host-leaderboard');
     const hostFinalLeaderboard = document.getElementById('host-final-leaderboard');
 
+    // Spotlight Elements
+    const speedName = document.getElementById('speed-name');
+    const speedTime = document.getElementById('speed-time');
+    const snailName = document.getElementById('snail-name');
+    const snailTime = document.getElementById('snail-time');
+
     const submissionCounterLabel = document.getElementById('submission-counter-label');
     const submissionChipsContainer = document.getElementById('submission-chips-container');
-
     const chartTotalLabel = document.getElementById('chart-total-label');
     const chartBarsWrapper = document.getElementById('chart-bars-wrapper');
 
     const btnStart = document.getElementById('btn-start');
     const btnRestart = document.getElementById('btn-restart');
+    const btnExportRecap = document.getElementById('btn-export-recap');
     const categorySelect = document.getElementById('category-select');
     const difficultySelect = document.getElementById('difficulty-select');
     const questionCountSelect = document.getElementById('question-count');
@@ -858,6 +929,10 @@
       hostTimer.textContent = data.timeLeft;
       hostQuestion.textContent = data.question;
 
+      // Reset Live Countdown Bar
+      timerBar.style.width = '100%';
+      timerBar.className = 'timer-meter-bar';
+
       if (data.image) {
         hostQuestionImage.src = data.image;
         hostImageContainer.classList.remove('hidden');
@@ -896,10 +971,26 @@
       submissionCounterLabel.textContent = `${data.submittedCount} / ${data.totalCount} Answered`;
     });
 
-    socket.on('game:timer_tick', (timeLeft) => {
+    // Dynamic TV Answer Countdown Engine
+    socket.on('game:timer_tick', (data) => {
+      const timeLeft = typeof data === 'object' ? data.timeLeft : data;
+      const totalDuration = typeof data === 'object' ? data.duration : 15;
+
       hostTimer.textContent = timeLeft;
-      if (timeLeft <= 3 && timeLeft > 0) playTickSound(true);
-      else if (timeLeft > 3) playTickSound(false);
+
+      const pct = Math.max(0, (timeLeft / totalDuration) * 100);
+      timerBar.style.width = `${pct}%`;
+
+      if (timeLeft <= 3) {
+        timerBar.className = 'timer-meter-bar danger';
+        playTickSound(true);
+      } else if (timeLeft <= 7) {
+        timerBar.className = 'timer-meter-bar warning';
+        playTickSound(false);
+      } else {
+        timerBar.className = 'timer-meter-bar';
+        playTickSound(false);
+      }
     });
 
     socket.on('game:round_ended', (data) => {
@@ -909,6 +1000,24 @@
 
       playRevealSound();
       hostCorrectAnswer.textContent = data.correctAnswerText;
+
+      // Populate Speed Demon & Snail Spotlights
+      if (data.fastestPlayer) {
+        speedName.textContent = `${data.fastestPlayer.avatar || '⚡'} ${data.fastestPlayer.name}`;
+        speedTime.textContent = `Answered in ${data.fastestPlayer.time}s!`;
+      } else {
+        speedName.textContent = 'None';
+        speedTime.textContent = 'No correct answers';
+      }
+
+      if (data.slowestPlayer) {
+        snailName.textContent = `${data.slowestPlayer.avatar || '🐢'} ${data.slowestPlayer.name}`;
+        snailTime.textContent = `Took ${data.slowestPlayer.time}s to answer`;
+      } else {
+        snailName.textContent = 'None';
+        snailTime.textContent = 'No submissions';
+      }
+
       renderDistributionChart(data);
 
       hostLeaderboard.innerHTML = '';
@@ -916,7 +1025,6 @@
         const li = document.createElement('li');
         const streakTag = p.streak >= 2 ? `<span style="color:#f59e0b; margin-left:0.4rem; font-size:0.8rem;">🔥 ${p.streak}</span>` : '';
 
-        // Rank Delta Badge
         let deltaHtml = '<span class="delta-badge delta-same">• 0</span>';
         if (p.rankDelta > 0) deltaHtml = `<span class="delta-badge delta-up">▲ +${p.rankDelta}</span>`;
         else if (p.rankDelta < 0) deltaHtml = `<span class="delta-badge delta-down">▼ ${p.rankDelta}</span>`;
@@ -982,6 +1090,7 @@
       hostRoundEnd.classList.add('hidden');
       hostGameOver.classList.remove('hidden');
 
+      lastCompletedMatchData = data;
       playVictorySound();
 
       const leaderboard = Array.isArray(data) ? data : data.leaderboard;
@@ -995,6 +1104,43 @@
       });
 
       triggerVictoryConfetti();
+    });
+
+    // CSV Match Recap Export Feature
+    btnExportRecap.addEventListener('click', () => {
+      if (!lastCompletedMatchData || !lastCompletedMatchData.leaderboard) {
+        return alert('No match data available to export.');
+      }
+
+      const rows = [
+        ['Rank', 'Avatar', 'Username', 'Score (PTS)', 'Final Streak', 'Room', 'Category', 'Timestamp']
+      ];
+
+      const room = lastCompletedMatchData.roomCode || currentRoomCode;
+      const cat = lastCompletedMatchData.category || 'Mixed';
+      const timeStr = new Date().toLocaleString();
+
+      lastCompletedMatchData.leaderboard.forEach((p, idx) => {
+        rows.push([
+          idx + 1,
+          `"${p.avatar || '🚀'}"`,
+          `"${p.name}"`,
+          p.score,
+          p.streak || 0,
+          `"${room}"`,
+          `"${cat}"`,
+          `"${timeStr}"`
+        ]);
+      });
+
+      const csvContent = 'data:text/csv;charset=utf-8,' + rows.map(e => e.join(',')).join('\n');
+      const encodedUri = encodeURI(csvContent);
+      const link = document.createElement('a');
+      link.setAttribute('href', encodedUri);
+      link.setAttribute('download', `Trivia_Match_Recap_${room}_${Date.now()}.csv`);
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
     });
 
     function renderPodium(players) {
