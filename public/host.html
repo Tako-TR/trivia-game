@@ -131,7 +131,7 @@
       display: flex;
       justify-content: space-between;
       align-items: center;
-      gap: 1rem;
+      gap: 0.75rem;
       margin-bottom: 1rem;
       flex-wrap: wrap;
     }
@@ -398,7 +398,6 @@
         <div style="color: #94a3b8;">Players in this room: <strong id="player-count" style="color: #38bdf8;">0</strong></div>
         
         <div class="settings-panel">
-          <!-- Room Selector (All 6 Named Rooms) -->
           <div class="setting-row">
             <label for="host-room-select" style="color: #f59e0b;">Select Game Room (1 of 6)</label>
             <select id="host-room-select">
@@ -513,7 +512,7 @@
           <div id="host-correct-answer" class="answer-reveal-text">---</div>
         </div>
 
-        <!-- Spotlights: Speed Demon & Snail -->
+        <!-- Spotlights -->
         <div class="spotlights-container" id="spotlights-box">
           <div class="spotlight-card speed" id="card-speed-demon">
             <div class="spotlight-icon">⚡</div>
@@ -564,11 +563,24 @@
       </div>
     </div>
 
-    <!-- Hall of Fame Tab -->
+    <!-- Hall of Fame Tab with Room Scope Selector -->
     <div id="host-hall-view" class="hidden">
       <div class="hall-filter-row">
-        <div style="display: flex; align-items: center; gap: 0.5rem;">
-          <label for="hall-category-select" style="font-size: 0.85rem; color: #94a3b8; font-weight: 700; text-transform: uppercase;">Category:</label>
+        <div style="display: flex; align-items: center; gap: 0.5rem; flex-wrap: wrap;">
+          <!-- Room Scope Filter -->
+          <label for="hall-room-select" style="font-size: 0.85rem; color: #f59e0b; font-weight: 800; text-transform: uppercase;">Leaderboard Scope:</label>
+          <select id="hall-room-select" style="padding: 0.4rem 0.8rem; font-size: 0.9rem; border-color: #f59e0b;">
+            <option value="all" selected>All Rooms (Global)</option>
+            <option value="ROOM1">Room 1</option>
+            <option value="ROOM2">Room 2 Fremont</option>
+            <option value="ROOM3">Room 3 Fremont HS</option>
+            <option value="ROOM4">Room 4 Fremont MS</option>
+            <option value="ROOM5">Room 5 Sandusky</option>
+            <option value="ROOM6">Room 6 Northwood</option>
+          </select>
+
+          <!-- Category Filter (enabled when viewing All Rooms) -->
+          <label for="hall-category-select" style="font-size: 0.85rem; color: #94a3b8; font-weight: 700; text-transform: uppercase; margin-left:0.5rem;">Category:</label>
           <select id="hall-category-select" style="padding: 0.4rem 0.8rem; font-size: 0.9rem;">
             <option value="all" selected>All Categories (Overall)</option>
             <option value="bible">Bible Trivia</option>
@@ -744,6 +756,7 @@
     const tabBtnLobby = document.getElementById('tab-btn-lobby');
     const tabBtnHall = document.getElementById('tab-btn-hall');
 
+    const hallRoomSelect = document.getElementById('hall-room-select');
     const hallCategorySelect = document.getElementById('hall-category-select');
     const btnShowHighScore = document.getElementById('btn-show-highscore');
     const btnShowCareer = document.getElementById('btn-show-career');
@@ -796,6 +809,13 @@
       loadHallOfFame();
     });
 
+    hallRoomSelect.addEventListener('change', () => {
+      const isGlobal = hallRoomSelect.value === 'all';
+      hallCategorySelect.disabled = !isGlobal;
+      hallCategorySelect.style.opacity = isGlobal ? '1' : '0.4';
+      loadHallOfFame();
+    });
+
     hallCategorySelect.addEventListener('change', loadHallOfFame);
 
     btnShowHighScore.addEventListener('click', () => {
@@ -813,9 +833,10 @@
     });
 
     async function loadHallOfFame() {
+      const roomScope = hallRoomSelect.value;
       const cat = hallCategorySelect.value;
       try {
-        const res = await fetch(`/api/leaderboards?category=${cat}`);
+        const res = await fetch(`/api/leaderboards?room=${roomScope}&category=${cat}`);
         hallData = await res.json();
         renderHallList();
       } catch (e) {
@@ -827,7 +848,7 @@
       hallOfFameList.innerHTML = '';
       const list = currentHallTab === 'high' ? hallData.highScores : hallData.careerScores;
       if (!list || list.length === 0) {
-        hallOfFameList.innerHTML = '<li>No records logged for this category yet.</li>';
+        hallOfFameList.innerHTML = '<li>No records logged for this room/category yet.</li>';
         return;
       }
       list.forEach((p, idx) => {
