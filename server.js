@@ -33,6 +33,14 @@ async function initDb() {
         games_played INT DEFAULT 0,
         updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
       );
+      CREATE TABLE IF NOT EXISTS category_scores (
+        username VARCHAR(30) NOT NULL,
+        category VARCHAR(30) NOT NULL,
+        high_score INT DEFAULT 0,
+        career_score INT DEFAULT 0,
+        games_played INT DEFAULT 0,
+        PRIMARY KEY (username, category)
+      );
     `);
     console.log('Database initialized successfully.');
   } catch (err) {
@@ -64,19 +72,19 @@ function shuffle(array) {
 }
 
 // Active Game State
-let activeSockets = {}; // socketId -> { username, score, currentAnswer, answerTimeLeft, roundPointsEarned }
+let activeSockets = {};
 let activeQuestions = [];
 let currentQuestionIndex = -1;
 let questionTimer = null;
 let intermissionTimer = null;
 let timeLeft = QUESTION_DURATION;
 let roundActive = false;
+let currentGameCategory = 'all';
 
 /* =========================================================
    ADMIN API: QUESTIONS & PLAYER/LEADERBOARD MANAGEMENT
 ========================================================= */
 
-// API: Fetch all questions
 app.post('/api/questions/list', (req, res) => {
   const { password } = req.body;
   if (password !== ADMIN_PASSWORD) {
@@ -85,7 +93,6 @@ app.post('/api/questions/list', (req, res) => {
   return res.json({ success: true, questions: masterQuestions });
 });
 
-// API: Add Single Question
 app.post('/api/questions/add', (req, res) => {
   const { password, category, difficulty, question, options, answer, image } = req.body;
   if (password !== ADMIN_PASSWORD) {
@@ -110,7 +117,6 @@ app.post('/api/questions/add', (req, res) => {
   });
 });
 
-// API: Bulk Add Questions
 app.post('/api/questions/bulk', (req, res) => {
   const { password, questions } = req.body;
   if (password !== ADMIN_PASSWORD) {
@@ -126,7 +132,7 @@ app.post('/api/questions/bulk', (req, res) => {
       const formatted = {
         category: q.category.trim(),
         question: q.question.trim(),
-        options: q.options.map(opt => String(opt).trim()),
+        options: q.options.map((opt) => String(opt).trim()),
         answer: parseInt(q.answer, 10)
       };
       if (q.image && String(q.image).trim() !== '') formatted.image = String(q.image).trim();
@@ -145,7 +151,6 @@ app.post('/api/questions/bulk', (req, res) => {
   });
 });
 
-// API: Delete Question
 app.post('/api/questions/delete', (req, res) => {
   const { password, index } = req.body;
   if (password !== ADMIN_PASSWORD) {
@@ -163,7 +168,6 @@ app.post('/api/questions/delete', (req, res) => {
   });
 });
 
-// API: Fetch All Registered Players
 app.post('/api/players/list', async (req, res) => {
   const { password } = req.body;
   if (password !== ADMIN_PASSWORD) {
@@ -181,7 +185,6 @@ app.post('/api/players/list', async (req, res) => {
   }
 });
 
-// API: Individual Reset or Delete/Ban Player
 app.post('/api/players/action', async (req, res) => {
   const { password, username, action } = req.body;
   if (password !== ADMIN_PASSWORD) {
@@ -198,14 +201,17 @@ app.post('/api/players/action', async (req, res) => {
           'UPDATE players SET high_score = 0, career_score = 0, games_played = 0, updated_at = NOW() WHERE username = $1;',
           [cleanUser]
         );
+        await pool.query(
+          'UPDATE category_scores SET high_score = 0, career_score = 0, games_played = 0 WHERE username = $1;',
+          [cleanUser]
+        );
       }
       return res.json({ success: true, message: `Scores reset for ${cleanUser}.` });
-    } 
-    else if (action === 'delete_ban') {
+    } else if (action === 'delete_ban') {
       if (pool) {
         await pool.query('DELETE FROM players WHERE username = $1;', [cleanUser]);
+        await pool.query('DELETE FROM category_scores WHERE username = $1;', [cleanUser]);
       }
-      // Kick player if currently online
       disconnectPlayerByUsername(cleanUser, 'Your profile has been removed by the administrator.');
       return res.json({ success: true, message: `Player ${cleanUser} deleted and banned.` });
     }
@@ -215,7 +221,6 @@ app.post('/api/players/action', async (req, res) => {
   }
 });
 
-// API: Bulk Reset or Bulk Wipe
 app.post('/api/players/bulk', async (req, res) => {
   const { password, action } = req.body;
   if (password !== ADMIN_PASSWORD) {
@@ -226,14 +231,14 @@ app.post('/api/players/bulk', async (req, res) => {
     if (action === 'reset_all_scores') {
       if (pool) {
         await pool.query('UPDATE players SET high_score = 0, career_score = 0, games_played = 0, updated_at = NOW();');
+        await pool.query('UPDATE category_scores SET high_score = 0, career_score = 0, games_played = 0;');
       }
       return res.json({ success: true, message: 'All player scores have been reset to 0.' });
-    } 
-    else if (action === 'wipe_all_players') {
+    } else if (action === 'wipe_all_players') {
       if (pool) {
+        await pool.query('TRUNCATE TABLE category_scores;');
         await pool.query('TRUNCATE TABLE players;');
       }
-      // Disconnect all connected players
       Object.keys(activeSockets).forEach((id) => {
         const sock = io.sockets.sockets.get(id);
         if (sock) {
@@ -251,7 +256,6 @@ app.post('/api/players/bulk', async (req, res) => {
   }
 });
 
-// Helper: Disconnect specific player
 function disconnectPlayerByUsername(username, reason) {
   Object.keys(activeSockets).forEach((id) => {
     if (activeSockets[id].username === username) {
@@ -266,17 +270,31 @@ function disconnectPlayerByUsername(username, reason) {
   io.emit('game:player_list', getLobbyPlayers());
 }
 
-// API: Fetch Top 100 Leaderboards
+// API: Fetch Top 100 Leaderboards (Overall or Category-Specific)
 app.get('/api/leaderboards', async (req, res) => {
   if (!pool) return res.json({ highScores: [], careerScores: [] });
+  const category = (req.query.category || 'all').toLowerCase();
+
   try {
-    const highScores = (await pool.query(
-      'SELECT username, high_score AS score, games_played FROM players ORDER BY high_score DESC LIMIT 100;'
-    )).rows;
-    const careerScores = (await pool.query(
-      'SELECT username, career_score AS score, games_played FROM players ORDER BY career_score DESC LIMIT 100;'
-    )).rows;
-    res.json({ highScores, careerScores });
+    if (category === 'all') {
+      const highScores = (await pool.query(
+        'SELECT username, high_score AS score, games_played FROM players ORDER BY high_score DESC LIMIT 100;'
+      )).rows;
+      const careerScores = (await pool.query(
+        'SELECT username, career_score AS score, games_played FROM players ORDER BY career_score DESC LIMIT 100;'
+      )).rows;
+      return res.json({ highScores, careerScores });
+    } else {
+      const highScores = (await pool.query(
+        'SELECT username, high_score AS score, games_played FROM category_scores WHERE category = $1 ORDER BY high_score DESC LIMIT 100;',
+        [category]
+      )).rows;
+      const careerScores = (await pool.query(
+        'SELECT username, career_score AS score, games_played FROM category_scores WHERE category = $1 ORDER BY career_score DESC LIMIT 100;',
+        [category]
+      )).rows;
+      return res.json({ highScores, careerScores });
+    }
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
@@ -342,7 +360,6 @@ io.on('connection', (socket) => {
     }
   });
 
-  // Host live kick request from host.html
   socket.on('host:kick_player', (targetUsername) => {
     disconnectPlayerByUsername(targetUsername, 'You have been removed by the host.');
   });
@@ -358,18 +375,18 @@ io.on('connection', (socket) => {
       activeSockets[id].roundPointsEarned = 0;
     });
 
-    const requestedCategory = config.category || 'all';
+    currentGameCategory = config.category || 'all';
     const requestedDifficulty = config.difficulty || 'all';
     const requestedCount = parseInt(config.count, 10) || 10;
 
     let eligible = masterQuestions.filter((q) => {
       const cat = (q.category || '').toLowerCase();
       let matchCat = false;
-      if (requestedCategory === 'all') matchCat = true;
-      else if (requestedCategory === 'bible') matchCat = cat.includes('bible');
-      else if (requestedCategory === 'movie') matchCat = cat.includes('movie');
-      else if (requestedCategory === 'logos') matchCat = cat.includes('logo');
-      else if (requestedCategory === 'music') matchCat = cat.includes('music') || cat.includes('pop culture');
+      if (currentGameCategory === 'all') matchCat = true;
+      else if (currentGameCategory === 'bible') matchCat = cat.includes('bible');
+      else if (currentGameCategory === 'movie') matchCat = cat.includes('movie');
+      else if (currentGameCategory === 'logos') matchCat = cat.includes('logo');
+      else if (currentGameCategory === 'music') matchCat = cat.includes('music') || cat.includes('pop culture');
       if (!matchCat) return false;
 
       switch (requestedDifficulty) {
@@ -490,6 +507,7 @@ async function finishGameAndSaveStats() {
     for (const p of Object.values(activeSockets)) {
       if (p.username) {
         try {
+          // 1. Update overall player record
           await pool.query(
             `UPDATE players 
              SET high_score = GREATEST(high_score, $1),
@@ -499,6 +517,20 @@ async function finishGameAndSaveStats() {
              WHERE username = $2;`,
             [p.score, p.username]
           );
+
+          // 2. If a specific category was played, update that category's leaderboard
+          if (currentGameCategory && currentGameCategory !== 'all') {
+            await pool.query(
+              `INSERT INTO category_scores (username, category, high_score, career_score, games_played)
+               VALUES ($1, $2, $3, $3, 1)
+               ON CONFLICT (username, category)
+               DO UPDATE SET
+                 high_score = GREATEST(category_scores.high_score, EXCLUDED.high_score),
+                 career_score = category_scores.career_score + EXCLUDED.career_score,
+                 games_played = category_scores.games_played + 1;`,
+              [p.username, currentGameCategory, p.score]
+            );
+          }
         } catch (err) {
           console.error(`Error saving stats for ${p.username}:`, err);
         }
