@@ -259,7 +259,7 @@ app.get('/api/leaderboards', async (req, res) => {
   }
 });
 
-// Socket.io Events
+// Socket.io Game Events
 io.on('connection', (socket) => {
   socket.on('player:auth', async ({ username, pin }) => {
     const cleanUser = (username || '').trim().toLowerCase();
@@ -423,6 +423,10 @@ function endRound() {
   const currentQ = activeQuestions[currentQuestionIndex];
   const correctIdx = currentQ.answer;
 
+  // Calculate answer distribution counts: [opt0Count, opt1Count, opt2Count, opt3Count]
+  const distribution = [0, 0, 0, 0];
+  let unansweredCount = 0;
+
   Object.keys(activeSockets).forEach((id) => {
     const p = activeSockets[id];
     if (p.currentAnswer === correctIdx) {
@@ -433,13 +437,19 @@ function endRound() {
     } else {
       p.roundPointsEarned = 0;
     }
+
+    if (p.currentAnswer !== null && p.currentAnswer >= 0 && p.currentAnswer <= 3) {
+      distribution[p.currentAnswer]++;
+    } else {
+      unansweredCount++;
+    }
   });
 
   const leaderboard = getCurrentGameStandings();
   const finishedQuestionNum = currentQuestionIndex + 1;
   const totalQuestions = activeQuestions.length;
+  const totalResponders = Object.keys(activeSockets).length;
 
-  // Check if a 10-question milestone occurred and more questions remain
   const isMilestone = totalQuestions > 10 && finishedQuestionNum % 10 === 0 && finishedQuestionNum < totalQuestions;
 
   io.sockets.sockets.forEach((socket) => {
@@ -449,6 +459,10 @@ function endRound() {
       correctAnswer: correctIdx,
       correctAnswerText: currentQ.options[correctIdx],
       questionText: currentQ.question,
+      options: currentQ.options,
+      distribution: distribution,
+      totalResponders: totalResponders,
+      unansweredCount: unansweredCount,
       leaderboard: leaderboard,
       myRank: rankIndex !== -1 ? rankIndex + 1 : null,
       myPointsEarned: p ? p.roundPointsEarned : 0,
@@ -458,8 +472,10 @@ function endRound() {
     });
   });
 
+  // Give 7 seconds on results screen so the host can view the bar chart
+  const revealDuration = 7000;
+
   if (isMilestone) {
-    // 5 seconds for round result + 10 seconds for current match leaderboard review
     intermissionTimer = setTimeout(() => {
       io.emit('game:milestone_leaderboard', {
         questionNumber: finishedQuestionNum,
@@ -469,11 +485,11 @@ function endRound() {
       intermissionTimer = setTimeout(() => {
         startNextQuestion();
       }, 10000);
-    }, 5000);
+    }, revealDuration);
   } else {
     intermissionTimer = setTimeout(() => {
       startNextQuestion();
-    }, 5000);
+    }, revealDuration);
   }
 }
 
