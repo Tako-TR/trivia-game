@@ -10,17 +10,57 @@ const io = new Server(server);
 
 const PORT = process.env.PORT || 3000;
 const QUESTION_DURATION = 15; // seconds per question
+const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || 'admin123';
 
+// Enable parsing JSON bodies for the question creator API
+app.use(express.json());
 app.use(express.static(path.join(__dirname, 'public')));
 
 // Load questions from questions.json
+const questionsFilePath = path.join(__dirname, 'questions.json');
 let masterQuestions = [];
 try {
-  const data = fs.readFileSync(path.join(__dirname, 'questions.json'), 'utf8');
+  const data = fs.readFileSync(questionsFilePath, 'utf8');
   masterQuestions = JSON.parse(data);
 } catch (err) {
   console.error('Error loading questions.json:', err);
 }
+
+// API endpoint to add new questions directly from the web interface
+app.post('/api/questions/add', (req, res) => {
+  const { password, category, difficulty, question, options, answer, image } = req.body;
+
+  if (password !== ADMIN_PASSWORD) {
+    return res.status(401).json({ success: false, message: 'Invalid admin passcode.' });
+  }
+
+  if (!category || !difficulty || !question || !Array.isArray(options) || options.length !== 4 || answer === undefined) {
+    return res.status(400).json({ success: false, message: 'Missing or invalid question fields.' });
+  }
+
+  const formattedCategory = `${category}: ${difficulty}`;
+  const newQuestion = {
+    category: formattedCategory,
+    question: question.trim(),
+    options: options.map(opt => opt.trim()),
+    answer: parseInt(answer, 10)
+  };
+
+  if (image && image.trim() !== '') {
+    newQuestion.image = image.trim();
+  }
+
+  // Update memory and write back to questions.json
+  masterQuestions.push(newQuestion);
+
+  fs.writeFile(questionsFilePath, JSON.stringify(masterQuestions, null, 2), 'utf8', (err) => {
+    if (err) {
+      console.error('Failed to save questions.json:', err);
+      return res.status(500).json({ success: false, message: 'Failed to write to file system.' });
+    }
+    return res.json({ success: true, totalQuestions: masterQuestions.length });
+  });
+});
 
 // Fisher-Yates array shuffle
 function shuffle(array) {
@@ -64,12 +104,11 @@ io.on('connection', (socket) => {
     }
   });
 
-  // Host starts game with category, difficulty, and question count
+  // Host starts game
   socket.on('host:start_game', (config) => {
     clearInterval(questionTimer);
     clearTimeout(intermissionTimer);
 
-    // Reset scores for new game
     Object.keys(players).forEach((id) => {
       players[id].score = 0;
       players[id].currentAnswer = null;
@@ -81,11 +120,9 @@ io.on('connection', (socket) => {
     const requestedDifficulty = config.difficulty || 'all';
     const requestedCount = parseInt(config.count, 10) || 10;
 
-    // Filter questions by Category AND Difficulty
     let eligibleQuestions = masterQuestions.filter((q) => {
       const cat = (q.category || '').toLowerCase();
 
-      // 1. Check Category
       let matchesCategory = false;
       if (requestedCategory === 'all') {
         matchesCategory = true;
@@ -99,7 +136,6 @@ io.on('connection', (socket) => {
 
       if (!matchesCategory) return false;
 
-      // 2. Check Difficulty
       switch (requestedDifficulty) {
         case 'easy':
           return cat.includes('easy');
@@ -117,7 +153,6 @@ io.on('connection', (socket) => {
       }
     });
 
-    // Fallback if combination has no questions
     if (eligibleQuestions.length === 0) {
       eligibleQuestions = masterQuestions;
     }
@@ -155,7 +190,6 @@ function startNextQuestion() {
     return;
   }
 
-  // Clear previous answers
   Object.keys(players).forEach((id) => {
     players[id].currentAnswer = null;
     players[id].answerTimeLeft = 0;
@@ -166,7 +200,6 @@ function startNextQuestion() {
   roundActive = true;
   timeLeft = QUESTION_DURATION;
 
-  // Broadcast question payload including optional image URL
   io.emit('game:new_question', {
     category: currentQ.category,
     question: currentQ.question,
@@ -195,7 +228,6 @@ function endRound() {
   const correctAnswerIndex = currentQ.answer;
   const correctAnswerText = currentQ.options[correctAnswerIndex];
 
-  // Speed-based scoring (500 base + up to 500 bonus)
   Object.keys(players).forEach((id) => {
     const p = players[id];
     if (p.currentAnswer === correctAnswerIndex) {
