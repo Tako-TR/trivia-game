@@ -1,0 +1,293 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Trivia Question Manager</title>
+  <link rel="stylesheet" href="style.css">
+  <style>
+    .container { max-width: 900px; }
+    .auth-banner {
+      background-color: #0f172a;
+      border: 1px solid #334155;
+      padding: 1.25rem;
+      border-radius: 12px;
+      margin-bottom: 1.5rem;
+      display: flex;
+      gap: 0.75rem;
+      align-items: center;
+      justify-content: center;
+      flex-wrap: wrap;
+    }
+    .auth-banner input {
+      background-color: #1e293b;
+      color: #fff;
+      border: 1px solid #475569;
+      padding: 0.6rem 1rem;
+      border-radius: 8px;
+      font-size: 0.95rem;
+    }
+    .filter-bar {
+      display: flex;
+      gap: 1rem;
+      margin-bottom: 1rem;
+      flex-wrap: wrap;
+    }
+    .filter-bar input, .filter-bar select {
+      background-color: #0f172a;
+      color: #38bdf8;
+      border: 1px solid #334155;
+      padding: 0.6rem 1rem;
+      border-radius: 8px;
+      font-size: 0.95rem;
+      flex: 1;
+      min-width: 200px;
+    }
+    .q-list {
+      display: flex;
+      flex-direction: column;
+      gap: 1rem;
+      max-height: 600px;
+      overflow-y: auto;
+      padding-right: 0.5rem;
+    }
+    .q-card {
+      background-color: #0f172a;
+      border: 1px solid #334155;
+      border-radius: 10px;
+      padding: 1.25rem;
+      text-align: left;
+      display: flex;
+      gap: 1.25rem;
+      align-items: flex-start;
+      position: relative;
+    }
+    .q-card:hover {
+      border-color: #475569;
+    }
+    .q-info { flex: 1; }
+    .q-badge {
+      display: inline-block;
+      background-color: #1e293b;
+      color: #38bdf8;
+      font-size: 0.75rem;
+      font-weight: 700;
+      padding: 0.2rem 0.6rem;
+      border-radius: 4px;
+      margin-bottom: 0.5rem;
+    }
+    .q-title {
+      font-size: 1.1rem;
+      font-weight: 700;
+      color: #f8fafc;
+      margin-bottom: 0.6rem;
+    }
+    .q-options {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 0.4rem;
+      font-size: 0.9rem;
+    }
+    .q-opt {
+      padding: 0.35rem 0.6rem;
+      border-radius: 6px;
+      background-color: #1e293b;
+      color: #94a3b8;
+    }
+    .q-opt.correct {
+      background-color: #064e3b;
+      color: #6ee7b7;
+      font-weight: 700;
+      border: 1px solid #10b981;
+    }
+    .q-img-thumb {
+      max-width: 80px;
+      max-height: 80px;
+      object-fit: contain;
+      background: #fff;
+      padding: 6px;
+      border-radius: 6px;
+    }
+    .btn-delete {
+      background-color: #dc2626;
+      color: #fff;
+      border: none;
+      padding: 0.45rem 0.85rem;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 0.85rem;
+      font-weight: 700;
+    }
+    .btn-delete:hover { background-color: #b91c1c; }
+    .top-actions {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 1rem;
+      flex-wrap: wrap;
+      gap: 0.5rem;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>Question Manager</h1>
+    <p class="question-text" style="margin-bottom: 1.5rem;">Browse, inspect, filter, or delete questions live from your dataset</p>
+
+    <!-- Passcode Authentication -->
+    <div class="auth-banner">
+      <label for="admin-pass" style="font-size: 0.85rem; font-weight: 700; color: #94a3b8; text-transform: uppercase;">Host Passcode</label>
+      <input type="password" id="admin-pass" placeholder="admin123">
+      <button id="btn-load" style="background-color: #38bdf8; color: #0f172a; padding: 0.6rem 1.25rem; font-weight: 700; border-radius: 8px;">Unlock & Load</button>
+    </div>
+
+    <!-- Manager Workspace (Hidden until logged in) -->
+    <div id="manager-panel" class="hidden">
+      <div class="top-actions">
+        <span style="color: #94a3b8;">Total Questions: <strong id="total-count" style="color: #38bdf8;">0</strong></span>
+        <div style="display: flex; gap: 0.75rem;">
+          <a href="/add.html" style="background-color: #10b981; color: #fff; padding: 0.45rem 0.9rem; border-radius: 6px; text-decoration: none; font-weight: 700; font-size: 0.9rem;">+ Add New Question</a>
+          <a href="/host.html" style="border: 1px solid #475569; color: #94a3b8; padding: 0.45rem 0.9rem; border-radius: 6px; text-decoration: none; font-size: 0.9rem;">Back to Host Screen</a>
+        </div>
+      </div>
+
+      <!-- Live Search & Category Filter -->
+      <div class="filter-bar">
+        <input type="text" id="search-input" placeholder="Search by question text or option...">
+        <select id="category-filter">
+          <option value="all">All Categories & Difficulties</option>
+          <option value="logos">Brand Logos</option>
+          <option value="bible">Bible</option>
+          <option value="movie">Movie Quotes</option>
+          <option value="easy">Easy Only</option>
+          <option value="medium">Medium Only</option>
+          <option value="hard">Hard Only</option>
+        </select>
+      </div>
+
+      <div id="question-list" class="q-list"></div>
+    </div>
+  </div>
+
+  <script>
+    const adminPassInput = document.getElementById('admin-pass');
+    const btnLoad = document.getElementById('btn-load');
+    const managerPanel = document.getElementById('manager-panel');
+    const questionList = document.getElementById('question-list');
+    const totalCount = document.getElementById('total-count');
+    const searchInput = document.getElementById('search-input');
+    const categoryFilter = document.getElementById('category-filter');
+
+    let allQuestions = [];
+
+    // Load questions using password
+    btnLoad.addEventListener('click', loadQuestions);
+    adminPassInput.addEventListener('keypress', (e) => { if (e.key === 'Enter') loadQuestions(); });
+
+    async function loadQuestions() {
+      const password = adminPassInput.value.trim();
+      if (!password) return alert('Please enter your host passcode.');
+
+      try {
+        const res = await fetch('/api/questions/list', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ password })
+        });
+        const data = await res.json();
+
+        if (res.ok && data.success) {
+          allQuestions = data.questions;
+          totalCount.textContent = allQuestions.length;
+          managerPanel.classList.remove('hidden');
+          renderList();
+        } else {
+          alert(data.message || 'Access denied.');
+        }
+      } catch (err) {
+        alert('Server connection error.');
+      }
+    }
+
+    // Filter & Search listener
+    searchInput.addEventListener('input', renderList);
+    categoryFilter.addEventListener('change', renderList);
+
+    function renderList() {
+      const query = searchInput.value.toLowerCase().trim();
+      const filter = categoryFilter.value.toLowerCase();
+
+      questionList.innerHTML = '';
+
+      const filtered = allQuestions
+        .map((q, originalIndex) => ({ ...q, originalIndex }))
+        .filter(q => {
+          const cat = (q.category || '').toLowerCase();
+          const matchesQuery = !query || q.question.toLowerCase().includes(query) || q.options.some(opt => opt.toLowerCase().includes(query));
+
+          let matchesCat = true;
+          if (filter !== 'all') {
+            matchesCat = cat.includes(filter);
+          }
+          return matchesQuery && matchesCat;
+        });
+
+      if (filtered.length === 0) {
+        questionList.innerHTML = '<div style="color: #64748b; padding: 2rem; text-align: center;">No questions match your filter.</div>';
+        return;
+      }
+
+      filtered.forEach(q => {
+        const card = document.createElement('div');
+        card.className = 'q-card';
+
+        const imgHtml = q.image ? `<img src="${q.image}" class="q-img-thumb" alt="thumb">` : '';
+
+        const optionsHtml = q.options.map((opt, i) => {
+          const isCorrect = i === q.answer;
+          return `<div class="q-opt ${isCorrect ? 'correct' : ''}">${isCorrect ? '✓ ' : ''}${opt}</div>`;
+        }).join('');
+
+        card.innerHTML = `
+          ${imgHtml}
+          <div class="q-info">
+            <span class="q-badge">${q.category}</span>
+            <div class="q-title">${q.question}</div>
+            <div class="q-options">${optionsHtml}</div>
+          </div>
+          <button class="btn-delete" onclick="deleteQuestion(${q.originalIndex})">Delete</button>
+        `;
+
+        questionList.appendChild(card);
+      });
+    }
+
+    // Delete question handler
+    window.deleteQuestion = async function(index) {
+      const q = allQuestions[index];
+      if (!confirm(`Are you sure you want to permanently delete:\n\n"${q.question}"?`)) return;
+
+      const password = adminPassInput.value.trim();
+
+      try {
+        const res = await fetch('/api/questions/delete', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ password, index })
+        });
+        const data = await res.json();
+
+        if (res.ok && data.success) {
+          allQuestions.splice(index, 1);
+          totalCount.textContent = allQuestions.length;
+          renderList();
+        } else {
+          alert(data.message || 'Error deleting question.');
+        }
+      } catch (err) {
+        alert('Server error.');
+      }
+    };
+  </script>
+</body>
+</html>
