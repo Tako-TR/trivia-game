@@ -1,18 +1,15 @@
 {
   "name": "trivia-game",
   "version": "1.0.0",
-  "description": "",
-  "main": "index.js",
+  "description": "Multiplayer trivia game with persistent hall of fame",
+  "main": "server.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "start": "node server.js"
   },
-  "keywords": [],
-  "author": "",
-  "license": "ISC",
-  "type": "commonjs",
   "dependencies": {
-    "express": "^5.2.1",
-    "socket.io": "^4.8.3"
-  },
-  "devDependencies": {}
+    "express": "^4.19.2",
+    "http": "^0.0.1-security",
+    "socket.io": "^4.7.5",
+    "pg": "^8.11.5"
+  }
 }
