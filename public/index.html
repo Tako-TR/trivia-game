@@ -275,7 +275,7 @@
       border-radius: 6px;
       font-size: 0.85rem;
       width: 100%;
-      margin-top: 0.5rem;
+      margin-top: 0.4rem;
     }
   </style>
 </head>
@@ -334,9 +334,21 @@
         </div>
       </div>
 
+      <!-- Pre-Game Hall of Fame Explorer with Room Scope -->
       <div style="background-color: #0f172a; border: 1px solid #334155; padding: 1rem; border-radius: 12px; margin: 1rem 0;">
         <h3 style="margin: 0 0 0.25rem 0; font-size: 1rem; color: #f8fafc;">All-Time Hall of Fame</h3>
-        <p style="margin: 0; font-size: 0.75rem; color: #94a3b8;">Review scores while waiting for host to start</p>
+        <p style="margin: 0; font-size: 0.75rem; color: #94a3b8;">Browse scores for any room or all rooms</p>
+
+        <!-- Room Scope Selector -->
+        <select id="lobby-room-select" class="filter-select" style="border-color:#f59e0b; color:#f59e0b; font-weight:700;">
+          <option value="all">All Rooms Combined (Global)</option>
+          <option value="ROOM1">Room 1</option>
+          <option value="ROOM2">Room 2 Fremont</option>
+          <option value="ROOM3">Room 3 Fremont HS</option>
+          <option value="ROOM4">Room 4 Fremont MS</option>
+          <option value="ROOM5">Room 5 Sandusky</option>
+          <option value="ROOM6">Room 6 Northwood</option>
+        </select>
 
         <select id="lobby-category-select" class="filter-select">
           <option value="all" selected>All Categories (Overall)</option>
@@ -414,7 +426,18 @@
         <ul id="leaderboard-list" class="leaderboard"></ul>
       </div>
 
+      <!-- Post-Game Cross-Room Leaderboards -->
       <div id="alltime-container" class="hidden" style="margin-top: 1rem;">
+        <select id="postgame-room-select" class="filter-select" style="border-color:#f59e0b; color:#f59e0b; font-weight:700;">
+          <option value="all">All Rooms Combined (Global)</option>
+          <option value="ROOM1">Room 1</option>
+          <option value="ROOM2">Room 2 Fremont</option>
+          <option value="ROOM3">Room 3 Fremont HS</option>
+          <option value="ROOM4">Room 4 Fremont MS</option>
+          <option value="ROOM5">Room 5 Sandusky</option>
+          <option value="ROOM6">Room 6 Northwood</option>
+        </select>
+
         <select id="postgame-category-select" class="filter-select">
           <option value="all" selected>All Categories (Overall)</option>
           <option value="bible">Bible Trivia</option>
@@ -509,6 +532,7 @@
     const milestoneText = document.getElementById('milestone-text');
     const milestoneLeaderboardList = document.getElementById('milestone-leaderboard-list');
 
+    const lobbyRoomSelect = document.getElementById('lobby-room-select');
     const lobbyCategorySelect = document.getElementById('lobby-category-select');
     const btnLobbyHigh = document.getElementById('btn-lobby-high');
     const btnLobbyCareer = document.getElementById('btn-lobby-career');
@@ -520,11 +544,20 @@
     const btnViewAlltime = document.getElementById('btn-view-alltime');
     const currentMatchContainer = document.getElementById('current-match-container');
     const alltimeContainer = document.getElementById('alltime-container');
+    const postgameRoomSelect = document.getElementById('postgame-room-select');
     const postgameCategorySelect = document.getElementById('postgame-category-select');
     const btnPostgameHigh = document.getElementById('btn-postgame-high');
     const btnPostgameCareer = document.getElementById('btn-postgame-career');
     const postgameHallList = document.getElementById('postgame-hall-list');
     let postgameHallMode = 'high';
+
+    // Default the room view to the current room the player joined
+    if (assignedRoomCode && lobbyRoomSelect) {
+      lobbyRoomSelect.value = assignedRoomCode;
+    }
+    if (assignedRoomCode && postgameRoomSelect) {
+      postgameRoomSelect.value = assignedRoomCode;
+    }
 
     const savedUser = localStorage.getItem('trivia_user');
     const savedPin = localStorage.getItem('trivia_pin');
@@ -591,9 +624,10 @@
     });
 
     async function loadLobbyLeaderboards() {
+      const roomScope = lobbyRoomSelect.value;
       const cat = lobbyCategorySelect.value;
       try {
-        const res = await fetch(`/api/leaderboards?category=${cat}`);
+        const res = await fetch(`/api/leaderboards?room=${roomScope}&category=${cat}`);
         const data = await res.json();
         renderLobbyHallList(data);
       } catch (e) {
@@ -605,7 +639,7 @@
       lobbyHallList.innerHTML = '';
       const list = lobbyHallMode === 'high' ? data.highScores : data.careerScores;
       if (!list || list.length === 0) {
-        lobbyHallList.innerHTML = '<li>No records logged yet.</li>';
+        lobbyHallList.innerHTML = '<li>No records logged for this room/category yet.</li>';
         return;
       }
       list.forEach((p, idx) => {
@@ -615,7 +649,14 @@
       });
     }
 
+    lobbyRoomSelect.addEventListener('change', () => {
+      const isGlobal = lobbyRoomSelect.value === 'all';
+      lobbyCategorySelect.disabled = !isGlobal;
+      lobbyCategorySelect.style.opacity = isGlobal ? '1' : '0.4';
+      loadLobbyLeaderboards();
+    });
     lobbyCategorySelect.addEventListener('change', loadLobbyLeaderboards);
+
     btnLobbyHigh.addEventListener('click', () => {
       btnLobbyHigh.classList.add('active');
       btnLobbyCareer.classList.remove('active');
@@ -787,9 +828,10 @@
     });
 
     async function loadPostgameLeaderboards() {
+      const roomScope = postgameRoomSelect.value;
       const cat = postgameCategorySelect.value;
       try {
-        const res = await fetch(`/api/leaderboards?category=${cat}`);
+        const res = await fetch(`/api/leaderboards?room=${roomScope}&category=${cat}`);
         const data = await res.json();
         renderPostgameHallList(data);
       } catch (e) {
@@ -801,7 +843,7 @@
       postgameHallList.innerHTML = '';
       const list = postgameHallMode === 'high' ? data.highScores : data.careerScores;
       if (!list || list.length === 0) {
-        postgameHallList.innerHTML = '<li>No records logged for this category.</li>';
+        postgameHallList.innerHTML = '<li>No records logged for this room/category.</li>';
         return;
       }
       list.forEach((p, idx) => {
@@ -811,7 +853,14 @@
       });
     }
 
+    postgameRoomSelect.addEventListener('change', () => {
+      const isGlobal = postgameRoomSelect.value === 'all';
+      postgameCategorySelect.disabled = !isGlobal;
+      postgameCategorySelect.style.opacity = isGlobal ? '1' : '0.4';
+      loadPostgameLeaderboards();
+    });
     postgameCategorySelect.addEventListener('change', loadPostgameLeaderboards);
+
     btnPostgameHigh.addEventListener('click', () => {
       btnPostgameHigh.classList.add('active');
       btnPostgameCareer.classList.remove('active');
