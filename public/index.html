@@ -56,6 +56,37 @@
       color: #38bdf8;
       margin: 0.25rem 0 0 0;
     }
+    .tab-bar {
+      display: flex;
+      justify-content: center;
+      gap: 0.4rem;
+      margin: 0.75rem 0;
+    }
+    .tab-btn {
+      background-color: #1e293b;
+      color: #94a3b8;
+      border: 1px solid #334155;
+      padding: 0.45rem 0.85rem;
+      border-radius: 8px;
+      font-weight: 700;
+      font-size: 0.85rem;
+      cursor: pointer;
+    }
+    .tab-btn.active {
+      background-color: #38bdf8;
+      color: #0f172a;
+      border-color: #38bdf8;
+    }
+    .hall-panel {
+      background-color: #0f172a;
+      border: 1px solid #334155;
+      padding: 0.75rem;
+      border-radius: 10px;
+      max-height: 250px;
+      overflow-y: auto;
+      margin-top: 0.5rem;
+      text-align: left;
+    }
     .rank-badge-box {
       display: inline-flex;
       align-items: center;
@@ -108,8 +139,6 @@
       font-weight: 600;
       display: none;
     }
-
-    /* Player Mini Podium */
     .player-podium {
       display: flex;
       justify-content: center;
@@ -150,6 +179,16 @@
     .p-slot.first .p-step { height: 80px; background: linear-gradient(180deg, #facc15, #ca8a04); }
     .p-slot.second .p-step { height: 60px; background: linear-gradient(180deg, #cbd5e1, #64748b); }
     .p-slot.third .p-step { height: 40px; background: linear-gradient(180deg, #fdba74, #c2410c); }
+    select.filter-select {
+      background-color: #1e293b;
+      color: #38bdf8;
+      border: 1px solid #475569;
+      padding: 0.4rem 0.6rem;
+      border-radius: 6px;
+      font-size: 0.85rem;
+      width: 100%;
+      margin-top: 0.5rem;
+    }
   </style>
 </head>
 <body>
@@ -158,7 +197,6 @@
     <div id="join-screen">
       <h1>Trivia Login</h1>
       <p class="question-text">Track your high scores & all-time career XP</p>
-      
       <p id="auth-error" class="error-msg"></p>
 
       <form id="auth-form" class="auth-card">
@@ -174,10 +212,10 @@
       </form>
     </div>
 
-    <!-- Lobby / Profile Screen -->
+    <!-- Lobby Screen: Profile & Pre-Game Leaderboards -->
     <div id="lobby-screen" class="hidden">
       <h1>Ready, <span id="display-player-name" style="color: #38bdf8;"></span>!</h1>
-      
+
       <div class="stats-card">
         <div class="stat-item">
           <h3>Single High Score</h3>
@@ -189,7 +227,30 @@
         </div>
       </div>
 
-      <p class="question-text">Waiting for the host to launch the game...</p>
+      <!-- Pre-Game All-Time Leaderboards Explorer -->
+      <div style="background-color: #0f172a; border: 1px solid #334155; padding: 1rem; border-radius: 12px; margin: 1rem 0;">
+        <h3 style="margin: 0 0 0.25rem 0; font-size: 1rem; color: #f8fafc;">All-Time Hall of Fame</h3>
+        <p style="margin: 0; font-size: 0.75rem; color: #94a3b8;">Review scores while waiting for host to start</p>
+
+        <select id="lobby-category-select" class="filter-select">
+          <option value="all" selected>All Categories (Overall)</option>
+          <option value="bible">Bible Trivia</option>
+          <option value="movie">Movie Quotes</option>
+          <option value="logos">Brand Logos</option>
+          <option value="music">Pop Culture & Music</option>
+        </select>
+
+        <div class="tab-bar">
+          <button id="btn-lobby-high" class="tab-btn active">High Scores</button>
+          <button id="btn-lobby-career" class="tab-btn">Career XP</button>
+        </div>
+
+        <div class="hall-panel">
+          <ul id="lobby-hall-list" class="leaderboard"><li>Loading...</li></ul>
+        </div>
+      </div>
+
+      <p class="question-text">Waiting for host to start the round...</p>
       <button id="btn-logout" style="background: none; border: 1px solid #475569; color: #94a3b8; padding: 0.4rem 1rem; border-radius: 6px; font-size: 0.85rem; cursor: pointer;">Log Out / Switch User</button>
     </div>
 
@@ -207,9 +268,18 @@
       <p id="status-message" class="badge hidden">Answer Submitted</p>
     </div>
 
-    <!-- Round End Screen -->
+    <!-- Milestone Checkpoint Screen (Shown every 10 questions) -->
+    <div id="milestone-screen" class="hidden">
+      <h1 style="color: #38bdf8;">Checkpoint Standings!</h1>
+      <p id="milestone-text" class="question-text" style="color: #f59e0b; font-weight: 700;">After 10 Questions</p>
+      <h2>Current Match Leaderboard</h2>
+      <ul id="milestone-leaderboard-list" class="leaderboard"></ul>
+      <p style="color: #94a3b8; font-size: 0.85rem; margin-top: 1rem;">Next question starts shortly...</p>
+    </div>
+
+    <!-- Round End & Match Over Screen -->
     <div id="results-screen" class="hidden">
-      <h1>Round Results</h1>
+      <h1 id="results-heading">Round Results</h1>
       <p id="result-feedback" class="question-text" style="margin-bottom: 0.25rem; font-weight: 700;"></p>
 
       <div id="rank-indicator" class="rank-badge-box">
@@ -224,8 +294,37 @@
         <div id="player-correct-answer" class="player-answer-text">---</div>
       </div>
 
-      <h2>Current Match Standings</h2>
-      <ul id="leaderboard-list" class="leaderboard"></ul>
+      <!-- Toggle View Controls for Post-Game -->
+      <div id="post-game-view-toggle" class="tab-bar hidden">
+        <button id="btn-view-match" class="tab-btn active">This Match</button>
+        <button id="btn-view-alltime" class="tab-btn">All-Time Leaderboards</button>
+      </div>
+
+      <!-- Container A: Current Match Standings -->
+      <div id="current-match-container">
+        <h2>Current Match Standings</h2>
+        <ul id="leaderboard-list" class="leaderboard"></ul>
+      </div>
+
+      <!-- Container B: All-Time Leaderboards (Viewable post-match) -->
+      <div id="alltime-container" class="hidden" style="margin-top: 1rem;">
+        <select id="postgame-category-select" class="filter-select">
+          <option value="all" selected>All Categories (Overall)</option>
+          <option value="bible">Bible Trivia</option>
+          <option value="movie">Movie Quotes</option>
+          <option value="logos">Brand Logos</option>
+          <option value="music">Pop Culture & Music</option>
+        </select>
+
+        <div class="tab-bar">
+          <button id="btn-postgame-high" class="tab-btn active">High Scores</button>
+          <button id="btn-postgame-career" class="tab-btn">Career XP</button>
+        </div>
+
+        <div class="hall-panel">
+          <ul id="postgame-hall-list" class="leaderboard"><li>Loading...</li></ul>
+        </div>
+      </div>
     </div>
   </div>
 
@@ -242,6 +341,7 @@
     const joinScreen = document.getElementById('join-screen');
     const lobbyScreen = document.getElementById('lobby-screen');
     const gameScreen = document.getElementById('game-screen');
+    const milestoneScreen = document.getElementById('milestone-screen');
     const resultsScreen = document.getElementById('results-screen');
 
     const authForm = document.getElementById('auth-form');
@@ -266,6 +366,29 @@
     const answerRevealWrapper = document.getElementById('answer-reveal-wrapper');
     const playerPodiumArea = document.getElementById('player-podium-area');
     const leaderboardList = document.getElementById('leaderboard-list');
+    const resultsHeading = document.getElementById('results-heading');
+
+    const milestoneText = document.getElementById('milestone-text');
+    const milestoneLeaderboardList = document.getElementById('milestone-leaderboard-list');
+
+    // Pre-game Leaderboard Elements
+    const lobbyCategorySelect = document.getElementById('lobby-category-select');
+    const btnLobbyHigh = document.getElementById('btn-lobby-high');
+    const btnLobbyCareer = document.getElementById('btn-lobby-career');
+    const lobbyHallList = document.getElementById('lobby-hall-list');
+    let lobbyHallMode = 'high';
+
+    // Post-game Leaderboard Elements
+    const postGameViewToggle = document.getElementById('post-game-view-toggle');
+    const btnViewMatch = document.getElementById('btn-view-match');
+    const btnViewAlltime = document.getElementById('btn-view-alltime');
+    const currentMatchContainer = document.getElementById('current-match-container');
+    const alltimeContainer = document.getElementById('alltime-container');
+    const postgameCategorySelect = document.getElementById('postgame-category-select');
+    const btnPostgameHigh = document.getElementById('btn-postgame-high');
+    const btnPostgameCareer = document.getElementById('btn-postgame-career');
+    const postgameHallList = document.getElementById('postgame-hall-list');
+    let postgameHallMode = 'high';
 
     const savedUser = localStorage.getItem('trivia_user');
     const savedPin = localStorage.getItem('trivia_pin');
@@ -298,9 +421,10 @@
 
       joinScreen.classList.add('hidden');
       lobbyScreen.classList.remove('hidden');
+
+      loadLobbyLeaderboards();
     });
 
-    // Handle Kicked from Game
     socket.on('player:kicked', (reason) => {
       alert(reason || 'You have been disconnected by the host.');
       localStorage.removeItem('trivia_user');
@@ -314,12 +438,57 @@
       window.location.reload();
     });
 
+    // Fetch Leaderboards for Lobby
+    async function loadLobbyLeaderboards() {
+      const cat = lobbyCategorySelect.value;
+      try {
+        const res = await fetch(`/api/leaderboards?category=${cat}`);
+        const data = await res.json();
+        renderLobbyHallList(data);
+      } catch (e) {
+        lobbyHallList.innerHTML = '<li>Unable to load scores.</li>';
+      }
+    }
+
+    function renderLobbyHallList(data) {
+      lobbyHallList.innerHTML = '';
+      const list = lobbyHallMode === 'high' ? data.highScores : data.careerScores;
+      if (!list || list.length === 0) {
+        lobbyHallList.innerHTML = '<li>No records logged yet.</li>';
+        return;
+      }
+      list.forEach((p, idx) => {
+        const li = document.createElement('li');
+        li.innerHTML = `<span>#${idx + 1} ${p.username}</span><strong style="color:#38bdf8;">${Number(p.score).toLocaleString()} pts</strong>`;
+        lobbyHallList.appendChild(li);
+      });
+    }
+
+    lobbyCategorySelect.addEventListener('change', loadLobbyLeaderboards);
+    btnLobbyHigh.addEventListener('click', () => {
+      btnLobbyHigh.classList.add('active');
+      btnLobbyCareer.classList.remove('active');
+      lobbyHallMode = 'high';
+      loadLobbyLeaderboards();
+    });
+    btnLobbyCareer.addEventListener('click', () => {
+      btnLobbyCareer.classList.add('active');
+      btnLobbyHigh.classList.remove('active');
+      lobbyHallMode = 'career';
+      loadLobbyLeaderboards();
+    });
+
+    // Game Question Event
     socket.on('game:new_question', (data) => {
       selectedAnswer = null;
       lobbyScreen.classList.add('hidden');
+      milestoneScreen.classList.add('hidden');
       resultsScreen.classList.add('hidden');
       playerPodiumArea.classList.add('hidden');
       answerRevealWrapper.classList.remove('hidden');
+      postGameViewToggle.classList.add('hidden');
+      currentMatchContainer.classList.remove('hidden');
+      alltimeContainer.classList.add('hidden');
       gameScreen.classList.remove('hidden');
 
       categoryBadge.textContent = `${data.category} (${data.questionNumber}/${data.totalQuestions})`;
@@ -358,8 +527,10 @@
 
     socket.on('game:round_ended', (data) => {
       gameScreen.classList.add('hidden');
+      milestoneScreen.classList.add('hidden');
       resultsScreen.classList.remove('hidden');
 
+      resultsHeading.textContent = "Round Results";
       playerCorrectAnswer.textContent = data.correctAnswerText;
       if (data.myRank) playerRankDisplay.textContent = `#${data.myRank}`;
 
@@ -377,27 +548,42 @@
         haptic(150);
       }
 
-      renderLeaderboard(data.leaderboard);
+      renderLeaderboard(data.leaderboard, leaderboardList);
     });
 
+    // Milestone Event (Every 10 Questions)
+    socket.on('game:milestone_leaderboard', (data) => {
+      resultsScreen.classList.add('hidden');
+      gameScreen.classList.add('hidden');
+      milestoneScreen.classList.remove('hidden');
+
+      milestoneText.textContent = `After ${data.questionNumber} Questions (Current Game Only)`;
+      renderLeaderboard(data.leaderboard, milestoneLeaderboardList);
+    });
+
+    // Game Over Event
     socket.on('game:over', (data) => {
       gameScreen.classList.add('hidden');
+      milestoneScreen.classList.add('hidden');
       resultsScreen.classList.remove('hidden');
+
+      resultsHeading.textContent = "Match Complete!";
       answerRevealWrapper.classList.add('hidden');
+      postGameViewToggle.classList.remove('hidden');
 
       const leaderboard = Array.isArray(data) ? data : data.leaderboard;
       const myRank = data.myRank;
 
       if (myRank) {
         playerRankDisplay.textContent = `#${myRank}`;
-        resultFeedback.textContent = `Match Finished! You finished #${myRank}`;
+        resultFeedback.textContent = `Match Finished! You placed #${myRank}`;
       } else {
         resultFeedback.textContent = "Match Finished! Final Standings:";
       }
       resultFeedback.style.color = "#38bdf8";
 
       renderPlayerPodium(leaderboard);
-      renderLeaderboard(leaderboard);
+      renderLeaderboard(leaderboard, leaderboardList);
 
       if (myRank && myRank <= 3) {
         haptic([80, 80, 80, 80, 200]);
@@ -405,6 +591,61 @@
           confetti({ particleCount: 80, spread: 70, origin: { y: 0.7 } });
         }
       }
+    });
+
+    // Post-game Toggle Listeners
+    btnViewMatch.addEventListener('click', () => {
+      btnViewMatch.classList.add('active');
+      btnViewAlltime.classList.remove('active');
+      currentMatchContainer.classList.remove('hidden');
+      alltimeContainer.classList.add('hidden');
+    });
+
+    btnViewAlltime.addEventListener('click', () => {
+      btnViewAlltime.classList.add('active');
+      btnViewMatch.classList.remove('active');
+      currentMatchContainer.classList.add('hidden');
+      alltimeContainer.classList.remove('hidden');
+      loadPostgameLeaderboards();
+    });
+
+    async function loadPostgameLeaderboards() {
+      const cat = postgameCategorySelect.value;
+      try {
+        const res = await fetch(`/api/leaderboards?category=${cat}`);
+        const data = await res.json();
+        renderPostgameHallList(data);
+      } catch (e) {
+        postgameHallList.innerHTML = '<li>Unable to load scores.</li>';
+      }
+    }
+
+    function renderPostgameHallList(data) {
+      postgameHallList.innerHTML = '';
+      const list = postgameHallMode === 'high' ? data.highScores : data.careerScores;
+      if (!list || list.length === 0) {
+        postgameHallList.innerHTML = '<li>No records logged for this category.</li>';
+        return;
+      }
+      list.forEach((p, idx) => {
+        const li = document.createElement('li');
+        li.innerHTML = `<span>#${idx + 1} ${p.username}</span><strong style="color:#38bdf8;">${Number(p.score).toLocaleString()} pts</strong>`;
+        postgameHallList.appendChild(li);
+      });
+    }
+
+    postgameCategorySelect.addEventListener('change', loadPostgameLeaderboards);
+    btnPostgameHigh.addEventListener('click', () => {
+      btnPostgameHigh.classList.add('active');
+      btnPostgameCareer.classList.remove('active');
+      postgameHallMode = 'high';
+      loadPostgameLeaderboards();
+    });
+    btnPostgameCareer.addEventListener('click', () => {
+      btnPostgameCareer.classList.add('active');
+      btnPostgameHigh.classList.remove('active');
+      postgameHallMode = 'career';
+      loadPostgameLeaderboards();
     });
 
     function renderPlayerPodium(players) {
@@ -424,14 +665,14 @@
       playerPodiumArea.innerHTML = html;
     }
 
-    function renderLeaderboard(players) {
-      leaderboardList.innerHTML = '';
+    function renderLeaderboard(players, targetElement) {
+      targetElement.innerHTML = '';
       players.forEach((p, idx) => {
         const li = document.createElement('li');
         const isMe = p.id === socket.id;
         li.style.border = isMe ? '2px solid #38bdf8' : 'none';
         li.innerHTML = `<span>#${idx + 1} ${p.name} ${isMe ? '(You)' : ''}</span><strong>${p.score} pts</strong>`;
-        leaderboardList.appendChild(li);
+        targetElement.appendChild(li);
       });
     }
   </script>
