@@ -53,7 +53,30 @@ try {
   console.error('Error loading questions.json:', err);
 }
 
-// API: Fetch all questions for Manager
+// Fisher-Yates array shuffle
+function shuffle(array) {
+  const arr = [...array];
+  for (let i = arr.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [arr[i], arr[j]] = [arr[j], arr[i]];
+  }
+  return arr;
+}
+
+// Active Game State
+let activeSockets = {}; // socketId -> { username, score, currentAnswer, answerTimeLeft, roundPointsEarned }
+let activeQuestions = [];
+let currentQuestionIndex = -1;
+let questionTimer = null;
+let intermissionTimer = null;
+let timeLeft = QUESTION_DURATION;
+let roundActive = false;
+
+/* =========================================================
+   ADMIN API: QUESTIONS & PLAYER/LEADERBOARD MANAGEMENT
+========================================================= */
+
+// API: Fetch all questions
 app.post('/api/questions/list', (req, res) => {
   const { password } = req.body;
   if (password !== ADMIN_PASSWORD) {
@@ -87,7 +110,7 @@ app.post('/api/questions/add', (req, res) => {
   });
 });
 
-// API: Bulk Add Questions (From CSV or JSON)
+// API: Bulk Add Questions
 app.post('/api/questions/bulk', (req, res) => {
   const { password, questions } = req.body;
   if (password !== ADMIN_PASSWORD) {
@@ -122,7 +145,7 @@ app.post('/api/questions/bulk', (req, res) => {
   });
 });
 
-// API: Delete Question by Index
+// API: Delete Question
 app.post('/api/questions/delete', (req, res) => {
   const { password, index } = req.body;
   if (password !== ADMIN_PASSWORD) {
@@ -140,7 +163,110 @@ app.post('/api/questions/delete', (req, res) => {
   });
 });
 
-// API: Fetch All-Time Leaderboards (Top 100)
+// API: Fetch All Registered Players
+app.post('/api/players/list', async (req, res) => {
+  const { password } = req.body;
+  if (password !== ADMIN_PASSWORD) {
+    return res.status(401).json({ success: false, message: 'Invalid admin passcode.' });
+  }
+  if (!pool) return res.json({ success: true, players: [] });
+
+  try {
+    const result = await pool.query(
+      'SELECT username, high_score, career_score, games_played, updated_at FROM players ORDER BY career_score DESC;'
+    );
+    res.json({ success: true, players: result.rows });
+  } catch (err) {
+    res.status(500).json({ success: false, message: err.message });
+  }
+});
+
+// API: Individual Reset or Delete/Ban Player
+app.post('/api/players/action', async (req, res) => {
+  const { password, username, action } = req.body;
+  if (password !== ADMIN_PASSWORD) {
+    return res.status(401).json({ success: false, message: 'Invalid admin passcode.' });
+  }
+  if (!username) return res.status(400).json({ success: false, message: 'Username required.' });
+
+  const cleanUser = username.trim().toLowerCase();
+
+  try {
+    if (action === 'reset_scores') {
+      if (pool) {
+        await pool.query(
+          'UPDATE players SET high_score = 0, career_score = 0, games_played = 0, updated_at = NOW() WHERE username = $1;',
+          [cleanUser]
+        );
+      }
+      return res.json({ success: true, message: `Scores reset for ${cleanUser}.` });
+    } 
+    else if (action === 'delete_ban') {
+      if (pool) {
+        await pool.query('DELETE FROM players WHERE username = $1;', [cleanUser]);
+      }
+      // Kick player if currently online
+      disconnectPlayerByUsername(cleanUser, 'Your profile has been removed by the administrator.');
+      return res.json({ success: true, message: `Player ${cleanUser} deleted and banned.` });
+    }
+    return res.status(400).json({ success: false, message: 'Invalid action.' });
+  } catch (err) {
+    res.status(500).json({ success: false, message: err.message });
+  }
+});
+
+// API: Bulk Reset or Bulk Wipe
+app.post('/api/players/bulk', async (req, res) => {
+  const { password, action } = req.body;
+  if (password !== ADMIN_PASSWORD) {
+    return res.status(401).json({ success: false, message: 'Invalid admin passcode.' });
+  }
+
+  try {
+    if (action === 'reset_all_scores') {
+      if (pool) {
+        await pool.query('UPDATE players SET high_score = 0, career_score = 0, games_played = 0, updated_at = NOW();');
+      }
+      return res.json({ success: true, message: 'All player scores have been reset to 0.' });
+    } 
+    else if (action === 'wipe_all_players') {
+      if (pool) {
+        await pool.query('TRUNCATE TABLE players;');
+      }
+      // Disconnect all connected players
+      Object.keys(activeSockets).forEach((id) => {
+        const sock = io.sockets.sockets.get(id);
+        if (sock) {
+          sock.emit('player:kicked', 'All player accounts were reset by the host.');
+          sock.disconnect(true);
+        }
+      });
+      activeSockets = {};
+      io.emit('game:player_list', []);
+      return res.json({ success: true, message: 'All player profiles and leaderboards wiped.' });
+    }
+    return res.status(400).json({ success: false, message: 'Invalid bulk action.' });
+  } catch (err) {
+    res.status(500).json({ success: false, message: err.message });
+  }
+});
+
+// Helper: Disconnect specific player
+function disconnectPlayerByUsername(username, reason) {
+  Object.keys(activeSockets).forEach((id) => {
+    if (activeSockets[id].username === username) {
+      const sock = io.sockets.sockets.get(id);
+      if (sock) {
+        sock.emit('player:kicked', reason || 'You were kicked from the match.');
+        sock.disconnect(true);
+      }
+      delete activeSockets[id];
+    }
+  });
+  io.emit('game:player_list', getLobbyPlayers());
+}
+
+// API: Fetch Top 100 Leaderboards
 app.get('/api/leaderboards', async (req, res) => {
   if (!pool) return res.json({ highScores: [], careerScores: [] });
   try {
@@ -156,24 +282,9 @@ app.get('/api/leaderboards', async (req, res) => {
   }
 });
 
-// Fisher-Yates array shuffle
-function shuffle(array) {
-  const arr = [...array];
-  for (let i = arr.length - 1; i > 0; i--) {
-    const j = Math.floor(Math.random() * (i + 1));
-    [arr[i], arr[j]] = [arr[j], arr[i]];
-  }
-  return arr;
-}
-
-// Active Game State
-let activeSockets = {};
-let activeQuestions = [];
-let currentQuestionIndex = -1;
-let questionTimer = null;
-let intermissionTimer = null;
-let timeLeft = QUESTION_DURATION;
-let roundActive = false;
+/* =========================================================
+   SOCKET.IO GAME LOGIC
+========================================================= */
 
 io.on('connection', (socket) => {
   socket.on('player:auth', async ({ username, pin }) => {
@@ -229,6 +340,11 @@ io.on('connection', (socket) => {
       activeSockets[socket.id].answerTimeLeft = timeLeft;
       socket.emit('player:answer_received', answerIndex);
     }
+  });
+
+  // Host live kick request from host.html
+  socket.on('host:kick_player', (targetUsername) => {
+    disconnectPlayerByUsername(targetUsername, 'You have been removed by the host.');
   });
 
   socket.on('host:start_game', (config) => {
