@@ -6,7 +6,6 @@
   <title>Trivia Player</title>
   <link rel="stylesheet" href="style.css">
   <script src="/socket.io/socket.io.js"></script>
-  <!-- Confetti Canvas Library -->
   <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.2/dist/confetti.browser.min.js"></script>
   <style>
     .auth-card {
@@ -218,7 +217,6 @@
         <span id="player-rank-display" style="color:#38bdf8; font-size:1.3rem;">#--</span>
       </div>
 
-      <!-- Mini Podium for Final Match Standings -->
       <div id="player-podium-area" class="player-podium hidden"></div>
 
       <div class="player-answer-reveal" id="answer-reveal-wrapper">
@@ -235,12 +233,9 @@
     const socket = io();
     let selectedAnswer = null;
 
-    // Tactile Vibration Helper (Safe for mobile browsers)
     function haptic(pattern) {
       if ('vibrate' in navigator) {
-        try {
-          navigator.vibrate(pattern);
-        } catch (e) {}
+        try { navigator.vibrate(pattern); } catch (e) {}
       }
     }
 
@@ -290,7 +285,7 @@
     socket.on('player:auth_error', (msg) => {
       authError.textContent = msg;
       authError.style.display = 'block';
-      haptic([80, 50, 80]); // Error vibration pattern
+      haptic([80, 50, 80]);
     });
 
     socket.on('player:authenticated', (data) => {
@@ -303,6 +298,14 @@
 
       joinScreen.classList.add('hidden');
       lobbyScreen.classList.remove('hidden');
+    });
+
+    // Handle Kicked from Game
+    socket.on('player:kicked', (reason) => {
+      alert(reason || 'You have been disconnected by the host.');
+      localStorage.removeItem('trivia_user');
+      localStorage.removeItem('trivia_pin');
+      window.location.reload();
     });
 
     btnLogout.addEventListener('click', () => {
@@ -339,7 +342,7 @@
         btn.addEventListener('click', () => {
           if (selectedAnswer !== null) return;
           selectedAnswer = index;
-          haptic(40); // Quick tactile confirmation tap
+          haptic(40);
           btn.classList.add('selected');
           Array.from(optionsContainer.children).forEach(b => b.disabled = true);
           statusMessage.classList.remove('hidden');
@@ -363,7 +366,7 @@
       if (selectedAnswer === data.correctAnswer) {
         resultFeedback.textContent = `Correct! +${data.myPointsEarned} pts`;
         resultFeedback.style.color = "#10b981";
-        haptic([40, 60, 80]); // Positive feedback
+        haptic([40, 60, 80]);
       } else if (selectedAnswer === null) {
         resultFeedback.textContent = "Time's up! +0 pts";
         resultFeedback.style.color = "#f59e0b";
@@ -371,7 +374,7 @@
       } else {
         resultFeedback.textContent = "Incorrect! +0 pts";
         resultFeedback.style.color = "#ef4444";
-        haptic(150); // Negative feedback buzz
+        haptic(150);
       }
 
       renderLeaderboard(data.leaderboard);
@@ -393,19 +396,13 @@
       }
       resultFeedback.style.color = "#38bdf8";
 
-      // Render player mini podium
       renderPlayerPodium(leaderboard);
       renderLeaderboard(leaderboard);
 
-      // If user finished on the podium (top 3), celebrate with confetti & haptic pulses
       if (myRank && myRank <= 3) {
         haptic([80, 80, 80, 80, 200]);
         if (typeof confetti === 'function') {
-          confetti({
-            particleCount: 80,
-            spread: 70,
-            origin: { y: 0.7 }
-          });
+          confetti({ particleCount: 80, spread: 70, origin: { y: 0.7 } });
         }
       }
     });
