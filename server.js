@@ -3,64 +3,56 @@ const http = require('http');
 const { Server } = require('socket.io');
 const fs = require('fs');
 const path = require('path');
+const { Pool } = require('pg');
 
 const app = express();
 const server = http.createServer(app);
 const io = new Server(server);
 
 const PORT = process.env.PORT || 3000;
-const QUESTION_DURATION = 15; // seconds per question
+const QUESTION_DURATION = 15;
 const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || 'admin123';
 
-// Enable parsing JSON bodies for the question creator API
+// Database setup
+const pool = process.env.DATABASE_URL
+  ? new Pool({ connectionString: process.env.DATABASE_URL, ssl: { rejectUnauthorized: false } })
+  : null;
+
+// Initialize Postgres tables automatically on startup
+async function initDb() {
+  if (!pool) {
+    console.warn('DATABASE_URL not detected. Persistent stats running in memory only.');
+    return;
+  }
+  try {
+    await pool.query(`
+      CREATE TABLE IF NOT EXISTS players (
+        username VARCHAR(30) PRIMARY KEY,
+        pin VARCHAR(10) NOT NULL,
+        high_score INT DEFAULT 0,
+        career_score INT DEFAULT 0,
+        games_played INT DEFAULT 0,
+        updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+      );
+    `);
+    console.log('Database initialized successfully.');
+  } catch (err) {
+    console.error('Error creating database tables:', err);
+  }
+}
+initDb();
+
 app.use(express.json());
 app.use(express.static(path.join(__dirname, 'public')));
 
-// Load questions from questions.json
+// Questions loader
 const questionsFilePath = path.join(__dirname, 'questions.json');
 let masterQuestions = [];
 try {
-  const data = fs.readFileSync(questionsFilePath, 'utf8');
-  masterQuestions = JSON.parse(data);
+  masterQuestions = JSON.parse(fs.readFileSync(questionsFilePath, 'utf8'));
 } catch (err) {
   console.error('Error loading questions.json:', err);
 }
-
-// API endpoint to add new questions directly from the web interface
-app.post('/api/questions/add', (req, res) => {
-  const { password, category, difficulty, question, options, answer, image } = req.body;
-
-  if (password !== ADMIN_PASSWORD) {
-    return res.status(401).json({ success: false, message: 'Invalid admin passcode.' });
-  }
-
-  if (!category || !difficulty || !question || !Array.isArray(options) || options.length !== 4 || answer === undefined) {
-    return res.status(400).json({ success: false, message: 'Missing or invalid question fields.' });
-  }
-
-  const formattedCategory = `${category}: ${difficulty}`;
-  const newQuestion = {
-    category: formattedCategory,
-    question: question.trim(),
-    options: options.map(opt => opt.trim()),
-    answer: parseInt(answer, 10)
-  };
-
-  if (image && image.trim() !== '') {
-    newQuestion.image = image.trim();
-  }
-
-  // Update memory and write back to questions.json
-  masterQuestions.push(newQuestion);
-
-  fs.writeFile(questionsFilePath, JSON.stringify(masterQuestions, null, 2), 'utf8', (err) => {
-    if (err) {
-      console.error('Failed to save questions.json:', err);
-      return res.status(500).json({ success: false, message: 'Failed to write to file system.' });
-    }
-    return res.json({ success: true, totalQuestions: masterQuestions.length });
-  });
-});
 
 // Fisher-Yates array shuffle
 function shuffle(array) {
@@ -72,8 +64,8 @@ function shuffle(array) {
   return arr;
 }
 
-// Game State
-let players = {};
+// Active Game State
+let activeSockets = {}; // socketId -> { username, score, currentAnswer, answerTimeLeft, roundPointsEarned }
 let activeQuestions = [];
 let currentQuestionIndex = -1;
 let questionTimer = null;
@@ -81,25 +73,101 @@ let intermissionTimer = null;
 let timeLeft = QUESTION_DURATION;
 let roundActive = false;
 
+// API: In-app question adder
+app.post('/api/questions/add', (req, res) => {
+  const { password, category, difficulty, question, options, answer, image } = req.body;
+  if (password !== ADMIN_PASSWORD) {
+    return res.status(401).json({ success: false, message: 'Invalid admin passcode.' });
+  }
+  if (!category || !difficulty || !question || !Array.isArray(options) || options.length !== 4 || answer === undefined) {
+    return res.status(400).json({ success: false, message: 'Missing required fields.' });
+  }
+
+  const newQuestion = {
+    category: `${category}: ${difficulty}`,
+    question: question.trim(),
+    options: options.map((opt) => opt.trim()),
+    answer: parseInt(answer, 10)
+  };
+  if (image && image.trim() !== '') newQuestion.image = image.trim();
+
+  masterQuestions.push(newQuestion);
+  fs.writeFile(questionsFilePath, JSON.stringify(masterQuestions, null, 2), 'utf8', (err) => {
+    if (err) return res.status(500).json({ success: false, message: 'Error saving file.' });
+    return res.json({ success: true, totalQuestions: masterQuestions.length });
+  });
+});
+
+// API: Fetch All-Time Leaderboards (Top 100)
+app.get('/api/leaderboards', async (req, res) => {
+  if (!pool) return res.json({ highScores: [], careerScores: [] });
+  try {
+    const highScores = (await pool.query(
+      'SELECT username, high_score AS score, games_played FROM players ORDER BY high_score DESC LIMIT 100;'
+    )).rows;
+    const careerScores = (await pool.query(
+      'SELECT username, career_score AS score, games_played FROM players ORDER BY career_score DESC LIMIT 100;'
+    )).rows;
+    res.json({ highScores, careerScores });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
 io.on('connection', (socket) => {
-  // Player joins
-  socket.on('player:join', (name) => {
-    players[socket.id] = {
-      name: name || `Player_${socket.id.substring(0, 4)}`,
-      score: 0,
-      currentAnswer: null,
-      answerTimeLeft: 0,
-      roundPointsEarned: 0
-    };
-    socket.emit('player:joined', { id: socket.id, name: players[socket.id].name });
-    io.emit('game:player_list', getLeaderboard());
+  // Player Auth / Login
+  socket.on('player:auth', async ({ username, pin }) => {
+    const cleanUser = (username || '').trim().toLowerCase();
+    const cleanPin = (pin || '').trim();
+
+    if (!cleanUser || !cleanPin || cleanUser.length < 2 || cleanPin.length < 4) {
+      return socket.emit('player:auth_error', 'Username (2+ chars) and 4-digit PIN required.');
+    }
+
+    try {
+      let playerProfile = { username: cleanUser, high_score: 0, career_score: 0, games_played: 0 };
+
+      if (pool) {
+        const existing = await pool.query('SELECT * FROM players WHERE username = $1;', [cleanUser]);
+        if (existing.rows.length > 0) {
+          if (existing.rows[0].pin !== cleanPin) {
+            return socket.emit('player:auth_error', 'Incorrect PIN for this username.');
+          }
+          playerProfile = existing.rows[0];
+        } else {
+          // Register new player
+          await pool.query(
+            'INSERT INTO players (username, pin, high_score, career_score, games_played) VALUES ($1, $2, 0, 0, 0);',
+            [cleanUser, cleanPin]
+          );
+        }
+      }
+
+      activeSockets[socket.id] = {
+        username: cleanUser,
+        score: 0,
+        currentAnswer: null,
+        answerTimeLeft: 0,
+        roundPointsEarned: 0
+      };
+
+      socket.emit('player:authenticated', {
+        username: cleanUser,
+        highScore: playerProfile.high_score,
+        careerScore: playerProfile.career_score,
+        gamesPlayed: playerProfile.games_played
+      });
+
+      io.emit('game:player_list', getLobbyPlayers());
+    } catch (err) {
+      socket.emit('player:auth_error', 'Server error logging in.');
+    }
   });
 
-  // Player submits answer
   socket.on('player:submit_answer', (answerIndex) => {
-    if (roundActive && players[socket.id] && players[socket.id].currentAnswer === null) {
-      players[socket.id].currentAnswer = answerIndex;
-      players[socket.id].answerTimeLeft = timeLeft;
+    if (roundActive && activeSockets[socket.id] && activeSockets[socket.id].currentAnswer === null) {
+      activeSockets[socket.id].currentAnswer = answerIndex;
+      activeSockets[socket.id].answerTimeLeft = timeLeft;
       socket.emit('player:answer_received', answerIndex);
     }
   });
@@ -109,91 +177,72 @@ io.on('connection', (socket) => {
     clearInterval(questionTimer);
     clearTimeout(intermissionTimer);
 
-    Object.keys(players).forEach((id) => {
-      players[id].score = 0;
-      players[id].currentAnswer = null;
-      players[id].answerTimeLeft = 0;
-      players[id].roundPointsEarned = 0;
+    Object.keys(activeSockets).forEach((id) => {
+      activeSockets[id].score = 0;
+      activeSockets[id].currentAnswer = null;
+      activeSockets[id].answerTimeLeft = 0;
+      activeSockets[id].roundPointsEarned = 0;
     });
 
     const requestedCategory = config.category || 'all';
     const requestedDifficulty = config.difficulty || 'all';
     const requestedCount = parseInt(config.count, 10) || 10;
 
-    let eligibleQuestions = masterQuestions.filter((q) => {
+    let eligible = masterQuestions.filter((q) => {
       const cat = (q.category || '').toLowerCase();
-
-      let matchesCategory = false;
-      if (requestedCategory === 'all') {
-        matchesCategory = true;
-      } else if (requestedCategory === 'bible') {
-        matchesCategory = cat.includes('bible');
-      } else if (requestedCategory === 'movie') {
-        matchesCategory = cat.includes('movie');
-      } else if (requestedCategory === 'logos') {
-        matchesCategory = cat.includes('logo');
-      }
-
-      if (!matchesCategory) return false;
+      let matchCat = false;
+      if (requestedCategory === 'all') matchCat = true;
+      else if (requestedCategory === 'bible') matchCat = cat.includes('bible');
+      else if (requestedCategory === 'movie') matchCat = cat.includes('movie');
+      else if (requestedCategory === 'logos') matchCat = cat.includes('logo');
+      if (!matchCat) return false;
 
       switch (requestedDifficulty) {
-        case 'easy':
-          return cat.includes('easy');
-        case 'medium':
-          return cat.includes('medium');
-        case 'hard':
-          return cat.includes('hard');
-        case 'easy_medium':
-          return cat.includes('easy') || cat.includes('medium');
-        case 'medium_hard':
-          return cat.includes('medium') || cat.includes('hard');
-        case 'all':
-        default:
-          return true;
+        case 'easy': return cat.includes('easy');
+        case 'medium': return cat.includes('medium');
+        case 'hard': return cat.includes('hard');
+        case 'easy_medium': return cat.includes('easy') || cat.includes('medium');
+        case 'medium_hard': return cat.includes('medium') || cat.includes('hard');
+        default: return true;
       }
     });
 
-    if (eligibleQuestions.length === 0) {
-      eligibleQuestions = masterQuestions;
-    }
+    if (eligible.length === 0) eligible = masterQuestions;
 
-    const shuffled = shuffle(eligibleQuestions);
+    const shuffled = shuffle(eligible);
     activeQuestions = shuffled.slice(0, Math.min(requestedCount, shuffled.length));
 
     currentQuestionIndex = -1;
     startNextQuestion();
   });
 
-  // Host forces game to stop
   socket.on('host:stop_game', () => {
     clearInterval(questionTimer);
     clearTimeout(intermissionTimer);
     roundActive = false;
-    broadcastGameOver();
+    finishGameAndSaveStats();
   });
 
-  // Disconnect
   socket.on('disconnect', () => {
-    if (players[socket.id]) {
-      delete players[socket.id];
-      io.emit('game:player_list', getLeaderboard());
+    if (activeSockets[socket.id]) {
+      delete activeSockets[socket.id];
+      io.emit('game:player_list', getLobbyPlayers());
     }
   });
 });
 
 function startNextQuestion() {
   currentQuestionIndex++;
-
   if (currentQuestionIndex >= activeQuestions.length) {
     roundActive = false;
-    broadcastGameOver();
+    finishGameAndSaveStats();
     return;
   }
 
-  Object.keys(players).forEach((id) => {
-    players[id].currentAnswer = null;
-    players[id].answerTimeLeft = 0;
-    players[id].roundPointsEarned = 0;
+  Object.keys(activeSockets).forEach((id) => {
+    activeSockets[id].currentAnswer = null;
+    activeSockets[id].answerTimeLeft = 0;
+    activeSockets[id].roundPointsEarned = 0;
   });
 
   const currentQ = activeQuestions[currentQuestionIndex];
@@ -214,7 +263,6 @@ function startNextQuestion() {
   questionTimer = setInterval(() => {
     timeLeft--;
     io.emit('game:timer_tick', timeLeft);
-
     if (timeLeft <= 0) {
       clearInterval(questionTimer);
       endRound();
@@ -225,12 +273,11 @@ function startNextQuestion() {
 function endRound() {
   roundActive = false;
   const currentQ = activeQuestions[currentQuestionIndex];
-  const correctAnswerIndex = currentQ.answer;
-  const correctAnswerText = currentQ.options[correctAnswerIndex];
+  const correctIdx = currentQ.answer;
 
-  Object.keys(players).forEach((id) => {
-    const p = players[id];
-    if (p.currentAnswer === correctAnswerIndex) {
+  Object.keys(activeSockets).forEach((id) => {
+    const p = activeSockets[id];
+    if (p.currentAnswer === correctIdx) {
       const bonus = Math.round((Math.max(1, p.answerTimeLeft) / QUESTION_DURATION) * 500);
       const earned = 500 + bonus;
       p.roundPointsEarned = earned;
@@ -240,21 +287,19 @@ function endRound() {
     }
   });
 
-  const leaderboard = getLeaderboard();
+  const leaderboard = getCurrentGameStandings();
 
   io.sockets.sockets.forEach((socket) => {
-    const player = players[socket.id];
+    const p = activeSockets[socket.id];
     const rankIndex = leaderboard.findIndex((item) => item.id === socket.id);
-    const rank = rankIndex !== -1 ? rankIndex + 1 : null;
-
     socket.emit('game:round_ended', {
-      correctAnswer: correctAnswerIndex,
-      correctAnswerText: correctAnswerText,
+      correctAnswer: correctIdx,
+      correctAnswerText: currentQ.options[correctIdx],
       questionText: currentQ.question,
       leaderboard: leaderboard,
-      myRank: rank,
-      myPointsEarned: player ? player.roundPointsEarned : 0,
-      myTotalScore: player ? player.score : 0
+      myRank: rankIndex !== -1 ? rankIndex + 1 : null,
+      myPointsEarned: p ? p.roundPointsEarned : 0,
+      myTotalScore: p ? p.score : 0
     });
   });
 
@@ -263,29 +308,53 @@ function endRound() {
   }, 5000);
 }
 
-function broadcastGameOver() {
-  const leaderboard = getLeaderboard();
-  io.sockets.sockets.forEach((socket) => {
-    const rankIndex = leaderboard.findIndex((item) => item.id === socket.id);
-    const rank = rankIndex !== -1 ? rankIndex + 1 : null;
+// Persist stats to database on match conclusion
+async function finishGameAndSaveStats() {
+  const standings = getCurrentGameStandings();
 
+  if (pool) {
+    for (const p of Object.values(activeSockets)) {
+      if (p.username) {
+        try {
+          await pool.query(
+            `UPDATE players 
+             SET high_score = GREATEST(high_score, $1),
+                 career_score = career_score + $1,
+                 games_played = games_played + 1,
+                 updated_at = NOW()
+             WHERE username = $2;`,
+            [p.score, p.username]
+          );
+        } catch (err) {
+          console.error(`Error saving stats for ${p.username}:`, err);
+        }
+      }
+    }
+  }
+
+  io.sockets.sockets.forEach((socket) => {
+    const rankIndex = standings.findIndex((item) => item.id === socket.id);
     socket.emit('game:over', {
-      leaderboard: leaderboard,
-      myRank: rank
+      leaderboard: standings,
+      myRank: rankIndex !== -1 ? rankIndex + 1 : null
     });
   });
 }
 
-function getLeaderboard() {
-  return Object.keys(players)
+function getCurrentGameStandings() {
+  return Object.keys(activeSockets)
     .map((id) => ({
       id: id,
-      name: players[id].name,
-      score: players[id].score
+      name: activeSockets[id].username,
+      score: activeSockets[id].score
     }))
     .sort((a, b) => b.score - a.score);
 }
 
+function getLobbyPlayers() {
+  return Object.values(activeSockets).map((p) => ({ name: p.username }));
+}
+
 server.listen(PORT, () => {
-  console.log(`Server running at http://localhost:${PORT}`);
+  console.log(`Server listening on port ${PORT}`);
 });
