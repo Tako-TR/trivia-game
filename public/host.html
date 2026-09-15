@@ -27,7 +27,11 @@
       font-weight: 800;
       font-size: 0.85rem;
     }
-    .audio-toggle-btn {
+    .top-toggles {
+      display: flex;
+      gap: 0.5rem;
+    }
+    .toggle-pill {
       background-color: #1e293b;
       border: 1px solid #475569;
       color: #38bdf8;
@@ -36,8 +40,9 @@
       padding: 0.4rem 0.8rem;
       border-radius: 9999px;
       cursor: pointer;
+      user-select: none;
     }
-    .audio-toggle-btn.muted { color: #94a3b8; border-color: #334155; }
+    .toggle-pill.off { color: #94a3b8; border-color: #334155; }
     .tab-bar {
       display: flex;
       justify-content: center;
@@ -207,6 +212,20 @@
       transform: scale(1.05);
     }
 
+    /* Rank Movement Badges */
+    .delta-badge {
+      font-size: 0.75rem;
+      font-weight: 800;
+      padding: 0.15rem 0.45rem;
+      border-radius: 4px;
+      margin-left: 0.5rem;
+      display: inline-flex;
+      align-items: center;
+    }
+    .delta-up { background-color: #064e3b; color: #6ee7b7; }
+    .delta-down { background-color: #7f1d1d; color: #fca5a5; }
+    .delta-same { background-color: #1e293b; color: #64748b; }
+
     /* Distribution Bar Chart */
     .chart-container {
       background-color: #0f172a;
@@ -321,7 +340,10 @@
   <div class="container">
     <div class="top-bar-controls">
       <div class="room-badge" id="host-room-badge">ROOM: ROOM1</div>
-      <button id="btn-toggle-sound" class="audio-toggle-btn">🔊 Sound: ON</button>
+      <div class="top-toggles">
+        <button id="btn-toggle-sound" class="toggle-pill">🔊 Sound: ON</button>
+        <button id="btn-toggle-autopilot" class="toggle-pill">⚡ Auto-Pilot: ON</button>
+      </div>
     </div>
 
     <h1>Host Screen</h1>
@@ -337,7 +359,7 @@
         <div class="lobby-header-card">
           <div class="qr-card">
             <h2>Scan to Join Room: <span id="qr-room-label" style="color:#38bdf8;">ROOM1</span></h2>
-            <p>Phone camera opens direct join link</p>
+            <p>Pick avatar & battle for top rank</p>
             <div id="qrcode"></div>
           </div>
         </div>
@@ -345,7 +367,6 @@
         <div style="color: #94a3b8;">Players in this room: <strong id="player-count" style="color: #38bdf8;">0</strong></div>
         
         <div class="settings-panel">
-          <!-- Room Selector (Up to 4 Rooms) -->
           <div class="setting-row">
             <label for="host-room-select" style="color: #f59e0b;">Select Game Room (1 of 4)</label>
             <select id="host-room-select">
@@ -356,7 +377,6 @@
             </select>
           </div>
 
-          <!-- Preset Game Pack -->
           <div class="setting-row" style="background-color: rgba(56, 189, 248, 0.08); padding: 0.6rem; border-radius: 8px; border: 1px dashed #38bdf8;">
             <label for="preset-select" style="color: #38bdf8;">Preset Game Pack (Optional)</label>
             <select id="preset-select">
@@ -364,7 +384,6 @@
             </select>
           </div>
 
-          <!-- Category Selector -->
           <div class="setting-row" id="standard-cat-row">
             <label for="category-select">Select Category</label>
             <select id="category-select">
@@ -376,7 +395,6 @@
             </select>
           </div>
 
-          <!-- Difficulty Selector -->
           <div class="setting-row" id="standard-diff-row">
             <label for="difficulty-select">Select Difficulty</label>
             <select id="difficulty-select">
@@ -389,7 +407,6 @@
             </select>
           </div>
 
-          <!-- Question Count Selector -->
           <div class="setting-row">
             <label for="question-count">Number of Questions</label>
             <select id="question-count">
@@ -449,7 +466,7 @@
         <button class="btn-danger stop-game-btn">Stop / End Game</button>
       </div>
 
-      <!-- Round End Screen with Chart -->
+      <!-- Round End Screen with Chart & Animated Ranks -->
       <div id="host-round-end" class="hidden">
         <h1>Round Results</h1>
 
@@ -516,10 +533,11 @@
 
   <script>
     /* =========================================================
-       AUDIO ENGINE
+       AUDIO & AUTO-PILOT SETTINGS
     ========================================================= */
     let audioCtx = null;
     let isSoundMuted = false;
+    let isAutoPilot = true;
 
     function initAudio() {
       if (!audioCtx) {
@@ -534,10 +552,22 @@
       isSoundMuted = !isSoundMuted;
       if (isSoundMuted) {
         btnToggleSound.textContent = '🔇 Sound: OFF';
-        btnToggleSound.classList.add('muted');
+        btnToggleSound.classList.add('off');
       } else {
         btnToggleSound.textContent = '🔊 Sound: ON';
-        btnToggleSound.classList.remove('muted');
+        btnToggleSound.classList.remove('off');
+      }
+    });
+
+    const btnToggleAutoPilot = document.getElementById('btn-toggle-autopilot');
+    btnToggleAutoPilot.addEventListener('click', () => {
+      isAutoPilot = !isAutoPilot;
+      if (isAutoPilot) {
+        btnToggleAutoPilot.textContent = '⚡ Auto-Pilot: ON';
+        btnToggleAutoPilot.classList.remove('off');
+      } else {
+        btnToggleAutoPilot.textContent = '⏸ Auto-Pilot: OFF';
+        btnToggleAutoPilot.classList.add('off');
       }
     });
 
@@ -603,7 +633,6 @@
     ========================================================= */
     const socket = io();
 
-    // Check if room was provided in URL: /host.html?room=ROOM2
     const urlParams = new URLSearchParams(window.location.search);
     let currentRoomCode = (urlParams.get('room') || 'ROOM1').toUpperCase();
 
@@ -612,12 +641,10 @@
     const qrRoomLabel = document.getElementById('qr-room-label');
     const qrcodeContainer = document.getElementById("qrcode");
 
-    let qrCodeObj = null;
-
     function renderQRCode(roomCode) {
       qrcodeContainer.innerHTML = '';
       const joinUrl = `${window.location.origin}/?room=${roomCode}`;
-      qrCodeObj = new QRCode(qrcodeContainer, {
+      new QRCode(qrcodeContainer, {
         text: joinUrl,
         width: 160,
         height: 160,
@@ -735,7 +762,7 @@
       }
       list.forEach((p, idx) => {
         const li = document.createElement('li');
-        li.innerHTML = `<span>#${idx + 1} ${p.username} (${p.games_played} games)</span><strong style="color:#38bdf8;">${Number(p.score).toLocaleString()} pts</strong>`;
+        li.innerHTML = `<span>#${idx + 1} ${p.avatar || '🚀'} ${p.username} (${p.games_played} games)</span><strong style="color:#38bdf8;">${Number(p.score).toLocaleString()} pts</strong>`;
         hallOfFameList.appendChild(li);
       });
     }
@@ -807,7 +834,7 @@
         li.style.alignItems = 'center';
 
         li.innerHTML = `
-          <span>${p.name}</span>
+          <span>${p.avatar || '🚀'} ${p.name}</span>
           <button class="btn-kick" onclick="kickPlayer('${p.name}')">Kick</button>
         `;
         hostLobbyPlayers.appendChild(li);
@@ -855,7 +882,7 @@
         const chip = document.createElement('div');
         chip.className = 'sub-chip';
         chip.id = `sub-chip-${p.name}`;
-        chip.innerHTML = `<span>○</span><span>${p.name}</span>`;
+        chip.innerHTML = `<span>○</span><span>${p.avatar || '🚀'} ${p.name}</span>`;
         submissionChipsContainer.appendChild(chip);
       });
     });
@@ -864,7 +891,7 @@
       const chip = document.getElementById(`sub-chip-${data.username}`);
       if (chip) {
         chip.classList.add('answered');
-        chip.innerHTML = `<span>✓</span><span>${data.username}</span>`;
+        chip.innerHTML = `<span>✓</span><span>${data.avatar || '🚀'} ${data.username}</span>`;
       }
       submissionCounterLabel.textContent = `${data.submittedCount} / ${data.totalCount} Answered`;
     });
@@ -887,8 +914,17 @@
       hostLeaderboard.innerHTML = '';
       data.leaderboard.forEach(p => {
         const li = document.createElement('li');
-        const streakTag = p.streak >= 2 ? `<span style="color:#f59e0b; margin-left:0.5rem; font-size:0.8rem;">🔥 ${p.streak}</span>` : '';
-        li.innerHTML = `<span>${p.name}${streakTag}</span><strong>${p.score} pts</strong>`;
+        const streakTag = p.streak >= 2 ? `<span style="color:#f59e0b; margin-left:0.4rem; font-size:0.8rem;">🔥 ${p.streak}</span>` : '';
+
+        // Rank Delta Badge
+        let deltaHtml = '<span class="delta-badge delta-same">• 0</span>';
+        if (p.rankDelta > 0) deltaHtml = `<span class="delta-badge delta-up">▲ +${p.rankDelta}</span>`;
+        else if (p.rankDelta < 0) deltaHtml = `<span class="delta-badge delta-down">▼ ${p.rankDelta}</span>`;
+
+        li.innerHTML = `
+          <span>${p.avatar || '🚀'} ${p.name}${streakTag}${deltaHtml}</span>
+          <strong>${p.score} pts</strong>
+        `;
         hostLeaderboard.appendChild(li);
       });
     });
@@ -935,7 +971,7 @@
       data.leaderboard.forEach((p, idx) => {
         const li = document.createElement('li');
         const streakTag = p.streak >= 2 ? `<span style="color:#f59e0b; margin-left:0.5rem; font-size:0.8rem;">🔥 ${p.streak}</span>` : '';
-        li.innerHTML = `<span>#${idx + 1} ${p.name}${streakTag}</span><strong>${p.score} pts</strong>`;
+        li.innerHTML = `<span>#${idx + 1} ${p.avatar || '🚀'} ${p.name}${streakTag}</span><strong>${p.score} pts</strong>`;
         hostMilestoneLeaderboard.appendChild(li);
       });
     });
@@ -954,7 +990,7 @@
       hostFinalLeaderboard.innerHTML = '';
       leaderboard.forEach((p, idx) => {
         const li = document.createElement('li');
-        li.innerHTML = `<span>#${idx + 1} ${p.name}</span><strong>${p.score} pts</strong>`;
+        li.innerHTML = `<span>#${idx + 1} ${p.avatar || '🚀'} ${p.name}</span><strong>${p.score} pts</strong>`;
         hostFinalLeaderboard.appendChild(li);
       });
 
@@ -973,7 +1009,7 @@
       if (p2) {
         html += `
           <div class="podium-slot second">
-            <div class="podium-avatar">🥈</div>
+            <div class="podium-avatar">${p2.avatar || '🥈'}</div>
             <div class="podium-name">${p2.name}</div>
             <div class="podium-score">${Number(p2.score).toLocaleString()} pts</div>
             <div class="podium-step">2</div>
@@ -983,7 +1019,7 @@
       if (p1) {
         html += `
           <div class="podium-slot first">
-            <div class="podium-avatar">👑</div>
+            <div class="podium-avatar">${p1.avatar || '👑'}</div>
             <div class="podium-name">${p1.name}</div>
             <div class="podium-score">${Number(p1.score).toLocaleString()} pts</div>
             <div class="podium-step">1</div>
@@ -993,7 +1029,7 @@
       if (p3) {
         html += `
           <div class="podium-slot third">
-            <div class="podium-avatar">🥉</div>
+            <div class="podium-avatar">${p3.avatar || '🥉'}</div>
             <div class="podium-name">${p3.name}</div>
             <div class="podium-score">${Number(p3.score).toLocaleString()} pts</div>
             <div class="podium-step">3</div>
