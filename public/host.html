@@ -6,16 +6,59 @@
   <title>Trivia Host Control</title>
   <link rel="stylesheet" href="style.css">
   <script src="/socket.io/socket.io.js"></script>
+  <!-- Lightweight QR code generator library -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
   <style>
     .container {
       max-width: 800px;
+    }
+    .lobby-header-card {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 1.25rem;
+      margin: 1.5rem 0;
+    }
+    .qr-card {
+      background: linear-gradient(145deg, #1e293b, #0f172a);
+      border: 2px solid #38bdf8;
+      border-radius: 16px;
+      padding: 1.5rem;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      box-shadow: 0 10px 25px -5px rgba(56, 189, 248, 0.25);
+    }
+    .qr-card h2 {
+      font-size: 1.25rem;
+      color: #38bdf8;
+      margin: 0 0 0.25rem 0;
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+    }
+    .qr-card p {
+      font-size: 0.9rem;
+      color: #94a3b8;
+      margin: 0 0 1rem 0;
+    }
+    #qrcode {
+      background: #0f172a;
+      padding: 12px;
+      border-radius: 12px;
+      display: inline-block;
+      border: 1px solid #334155;
+    }
+    #qrcode canvas, #qrcode img {
+      display: block;
+      margin: 0 auto;
     }
     .settings-panel {
       background-color: #0f172a;
       border: 1px solid #334155;
       padding: 1.25rem;
       border-radius: 10px;
-      margin: 1.25rem auto;
+      margin: 1rem auto;
+      width: 100%;
       max-width: 500px;
       display: flex;
       flex-direction: column;
@@ -67,7 +110,7 @@
       background-color: #b91c1c !important;
     }
     .player-counter {
-      margin-top: 1rem;
+      margin-top: 0.5rem;
       font-size: 1.1rem;
       color: #94a3b8;
     }
@@ -118,7 +161,16 @@
 
     <!-- Pre-game / Lobby View -->
     <div id="host-lobby">
-      <p class="question-text">Waiting for players to connect...</p>
+      
+      <!-- Styled QR Join Card -->
+      <div class="lobby-header-card">
+        <div class="qr-card">
+          <h2>Scan to Join the Game</h2>
+          <p>Point your phone camera here to jump straight in</p>
+          <div id="qrcode"></div>
+        </div>
+      </div>
+
       <div class="player-counter">Players connected: <strong id="player-count">0</strong></div>
       
       <div class="settings-panel">
@@ -215,6 +267,17 @@
   <script>
     const socket = io();
 
+    // Generate dynamic QR Code for the base player URL
+    const playerUrl = window.location.origin; // Generates base link without /host.html
+    new QRCode(document.getElementById("qrcode"), {
+      text: playerUrl,
+      width: 170,
+      height: 170,
+      colorDark: "#38bdf8",     // Sleek electric cyan
+      colorLight: "#0f172a",    // Deep slate background that blends with your theme
+      correctLevel: QRCode.CorrectLevel.M
+    });
+
     const hostLobby = document.getElementById('host-lobby');
     const hostGame = document.getElementById('host-game');
     const hostRoundEnd = document.getElementById('host-round-end');
@@ -281,7 +344,6 @@
       hostTimer.textContent = data.timeLeft;
       hostQuestion.textContent = data.question;
 
-      // Handle logo image
       if (data.image) {
         hostQuestionImage.src = data.image;
         hostImageContainer.classList.remove('hidden');
