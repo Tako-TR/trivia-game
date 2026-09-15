@@ -17,8 +17,7 @@ const pool = process.env.DATABASE_URL
   ? new Pool({ connectionString: process.env.DATABASE_URL, ssl: { rejectUnauthorized: false } })
   : null;
 
-// In-memory player registry fallback if running without database
-const memoryPlayers = {}; // username -> { pin, high_score, career_score, games_played }
+const memoryPlayers = {};
 
 async function initDb() {
   if (!pool) {
@@ -96,9 +95,6 @@ function shuffle(array) {
   return arr;
 }
 
-/* =========================================================
-   MULTI-ROOM STATE ARCHITECTURE (UP TO 4 ROOMS)
-========================================================= */
 const MAX_ROOMS = 4;
 const rooms = {};
 
@@ -132,7 +128,6 @@ function getSocketRoom(socket) {
   return null;
 }
 
-// Check if a player username is currently active online in ANY room
 function isPlayerCurrentlyOnline(username) {
   for (const code of Object.keys(rooms)) {
     for (const id of Object.keys(rooms[code].activeSockets)) {
@@ -143,10 +138,6 @@ function isPlayerCurrentlyOnline(username) {
   }
   return false;
 }
-
-/* =========================================================
-   ADMIN API: QUESTIONS, PRESETS & PLAYERS
-========================================================= */
 
 app.post('/api/questions/list', (req, res) => {
   const { password } = req.body;
@@ -381,7 +372,6 @@ function disconnectPlayerByUsername(room, username, reason) {
   io.to(room.code).emit('game:player_list', getLobbyPlayers(room));
 }
 
-// Global Leaderboard across all rooms
 app.get('/api/leaderboards', async (req, res) => {
   const category = (req.query.category || 'all').toLowerCase();
 
@@ -407,9 +397,6 @@ app.get('/api/leaderboards', async (req, res) => {
   }
 });
 
-/* =========================================================
-   STREAK MULTIPLIER HELPER
-========================================================= */
 function getStreakMultiplier(streak) {
   if (streak >= 20) return 3.0;
   if (streak >= 10) return 2.0;
@@ -426,10 +413,6 @@ function getStreakLabel(streak) {
   return '';
 }
 
-/* =========================================================
-   SOCKET.IO REAL-TIME ROOM LOGIC
-========================================================= */
-
 io.on('connection', (socket) => {
   socket.on('host:join_room', (roomCode) => {
     const room = getOrCreateRoom(roomCode);
@@ -443,7 +426,6 @@ io.on('connection', (socket) => {
     });
   });
 
-  // Player authentication: Enforces globally unique usernames & matching PIN
   socket.on('player:auth', async ({ username, pin, roomCode }) => {
     const cleanUser = (username || '').trim().toLowerCase();
     const cleanPin = (pin || '').trim();
@@ -458,7 +440,6 @@ io.on('connection', (socket) => {
       return socket.emit('player:auth_error', `Room ${targetRoomCode} is full or unavailable.`);
     }
 
-    // Check if the user is already actively connected in any room
     if (isPlayerCurrentlyOnline(cleanUser)) {
       return socket.emit('player:auth_error', `"${cleanUser}" is already active in a room right now.`);
     }
@@ -469,7 +450,6 @@ io.on('connection', (socket) => {
       if (pool) {
         const existing = await pool.query('SELECT * FROM players WHERE username = $1;', [cleanUser]);
         if (existing.rows.length > 0) {
-          // If username already exists in database, PIN must match exactly
           if (existing.rows[0].pin !== cleanPin) {
             return socket.emit(
               'player:auth_error',
@@ -478,7 +458,6 @@ io.on('connection', (socket) => {
           }
           playerProfile = existing.rows[0];
         } else {
-          // New unique registration
           await pool.query(
             'INSERT INTO players (username, pin, high_score, career_score, games_played) VALUES ($1, $2, 0, 0, 0);',
             [cleanUser, cleanPin]
@@ -723,7 +702,7 @@ function endRound(room) {
 
   const isMilestone = totalQuestions > 10 && finishedQuestionNum % 10 === 0 && finishedQuestionNum < totalQuestions;
 
- // 1. Broadcast the round results, chart distribution, and standings to the HOST and entire room
+  // 1. Send round results and distribution chart to the HOST and everyone in room
   io.to(room.code).emit('game:round_ended', {
     correctAnswer: correctIdx,
     correctAnswerText: currentQ.options[correctIdx],
@@ -737,7 +716,7 @@ function endRound(room) {
     milestoneNumber: finishedQuestionNum
   });
 
-  // 2. Send personalized player stats (points, rank, streak multiplier) to each individual player phone
+  // 2. Send personalized streak/score data to each player phone
   Object.keys(room.activeSockets).forEach((sockId) => {
     const socket = io.sockets.sockets.get(sockId);
     if (socket) {
@@ -791,7 +770,6 @@ async function finishGameAndSaveStats(room) {
     if (p.username) {
       if (pool) {
         try {
-          // 1. Update overall player record (Global across all rooms)
           await pool.query(
             `UPDATE players 
              SET high_score = GREATEST(high_score, $1),
@@ -802,7 +780,6 @@ async function finishGameAndSaveStats(room) {
             [p.score, p.username]
           );
 
-          // 2. Update category record
           if (room.currentGameCategory && !room.currentGameCategory.startsWith('Preset:') && room.currentGameCategory !== 'all') {
             await pool.query(
               `INSERT INTO category_scores (username, category, high_score, career_score, games_played)
@@ -826,6 +803,12 @@ async function finishGameAndSaveStats(room) {
     }
   }
 
+  // 1. Broadcast game:over to the HOST and entire room
+  io.to(room.code).emit('game:over', {
+    leaderboard: standings
+  });
+
+  // 2. Send personalized final rank to each player phone
   Object.keys(room.activeSockets).forEach((sockId) => {
     const socket = io.sockets.sockets.get(sockId);
     if (socket) {
