@@ -33,8 +33,32 @@
       border-radius: 8px;
       font-size: 1rem;
     }
-    
-    /* Avatar Picker Styles */
+
+    /* Locked Room Box */
+    .locked-room-box {
+      background-color: rgba(56, 189, 248, 0.08);
+      border: 1px dashed #38bdf8;
+      border-radius: 8px;
+      padding: 0.6rem 0.85rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 0.25rem;
+    }
+    .locked-room-label {
+      font-size: 0.75rem;
+      font-weight: 700;
+      color: #94a3b8;
+      text-transform: uppercase;
+    }
+    .locked-room-val {
+      font-size: 1.05rem;
+      font-weight: 900;
+      color: #38bdf8;
+      letter-spacing: 0.05em;
+    }
+
+    /* Avatar Picker */
     .avatar-grid {
       display: flex;
       gap: 0.5rem;
@@ -255,6 +279,12 @@
       <p id="auth-error" class="error-msg"></p>
 
       <form id="auth-form" class="auth-card">
+        <!-- Locked Room Display (Cannot be edited by players) -->
+        <div class="locked-room-box">
+          <span class="locked-room-label">Joining Room:</span>
+          <span class="locked-room-val" id="display-assigned-room">ROOM1</span>
+        </div>
+
         <div>
           <label>Choose Avatar</label>
           <div class="avatar-grid" id="avatar-selector">
@@ -268,10 +298,7 @@
             <button type="button" class="avatar-btn" data-avatar="👑">👑</button>
           </div>
         </div>
-        <div>
-          <label for="room-input">Room Code</label>
-          <input type="text" id="room-input" value="ROOM1" maxlength="8" required style="text-transform:uppercase; font-weight:800; color:#38bdf8;">
-        </div>
+
         <div>
           <label for="username-input">Username</label>
           <input type="text" id="username-input" placeholder="e.g. Maverick" maxlength="20" required>
@@ -323,7 +350,7 @@
       </div>
 
       <p class="question-text">Waiting for host to launch the round...</p>
-      <button id="btn-logout" style="background: none; border: 1px solid #475569; color: #94a3b8; padding: 0.4rem 1rem; border-radius: 6px; font-size: 0.85rem; cursor: pointer;">Log Out / Switch Room</button>
+      <button id="btn-logout" style="background: none; border: 1px solid #475569; color: #94a3b8; padding: 0.4rem 1rem; border-radius: 6px; font-size: 0.85rem; cursor: pointer;">Log Out</button>
     </div>
 
     <!-- Active Question Screen -->
@@ -405,14 +432,19 @@
     let selectedAnswer = null;
     let chosenAvatar = '🚀';
 
-    // Enhanced Mobile Haptics
+    // Room is set strictly via QR code URL (e.g. ?room=ROOM2), defaulting to ROOM1
+    const urlParams = new URLSearchParams(window.location.search);
+    const assignedRoomCode = (urlParams.get('room') || 'ROOM1').trim().toUpperCase();
+
+    const displayAssignedRoom = document.getElementById('display-assigned-room');
+    displayAssignedRoom.textContent = assignedRoomCode;
+
     function haptic(pattern) {
       if ('vibrate' in navigator) {
         try { navigator.vibrate(pattern); } catch (e) {}
       }
     }
 
-    // Avatar Picker listener
     const avatarBtns = document.querySelectorAll('.avatar-btn');
     avatarBtns.forEach(btn => {
       btn.addEventListener('click', () => {
@@ -430,7 +462,6 @@
     const resultsScreen = document.getElementById('results-screen');
 
     const authForm = document.getElementById('auth-form');
-    const roomInput = document.getElementById('room-input');
     const usernameInput = document.getElementById('username-input');
     const pinInput = document.getElementById('pin-input');
     const authError = document.getElementById('auth-error');
@@ -478,10 +509,6 @@
     const postgameHallList = document.getElementById('postgame-hall-list');
     let postgameHallMode = 'high';
 
-    const urlParams = new URLSearchParams(window.location.search);
-    const roomFromUrl = urlParams.get('room');
-    if (roomFromUrl) roomInput.value = roomFromUrl.toUpperCase();
-
     const savedUser = localStorage.getItem('trivia_user');
     const savedPin = localStorage.getItem('trivia_pin');
     const savedAvatar = localStorage.getItem('trivia_avatar') || '🚀';
@@ -492,7 +519,7 @@
         username: savedUser,
         pin: savedPin,
         avatar: chosenAvatar,
-        roomCode: roomInput.value.trim().toUpperCase()
+        roomCode: assignedRoomCode
       });
     }
 
@@ -501,9 +528,13 @@
       authError.style.display = 'none';
       const username = usernameInput.value.trim();
       const pin = pinInput.value.trim();
-      const roomCode = roomInput.value.trim().toUpperCase();
       haptic(35);
-      socket.emit('player:auth', { username, pin, avatar: chosenAvatar, roomCode });
+      socket.emit('player:auth', {
+        username,
+        pin,
+        avatar: chosenAvatar,
+        roomCode: assignedRoomCode
+      });
     });
 
     socket.on('player:auth_error', (msg) => {
@@ -636,7 +667,6 @@
       playerCorrectAnswer.textContent = data.correctAnswerText;
       if (data.myRank) playerRankDisplay.textContent = `#${data.myRank}`;
 
-      // Personal Rank Delta Pill
       if (data.myRankDelta > 0) {
         playerDeltaDisplay.innerHTML = `<span style="color:#6ee7b7; font-weight:800;">▲ +${data.myRankDelta}</span>`;
       } else if (data.myRankDelta < 0) {
@@ -649,8 +679,6 @@
         let multText = data.streakMultiplier > 1 ? ` (${data.streakMultiplier}x Boost!)` : '';
         resultFeedback.textContent = `Correct! +${data.myPointsEarned} pts${multText}`;
         resultFeedback.style.color = "#10b981";
-        
-        // Haptic: Upbeat double pulse
         haptic([50, 60, 100]);
 
         if (data.streakLabel) {
@@ -668,7 +696,6 @@
         resultFeedback.textContent = "Incorrect! +0 pts (Streak reset)";
         resultFeedback.style.color = "#ef4444";
         streakBanner.classList.add('hidden');
-        // Haptic: Heavy buzz for wrong answer
         haptic(180);
       }
 
