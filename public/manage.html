@@ -241,7 +241,7 @@
       flex: 1;
     }
 
-    /* Preset Packs UI */
+    /* Preset Pack Builder Styles */
     .preset-builder-card {
       background-color: #0f172a;
       border: 1px solid #334155;
@@ -250,31 +250,88 @@
       margin-bottom: 1.5rem;
       text-align: left;
     }
+    .preset-filter-box {
+      background-color: #1e293b;
+      border: 1px solid #334155;
+      border-radius: 8px;
+      padding: 0.85rem;
+      margin: 0.75rem 0;
+      display: flex;
+      flex-direction: column;
+      gap: 0.6rem;
+    }
+    .filter-group {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      flex-wrap: wrap;
+    }
+    .filter-label {
+      font-size: 0.75rem;
+      font-weight: 800;
+      color: #94a3b8;
+      text-transform: uppercase;
+      min-width: 80px;
+    }
+    .filter-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.35rem;
+      background-color: #0f172a;
+      border: 1px solid #475569;
+      color: #cbd5e1;
+      padding: 0.3rem 0.65rem;
+      border-radius: 9999px;
+      font-size: 0.8rem;
+      cursor: pointer;
+      user-select: none;
+      transition: all 0.15s;
+    }
+    .filter-pill input {
+      accent-color: #38bdf8;
+      cursor: pointer;
+    }
+    .filter-pill.active {
+      background-color: rgba(56, 189, 248, 0.15);
+      border-color: #38bdf8;
+      color: #38bdf8;
+      font-weight: 700;
+    }
     .preset-select-list {
-      max-height: 320px;
+      max-height: 340px;
       overflow-y: auto;
       border: 1px solid #334155;
       border-radius: 8px;
       padding: 0.5rem;
-      margin: 0.75rem 0;
+      margin: 0.5rem 0;
       background-color: #1e293b;
     }
     .preset-q-item {
       display: flex;
       align-items: center;
       gap: 0.6rem;
-      padding: 0.4rem;
+      padding: 0.5rem 0.4rem;
       border-bottom: 1px solid #334155;
       font-size: 0.85rem;
       color: #f8fafc;
+    }
+    .preset-q-item:hover {
+      background-color: rgba(56, 189, 248, 0.05);
+    }
+    .preset-q-item input[type="checkbox"] {
+      width: 1.1rem;
+      height: 1.1rem;
+      accent-color: #10b981;
+      cursor: pointer;
     }
     .preset-badge {
       font-size: 0.7rem;
       color: #38bdf8;
       background-color: #0f172a;
-      padding: 0.15rem 0.4rem;
+      padding: 0.15rem 0.45rem;
       border-radius: 4px;
       white-space: nowrap;
+      border: 1px solid #334155;
     }
     .presets-grid {
       display: grid;
@@ -297,7 +354,7 @@
 <body>
   <div class="container">
     <h1>Database & Admin Manager</h1>
-    <p class="question-text" style="margin-bottom: 1.5rem;">Edit questions, build custom game packs, and manage leaderboards</p>
+    <p class="question-text" style="margin-bottom: 1.5rem;">Edit questions, build filtered game packs, and manage leaderboards</p>
 
     <!-- Passcode Authentication -->
     <div class="auth-banner">
@@ -342,26 +399,59 @@
         <div id="question-list" class="q-list"></div>
       </div>
 
-      <!-- TAB 2: PRESET GAME PACK BUILDER -->
+      <!-- TAB 2: PRESET GAME PACK BUILDER WITH ADVANCED FILTERS -->
       <div id="section-presets" class="hidden">
         <div class="preset-builder-card">
           <h3 style="margin-top: 0; color: #38bdf8; font-size: 1.15rem;">Create a New Custom Game Pack</h3>
-          <p style="font-size: 0.85rem; color: #94a3b8; margin-bottom: 0.75rem;">Select the questions you want included, give this pack a name, and save it for one-click launching from the host screen.</p>
+          <p style="font-size: 0.85rem; color: #94a3b8; margin-bottom: 0.75rem;">Filter by any combination of categories and difficulties, select your questions, and save them as a ready-to-launch pack.</p>
           
           <label for="preset-name-input" style="font-size: 0.8rem; font-weight: 700; color: #94a3b8; text-transform: uppercase;">Game Pack Name</label>
-          <input type="text" id="preset-name-input" placeholder="e.g. Disney Night, Youth Group Championship, 80s Rock" style="width: 100%; background-color: #1e293b; color: #fff; border: 1px solid #475569; padding: 0.6rem; border-radius: 8px; margin: 0.3rem 0 0.75rem 0; box-sizing: border-box;">
+          <input type="text" id="preset-name-input" placeholder="e.g. Sunday School Hard, 80s Movies & Music, All-Star Trivia" style="width: 100%; background-color: #1e293b; color: #fff; border: 1px solid #475569; padding: 0.6rem; border-radius: 8px; margin: 0.3rem 0 0.75rem 0; box-sizing: border-box;">
 
-          <div style="display: flex; justify-content: space-between; align-items: center;">
-            <span style="font-size: 0.85rem; color: #94a3b8;">Selected: <strong id="preset-selected-count" style="color: #38bdf8;">0</strong> questions</span>
-            <div style="display: flex; gap: 0.5rem;">
-              <button id="btn-select-all" style="background: none; border: 1px solid #475569; color: #94a3b8; padding: 0.3rem 0.6rem; border-radius: 6px; font-size: 0.75rem; cursor: pointer;">Select Filtered</button>
-              <button id="btn-clear-selection" style="background: none; border: 1px solid #475569; color: #94a3b8; padding: 0.3rem 0.6rem; border-radius: 6px; font-size: 0.75rem; cursor: pointer;">Clear All</button>
+          <!-- Category & Difficulty Filter Box -->
+          <div class="preset-filter-box">
+            <!-- Categories -->
+            <div class="filter-group">
+              <span class="filter-label">Categories:</span>
+              <label class="filter-pill active" id="pill-cat-all"><input type="checkbox" id="chk-cat-all" checked> All</label>
+              <label class="filter-pill" id="pill-cat-bible"><input type="checkbox" class="chk-cat" value="bible"> Bible</label>
+              <label class="filter-pill" id="pill-cat-movie"><input type="checkbox" class="chk-cat" value="movie"> Movies</label>
+              <label class="filter-pill" id="pill-cat-logos"><input type="checkbox" class="chk-cat" value="logo"> Logos</label>
+              <label class="filter-pill" id="pill-cat-music"><input type="checkbox" class="chk-cat" value="music"> Pop Culture & Music</label>
+            </div>
+
+            <!-- Difficulties -->
+            <div class="filter-group">
+              <span class="filter-label">Difficulty:</span>
+              <label class="filter-pill active" id="pill-diff-all"><input type="checkbox" id="chk-diff-all" checked> All</label>
+              <label class="filter-pill" id="pill-diff-easy"><input type="checkbox" class="chk-diff" value="easy"> Easy</label>
+              <label class="filter-pill" id="pill-diff-medium"><input type="checkbox" class="chk-diff" value="medium"> Medium</label>
+              <label class="filter-pill" id="pill-diff-hard"><input type="checkbox" class="chk-diff" value="hard"> Hard</label>
+            </div>
+
+            <!-- Keyword Search -->
+            <div class="filter-group">
+              <span class="filter-label">Search:</span>
+              <input type="text" id="preset-search-input" placeholder="Filter questions by keywords..." style="flex:1; background-color:#0f172a; color:#f8fafc; border:1px solid #475569; padding:0.4rem 0.75rem; border-radius:6px; font-size:0.85rem; margin-bottom:0;">
+            </div>
+          </div>
+
+          <!-- Selection Controls Bar -->
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 0.5rem; flex-wrap: wrap; gap: 0.5rem;">
+            <span style="font-size: 0.85rem; color: #94a3b8;">
+              Showing: <strong id="preset-showing-count" style="color:#f8fafc;">0</strong> | 
+              Selected in Pack: <strong id="preset-selected-count" style="color: #38bdf8;">0</strong>
+            </span>
+            <div style="display: flex; gap: 0.5rem; flex-wrap: wrap;">
+              <button id="btn-select-visible" style="background: none; border: 1px solid #10b981; color: #10b981; padding: 0.35rem 0.7rem; border-radius: 6px; font-size: 0.75rem; font-weight: 700; cursor: pointer;">+ Select Visible</button>
+              <button id="btn-deselect-visible" style="background: none; border: 1px solid #f59e0b; color: #f59e0b; padding: 0.35rem 0.7rem; border-radius: 6px; font-size: 0.75rem; cursor: pointer;">- Deselect Visible</button>
+              <button id="btn-clear-selection" style="background: none; border: 1px solid #ef4444; color: #ef4444; padding: 0.35rem 0.7rem; border-radius: 6px; font-size: 0.75rem; cursor: pointer;">Clear All</button>
             </div>
           </div>
 
           <div id="preset-select-list" class="preset-select-list"></div>
 
-          <button id="btn-save-preset" style="background-color: #10b981; color: #fff; font-weight: 700; border: none; padding: 0.65rem 1.5rem; border-radius: 8px; cursor: pointer; margin-top: 0.5rem;">Save Game Pack</button>
+          <button id="btn-save-preset" style="background-color: #10b981; color: #fff; font-weight: 700; border: none; padding: 0.65rem 1.5rem; border-radius: 8px; cursor: pointer; margin-top: 0.75rem;">Save Game Pack</button>
         </div>
 
         <h3 style="text-align: left; color: #f8fafc; font-size: 1.1rem; margin-top: 1.5rem;">Existing Game Packs</h3>
@@ -484,12 +574,25 @@
 
     // Preset elements
     const presetNameInput = document.getElementById('preset-name-input');
+    const presetSearchInput = document.getElementById('preset-search-input');
     const presetSelectList = document.getElementById('preset-select-list');
+    const presetShowingCount = document.getElementById('preset-showing-count');
     const presetSelectedCount = document.getElementById('preset-selected-count');
-    const btnSelectAll = document.getElementById('btn-select-all');
+    const btnSelectVisible = document.getElementById('btn-select-visible');
+    const btnDeselectVisible = document.getElementById('btn-deselect-visible');
     const btnClearSelection = document.getElementById('btn-clear-selection');
     const btnSavePreset = document.getElementById('btn-save-preset');
     const presetsGrid = document.getElementById('presets-grid');
+
+    // Category filter checkboxes
+    const chkCatAll = document.getElementById('chk-cat-all');
+    const chkCats = document.querySelectorAll('.chk-cat');
+    const pillCatAll = document.getElementById('pill-cat-all');
+
+    // Difficulty filter checkboxes
+    const chkDiffAll = document.getElementById('chk-diff-all');
+    const chkDiffs = document.querySelectorAll('.chk-diff');
+    const pillDiffAll = document.getElementById('pill-diff-all');
 
     // Edit Modal elements
     const editModal = document.getElementById('edit-modal');
@@ -523,6 +626,7 @@
     let allPlayers = [];
     let allPresets = {};
     let selectedForPreset = new Set();
+    let currentlyVisibleIndices = [];
 
     // Tab Navigation
     navQuestions.addEventListener('click', () => {
@@ -565,7 +669,7 @@
     }
 
     /* =========================================================
-       QUESTIONS & DIRECT EDITING
+       QUESTIONS TAB FUNCTIONS
     ========================================================= */
     async function loadQuestions() {
       const password = adminPassInput.value.trim();
@@ -583,6 +687,7 @@
           totalCount.textContent = allQuestions.length;
           managerPanel.classList.remove('hidden');
           renderQuestionList();
+          renderPresetBuilder();
         } else {
           alert(data.message || 'Access denied.');
         }
@@ -682,27 +787,14 @@
         const res = await fetch('/api/questions/edit', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            password,
-            index,
-            category,
-            question,
-            options,
-            answer,
-            image
-          })
+          body: JSON.stringify({ password, index, category, question, options, answer, image })
         });
         const data = await res.json();
         if (res.ok && data.success) {
-          allQuestions[index] = {
-            category,
-            question,
-            options,
-            answer,
-            image: image || undefined
-          };
+          allQuestions[index] = { category, question, options, answer, image: image || undefined };
           editModal.classList.add('hidden');
           renderQuestionList();
+          renderPresetBuilder();
         } else {
           alert(data.message || 'Failed to update question.');
         }
@@ -726,52 +818,146 @@
         allQuestions.splice(index, 1);
         totalCount.textContent = allQuestions.length;
         renderQuestionList();
+        renderPresetBuilder();
       } else {
         alert(data.message || 'Delete error.');
       }
     };
 
     /* =========================================================
-       CUSTOM GAME PACKS / PRESETS
+       CUSTOM GAME PACK BUILDER & FILTER LOGIC
     ========================================================= */
-    async function loadPresets() {
-      try {
-        const res = await fetch('/api/presets/list');
-        const data = await res.json();
-        if (res.ok && data.success) {
-          allPresets = data.presets || {};
-          renderPresetsGrid();
+
+    // Category Pill Listeners
+    chkCatAll.addEventListener('change', () => {
+      if (chkCatAll.checked) {
+        chkCats.forEach(c => {
+          c.checked = false;
+          c.closest('.filter-pill').classList.remove('active');
+        });
+        pillCatAll.classList.add('active');
+      }
+      renderPresetBuilder();
+    });
+
+    chkCats.forEach(chk => {
+      chk.addEventListener('change', () => {
+        const pill = chk.closest('.filter-pill');
+        if (chk.checked) pill.classList.add('active');
+        else pill.classList.remove('active');
+
+        const anyChecked = Array.from(chkCats).some(c => c.checked);
+        if (anyChecked) {
+          chkCatAll.checked = false;
+          pillCatAll.classList.remove('active');
+        } else {
+          chkCatAll.checked = true;
+          pillCatAll.classList.add('active');
         }
-      } catch (e) {}
-    }
+        renderPresetBuilder();
+      });
+    });
+
+    // Difficulty Pill Listeners
+    chkDiffAll.addEventListener('change', () => {
+      if (chkDiffAll.checked) {
+        chkDiffs.forEach(d => {
+          d.checked = false;
+          d.closest('.filter-pill').classList.remove('active');
+        });
+        pillDiffAll.classList.add('active');
+      }
+      renderPresetBuilder();
+    });
+
+    chkDiffs.forEach(chk => {
+      chk.addEventListener('change', () => {
+        const pill = chk.closest('.filter-pill');
+        if (chk.checked) pill.classList.add('active');
+        else pill.classList.remove('active');
+
+        const anyChecked = Array.from(chkDiffs).some(d => d.checked);
+        if (anyChecked) {
+          chkDiffAll.checked = false;
+          pillDiffAll.classList.remove('active');
+        } else {
+          chkDiffAll.checked = true;
+          pillDiffAll.classList.add('active');
+        }
+        renderPresetBuilder();
+      });
+    });
+
+    presetSearchInput.addEventListener('input', renderPresetBuilder);
 
     function renderPresetBuilder() {
       presetSelectList.innerHTML = '';
+      currentlyVisibleIndices = [];
+
+      const query = presetSearchInput.value.toLowerCase().trim();
+      const isAllCat = chkCatAll.checked;
+      const activeCats = Array.from(chkCats).filter(c => c.checked).map(c => c.value);
+
+      const isAllDiff = chkDiffAll.checked;
+      const activeDiffs = Array.from(chkDiffs).filter(d => d.checked).map(d => d.value);
+
       allQuestions.forEach((q, idx) => {
-        const item = document.createElement('div');
-        item.className = 'preset-q-item';
+        const cat = (q.category || '').toLowerCase();
 
-        const isChecked = selectedForPreset.has(idx) ? 'checked' : '';
-        item.innerHTML = `
-          <input type="checkbox" id="preset-chk-${idx}" value="${idx}" ${isChecked}>
-          <span class="preset-badge">${q.category}</span>
-          <label for="preset-chk-${idx}" style="cursor:pointer; flex:1;">${q.question}</label>
-        `;
+        // 1. Check Category Match
+        let matchesCat = isAllCat;
+        if (!matchesCat) {
+          matchesCat = activeCats.some(selectedCat => cat.includes(selectedCat));
+        }
 
-        const chk = item.querySelector('input');
-        chk.addEventListener('change', (e) => {
-          if (e.target.checked) selectedForPreset.add(idx);
-          else selectedForPreset.delete(idx);
-          presetSelectedCount.textContent = selectedForPreset.size;
-        });
+        // 2. Check Difficulty Match
+        let matchesDiff = isAllDiff;
+        if (!matchesDiff) {
+          matchesDiff = activeDiffs.some(selectedDiff => cat.includes(selectedDiff));
+        }
 
-        presetSelectList.appendChild(item);
+        // 3. Check Keyword Search
+        const matchesQuery = !query || q.question.toLowerCase().includes(query) || q.options.some(opt => opt.toLowerCase().includes(query));
+
+        if (matchesCat && matchesDiff && matchesQuery) {
+          currentlyVisibleIndices.push(idx);
+
+          const item = document.createElement('div');
+          item.className = 'preset-q-item';
+          const isChecked = selectedForPreset.has(idx) ? 'checked' : '';
+
+          item.innerHTML = `
+            <input type="checkbox" id="preset-chk-${idx}" value="${idx}" ${isChecked}>
+            <span class="preset-badge">${q.category}</span>
+            <label for="preset-chk-${idx}" style="cursor:pointer; flex:1; margin-left:0.25rem;">${q.question}</label>
+          `;
+
+          const chk = item.querySelector('input');
+          chk.addEventListener('change', (e) => {
+            if (e.target.checked) selectedForPreset.add(idx);
+            else selectedForPreset.delete(idx);
+            presetSelectedCount.textContent = selectedForPreset.size;
+          });
+
+          presetSelectList.appendChild(item);
+        }
       });
+
+      presetShowingCount.textContent = currentlyVisibleIndices.length;
       presetSelectedCount.textContent = selectedForPreset.size;
+
+      if (currentlyVisibleIndices.length === 0) {
+        presetSelectList.innerHTML = '<div style="color: #64748b; padding: 1.5rem; text-align: center;">No questions match your current category / difficulty filters.</div>';
+      }
     }
 
-    btnSelectAll.addEventListener('click', () => {
-      allQuestions.forEach((_, idx) => selectedForPreset.add(idx));
+    btnSelectVisible.addEventListener('click', () => {
+      currentlyVisibleIndices.forEach(idx => selectedForPreset.add(idx));
+      renderPresetBuilder();
+    });
+
+    btnDeselectVisible.addEventListener('click', () => {
+      currentlyVisibleIndices.forEach(idx => selectedForPreset.delete(idx));
       renderPresetBuilder();
     });
 
@@ -809,6 +995,17 @@
         alert('Server communication error.');
       }
     });
+
+    async function loadPresets() {
+      try {
+        const res = await fetch('/api/presets/list');
+        const data = await res.json();
+        if (res.ok && data.success) {
+          allPresets = data.presets || {};
+          renderPresetsGrid();
+        }
+      } catch (e) {}
+    }
 
     function renderPresetsGrid() {
       presetsGrid.innerHTML = '';
