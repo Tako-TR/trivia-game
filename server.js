@@ -110,12 +110,12 @@ function shuffle(array) {
 
 const MAX_ROOMS = 6;
 const ROOM_NAMES = {
-  'ROOM1': 'Room 1',
-  'ROOM2': 'Room 2 Fremont',
-  'ROOM3': 'Room 3 Fremont HS',
-  'ROOM4': 'Room 4 Fremont MS',
-  'ROOM5': 'Room 5 Sandusky',
-  'ROOM6': 'Room 6 Northwood'
+  'ROOM1': 'Fremont Main',
+  'ROOM2': 'Fremont HS',
+  'ROOM3': 'Fremont MS',
+  'ROOM4': 'Tiffin',
+  'ROOM5': 'Sandusky',
+  'ROOM6': 'Northwood'
 };
 
 const rooms = {};
