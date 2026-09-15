@@ -95,11 +95,30 @@
       background-color: #334155;
       padding: 0.5rem 1.25rem;
       border-radius: 9999px;
-      margin: 0.75rem auto 1rem;
+      margin: 0.75rem auto 0.5rem;
       font-size: 1.1rem;
       font-weight: 700;
       color: #f8fafc;
       border: 1px solid #475569;
+    }
+    .streak-banner {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      background: linear-gradient(90deg, #f59e0b, #ef4444);
+      color: #fff;
+      font-weight: 900;
+      font-size: 0.85rem;
+      padding: 0.35rem 0.9rem;
+      border-radius: 9999px;
+      margin-bottom: 0.75rem;
+      letter-spacing: 0.05em;
+      box-shadow: 0 4px 12px rgba(245, 158, 11, 0.4);
+      animation: pulse 1.2s infinite;
+    }
+    @keyframes pulse {
+      0%, 100% { transform: scale(1); }
+      50% { transform: scale(1.05); }
     }
     .player-answer-reveal {
       background-color: #064e3b;
@@ -268,7 +287,7 @@
       <p id="status-message" class="badge hidden">Answer Submitted</p>
     </div>
 
-    <!-- Milestone Checkpoint Screen (Shown every 10 questions) -->
+    <!-- Milestone Checkpoint Screen (Every 10 questions) -->
     <div id="milestone-screen" class="hidden">
       <h1 style="color: #38bdf8;">Checkpoint Standings!</h1>
       <p id="milestone-text" class="question-text" style="color: #f59e0b; font-weight: 700;">After 10 Questions</p>
@@ -282,6 +301,9 @@
       <h1 id="results-heading">Round Results</h1>
       <p id="result-feedback" class="question-text" style="margin-bottom: 0.25rem; font-weight: 700;"></p>
 
+      <!-- Dynamic Streak Multiplier Badge -->
+      <div id="streak-banner" class="streak-banner hidden"></div>
+
       <div id="rank-indicator" class="rank-badge-box">
         <span>Game Rank:</span>
         <span id="player-rank-display" style="color:#38bdf8; font-size:1.3rem;">#--</span>
@@ -294,19 +316,16 @@
         <div id="player-correct-answer" class="player-answer-text">---</div>
       </div>
 
-      <!-- Toggle View Controls for Post-Game -->
       <div id="post-game-view-toggle" class="tab-bar hidden">
         <button id="btn-view-match" class="tab-btn active">This Match</button>
         <button id="btn-view-alltime" class="tab-btn">All-Time Leaderboards</button>
       </div>
 
-      <!-- Container A: Current Match Standings -->
       <div id="current-match-container">
         <h2>Current Match Standings</h2>
         <ul id="leaderboard-list" class="leaderboard"></ul>
       </div>
 
-      <!-- Container B: All-Time Leaderboards (Viewable post-match) -->
       <div id="alltime-container" class="hidden" style="margin-top: 1rem;">
         <select id="postgame-category-select" class="filter-select">
           <option value="all" selected>All Categories (Overall)</option>
@@ -361,6 +380,7 @@
     const optionsContainer = document.getElementById('options-container');
     const statusMessage = document.getElementById('status-message');
     const resultFeedback = document.getElementById('result-feedback');
+    const streakBanner = document.getElementById('streak-banner');
     const playerRankDisplay = document.getElementById('player-rank-display');
     const playerCorrectAnswer = document.getElementById('player-correct-answer');
     const answerRevealWrapper = document.getElementById('answer-reveal-wrapper');
@@ -371,14 +391,12 @@
     const milestoneText = document.getElementById('milestone-text');
     const milestoneLeaderboardList = document.getElementById('milestone-leaderboard-list');
 
-    // Pre-game Leaderboard Elements
     const lobbyCategorySelect = document.getElementById('lobby-category-select');
     const btnLobbyHigh = document.getElementById('btn-lobby-high');
     const btnLobbyCareer = document.getElementById('btn-lobby-career');
     const lobbyHallList = document.getElementById('lobby-hall-list');
     let lobbyHallMode = 'high';
 
-    // Post-game Leaderboard Elements
     const postGameViewToggle = document.getElementById('post-game-view-toggle');
     const btnViewMatch = document.getElementById('btn-view-match');
     const btnViewAlltime = document.getElementById('btn-view-alltime');
@@ -421,7 +439,6 @@
 
       joinScreen.classList.add('hidden');
       lobbyScreen.classList.remove('hidden');
-
       loadLobbyLeaderboards();
     });
 
@@ -438,7 +455,6 @@
       window.location.reload();
     });
 
-    // Fetch Leaderboards for Lobby
     async function loadLobbyLeaderboards() {
       const cat = lobbyCategorySelect.value;
       try {
@@ -478,7 +494,6 @@
       loadLobbyLeaderboards();
     });
 
-    // Game Question Event
     socket.on('game:new_question', (data) => {
       selectedAnswer = null;
       lobbyScreen.classList.add('hidden');
@@ -489,6 +504,7 @@
       postGameViewToggle.classList.add('hidden');
       currentMatchContainer.classList.remove('hidden');
       alltimeContainer.classList.add('hidden');
+      streakBanner.classList.add('hidden');
       gameScreen.classList.remove('hidden');
 
       categoryBadge.textContent = `${data.category} (${data.questionNumber}/${data.totalQuestions})`;
@@ -535,23 +551,33 @@
       if (data.myRank) playerRankDisplay.textContent = `#${data.myRank}`;
 
       if (selectedAnswer === data.correctAnswer) {
-        resultFeedback.textContent = `Correct! +${data.myPointsEarned} pts`;
+        let multText = data.streakMultiplier > 1 ? ` (${data.streakMultiplier}x Boost!)` : '';
+        resultFeedback.textContent = `Correct! +${data.myPointsEarned} pts${multText}`;
         resultFeedback.style.color = "#10b981";
         haptic([40, 60, 80]);
+
+        // Render streak multiplier badge
+        if (data.streakLabel) {
+          streakBanner.textContent = `${data.streakLabel} • ${data.myStreak} Streak!`;
+          streakBanner.classList.remove('hidden');
+        } else {
+          streakBanner.classList.add('hidden');
+        }
       } else if (selectedAnswer === null) {
-        resultFeedback.textContent = "Time's up! +0 pts";
+        resultFeedback.textContent = "Time's up! +0 pts (Streak reset)";
         resultFeedback.style.color = "#f59e0b";
+        streakBanner.classList.add('hidden');
         haptic([70, 40, 70]);
       } else {
-        resultFeedback.textContent = "Incorrect! +0 pts";
+        resultFeedback.textContent = "Incorrect! +0 pts (Streak reset)";
         resultFeedback.style.color = "#ef4444";
+        streakBanner.classList.add('hidden');
         haptic(150);
       }
 
       renderLeaderboard(data.leaderboard, leaderboardList);
     });
 
-    // Milestone Event (Every 10 Questions)
     socket.on('game:milestone_leaderboard', (data) => {
       resultsScreen.classList.add('hidden');
       gameScreen.classList.add('hidden');
@@ -561,7 +587,6 @@
       renderLeaderboard(data.leaderboard, milestoneLeaderboardList);
     });
 
-    // Game Over Event
     socket.on('game:over', (data) => {
       gameScreen.classList.add('hidden');
       milestoneScreen.classList.add('hidden');
@@ -569,6 +594,7 @@
 
       resultsHeading.textContent = "Match Complete!";
       answerRevealWrapper.classList.add('hidden');
+      streakBanner.classList.add('hidden');
       postGameViewToggle.classList.remove('hidden');
 
       const leaderboard = Array.isArray(data) ? data : data.leaderboard;
@@ -593,7 +619,6 @@
       }
     });
 
-    // Post-game Toggle Listeners
     btnViewMatch.addEventListener('click', () => {
       btnViewMatch.classList.add('active');
       btnViewAlltime.classList.remove('active');
@@ -671,7 +696,8 @@
         const li = document.createElement('li');
         const isMe = p.id === socket.id;
         li.style.border = isMe ? '2px solid #38bdf8' : 'none';
-        li.innerHTML = `<span>#${idx + 1} ${p.name} ${isMe ? '(You)' : ''}</span><strong>${p.score} pts</strong>`;
+        const streakTag = p.streak >= 2 ? `<span style="color:#f59e0b; margin-left:0.5rem; font-size:0.8rem;">🔥 ${p.streak}</span>` : '';
+        li.innerHTML = `<span>#${idx + 1} ${p.name} ${isMe ? '(You)' : ''}${streakTag}</span><strong>${p.score} pts</strong>`;
         targetElement.appendChild(li);
       });
     }
