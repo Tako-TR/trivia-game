@@ -72,7 +72,7 @@
       padding: 1.25rem;
       border-radius: 10px;
       margin: 1rem auto;
-      max-width: 500px;
+      max-width: 520px;
       display: flex;
       flex-direction: column;
       gap: 0.85rem;
@@ -95,7 +95,7 @@
       border: 2px solid #10b981;
       padding: 1.25rem;
       border-radius: 10px;
-      margin: 1rem 0;
+      margin: 1.25rem 0;
     }
     .answer-reveal-label { font-size: 0.8rem; text-transform: uppercase; color: #6ee7b7; margin-bottom: 0.25rem; }
     .answer-reveal-text { font-size: 1.5rem; font-weight: 800; color: #fff; }
@@ -134,7 +134,7 @@
     }
     .btn-kick:hover { background-color: #dc2626; color: #fff; }
 
-    /* Answer Distribution Bar Chart Styles */
+    /* Answer Distribution Bar Chart */
     .chart-container {
       background-color: #0f172a;
       border: 1px solid #334155;
@@ -267,7 +267,16 @@
         <div style="color: #94a3b8;">Players logged in: <strong id="player-count" style="color: #38bdf8;">0</strong></div>
         
         <div class="settings-panel">
-          <div class="setting-row">
+          <!-- Custom Game Pack Preset Selector -->
+          <div class="setting-row" style="background-color: rgba(56, 189, 248, 0.08); padding: 0.6rem; border-radius: 8px; border: 1px dashed #38bdf8;">
+            <label for="preset-select" style="color: #38bdf8;">Preset Game Pack (Optional)</label>
+            <select id="preset-select">
+              <option value="none" selected>-- None (Use Category & Difficulty Below) --</option>
+            </select>
+          </div>
+
+          <!-- Category Selector -->
+          <div class="setting-row" id="standard-cat-row">
             <label for="category-select">Select Category</label>
             <select id="category-select">
               <option value="all" selected>Mixed (All Categories)</option>
@@ -278,7 +287,8 @@
             </select>
           </div>
 
-          <div class="setting-row">
+          <!-- Difficulty Selector -->
+          <div class="setting-row" id="standard-diff-row">
             <label for="difficulty-select">Select Difficulty</label>
             <select id="difficulty-select">
               <option value="all" selected>Mixed (All Difficulties)</option>
@@ -290,6 +300,7 @@
             </select>
           </div>
 
+          <!-- Question Count Selector -->
           <div class="setting-row">
             <label for="question-count">Number of Questions</label>
             <select id="question-count">
@@ -308,7 +319,7 @@
           <button id="btn-start" style="background-color: #10b981; min-width: 220px;">Start Game</button>
           <div class="host-links">
             <a href="/add.html" class="host-link-btn">+ Add Questions</a>
-            <a href="/manage.html" class="host-link-btn">⚙ Manage Database & Players</a>
+            <a href="/manage.html" class="host-link-btn">⚙ Question Editor & Presets</a>
           </div>
         </div>
 
@@ -429,14 +440,44 @@
     const btnShowCareer = document.getElementById('btn-show-career');
     const hallOfFameList = document.getElementById('hall-of-fame-list');
 
+    const presetSelect = document.getElementById('preset-select');
+    const standardCatRow = document.getElementById('standard-cat-row');
+    const standardDiffRow = document.getElementById('standard-diff-row');
+
     let hallData = { highScores: [], careerScores: [] };
     let currentHallTab = 'high';
+
+    // Populate Presets in Host Dropdown
+    async function fetchLobbyPresets() {
+      try {
+        const res = await fetch('/api/presets/list');
+        const data = await res.json();
+        if (res.ok && data.success && data.presets) {
+          presetSelect.innerHTML = '<option value="none" selected>-- None (Use Category & Difficulty Below) --</option>';
+          Object.keys(data.presets).forEach(name => {
+            const count = data.presets[name].length;
+            const opt = document.createElement('option');
+            opt.value = name;
+            opt.textContent = `${name} (${count} questions)`;
+            presetSelect.appendChild(opt);
+          });
+        }
+      } catch (e) {}
+    }
+    fetchLobbyPresets();
+
+    presetSelect.addEventListener('change', () => {
+      const isPreset = presetSelect.value !== 'none';
+      standardCatRow.style.opacity = isPreset ? '0.4' : '1';
+      standardDiffRow.style.opacity = isPreset ? '0.4' : '1';
+    });
 
     tabBtnLobby.addEventListener('click', () => {
       tabBtnLobby.classList.add('active');
       tabBtnHall.classList.remove('active');
       hostLobbyView.classList.remove('hidden');
       hostHallView.classList.add('hidden');
+      fetchLobbyPresets();
     });
 
     tabBtnHall.addEventListener('click', () => {
@@ -519,6 +560,7 @@
 
     btnStart.addEventListener('click', () => {
       socket.emit('host:start_game', {
+        preset: presetSelect.value,
         category: categorySelect.value,
         difficulty: difficultySelect.value,
         count: questionCountSelect.value
@@ -536,6 +578,7 @@
     btnRestart.addEventListener('click', () => {
       hostGameOver.classList.add('hidden');
       hostLobby.classList.remove('hidden');
+      fetchLobbyPresets();
     });
 
     socket.on('game:player_list', (players) => {
@@ -599,8 +642,6 @@
       hostRoundEnd.classList.remove('hidden');
 
       hostCorrectAnswer.textContent = data.correctAnswerText;
-
-      // Render the Answer Distribution Bar Chart
       renderDistributionChart(data);
 
       hostLeaderboard.innerHTML = '';
@@ -636,7 +677,6 @@
         `;
         chartBarsWrapper.appendChild(row);
 
-        // Animate bar width in after brief paint delay
         setTimeout(() => {
           const fill = row.querySelector('.chart-fill');
           if (fill) fill.style.width = `${Math.max(pct, count > 0 ? 8 : 0)}%`;
@@ -686,7 +726,6 @@
       const p3 = players[2] || null;
 
       let html = '';
-
       if (p2) {
         html += `
           <div class="podium-slot second">
@@ -697,7 +736,6 @@
           </div>
         `;
       }
-
       if (p1) {
         html += `
           <div class="podium-slot first">
@@ -708,7 +746,6 @@
           </div>
         `;
       }
-
       if (p3) {
         html += `
           <div class="podium-slot third">
@@ -719,7 +756,6 @@
           </div>
         `;
       }
-
       podiumArea.innerHTML = html;
     }
 
