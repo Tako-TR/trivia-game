@@ -98,15 +98,28 @@ function shuffle(array) {
   return arr;
 }
 
-const MAX_ROOMS = 4;
+/* =========================================================
+   MULTI-ROOM ARCHITECTURE (6 ROOMS CONFIGURATION)
+========================================================= */
+const MAX_ROOMS = 6;
+const ROOM_NAMES = {
+  'ROOM1': 'Room 1',
+  'ROOM2': 'Room 2 Fremont',
+  'ROOM3': 'Room 3 Fremont HS',
+  'ROOM4': 'Room 4 Fremont MS',
+  'ROOM5': 'Room 5 Sandusky',
+  'ROOM6': 'Room 6 Northwood'
+};
+
 const rooms = {};
 
 function getOrCreateRoom(rawRoomCode) {
   const code = (rawRoomCode || 'ROOM1').trim().toUpperCase();
   if (!rooms[code]) {
-    if (Object.keys(rooms).length >= MAX_ROOMS) return null;
+    if (Object.keys(rooms).length >= MAX_ROOMS && !rooms[code]) return null;
     rooms[code] = {
       code: code,
+      name: ROOM_NAMES[code] || code,
       activeSockets: {},
       activeQuestions: [],
       currentQuestionIndex: -1,
@@ -230,7 +243,6 @@ app.post('/api/questions/delete', (req, res) => {
   saveQuestionsToFile(res, { success: true, totalQuestions: masterQuestions.length });
 });
 
-// Built-in Question Generator
 app.post('/api/questions/generate', (req, res) => {
   const { password, category, difficulty, count } = req.body;
   if (password !== ADMIN_PASSWORD) return res.status(401).json({ success: false, message: 'Invalid admin passcode.' });
@@ -462,6 +474,7 @@ io.on('connection', (socket) => {
     socket.join(room.code);
     socket.emit('host:room_joined', {
       roomCode: room.code,
+      roomName: room.name,
       players: getLobbyPlayers(room)
     });
   });
@@ -526,6 +539,7 @@ io.on('connection', (socket) => {
         username: cleanUser,
         avatar: chosenAvatar,
         roomCode: room.code,
+        roomName: room.name,
         highScore: playerProfile.high_score,
         careerScore: playerProfile.career_score,
         gamesPlayed: playerProfile.games_played
@@ -724,7 +738,6 @@ function endRound(room) {
   const distribution = [0, 0, 0, 0];
   let unansweredCount = 0;
 
-  // Speed Demon & Snail Tracking
   let fastestPlayer = null;
   let slowestPlayer = null;
 
@@ -741,7 +754,6 @@ function endRound(room) {
       p.roundPointsEarned = earned;
       p.score += earned;
 
-      // Check Fastest Correct Answer
       if (p.reactionSeconds !== null) {
         if (!fastestPlayer || p.reactionSeconds < fastestPlayer.time) {
           fastestPlayer = { name: p.username, avatar: p.avatar, time: p.reactionSeconds };
@@ -752,7 +764,6 @@ function endRound(room) {
       p.roundPointsEarned = 0;
     }
 
-    // Check Slowest Responder (any submitted answer)
     if (p.reactionSeconds !== null) {
       if (!slowestPlayer || p.reactionSeconds > slowestPlayer.time) {
         slowestPlayer = { name: p.username, avatar: p.avatar, time: p.reactionSeconds };
@@ -787,7 +798,7 @@ function endRound(room) {
 
   const isMilestone = totalQuestions > 10 && finishedQuestionNum % 10 === 0 && finishedQuestionNum < totalQuestions;
 
-  // 1. Broadcast round results + Speed Demon & Snail Award to HOST
+  // Broadcast results to HOST
   io.to(room.code).emit('game:round_ended', {
     correctAnswer: correctIdx,
     correctAnswerText: currentQ.options[correctIdx],
@@ -803,7 +814,7 @@ function endRound(room) {
     milestoneNumber: finishedQuestionNum
   });
 
-  // 2. Broadcast personalized stats to each player
+  // Broadcast to each player
   Object.keys(room.activeSockets).forEach((sockId) => {
     const socket = io.sockets.sockets.get(sockId);
     if (socket) {
@@ -898,6 +909,7 @@ async function finishGameAndSaveStats(room) {
 
   io.to(room.code).emit('game:over', {
     roomCode: room.code,
+    roomName: room.name,
     category: room.currentGameCategory,
     leaderboard: standings
   });
@@ -908,6 +920,7 @@ async function finishGameAndSaveStats(room) {
       const rankIndex = standings.findIndex((item) => item.id === sockId);
       socket.emit('game:over', {
         roomCode: room.code,
+        roomName: room.name,
         category: room.currentGameCategory,
         leaderboard: standings,
         myRank: rankIndex !== -1 ? rankIndex + 1 : null
