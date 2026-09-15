@@ -41,7 +41,7 @@ async function initDb() {
 }
 initDb();
 
-app.use(express.json());
+app.use(express.json({ limit: '10mb' }));
 app.use(express.static(path.join(__dirname, 'public')));
 
 // Questions loader
@@ -62,7 +62,7 @@ app.post('/api/questions/list', (req, res) => {
   return res.json({ success: true, questions: masterQuestions });
 });
 
-// API: Add Question
+// API: Add Single Question
 app.post('/api/questions/add', (req, res) => {
   const { password, category, difficulty, question, options, answer, image } = req.body;
   if (password !== ADMIN_PASSWORD) {
@@ -84,6 +84,41 @@ app.post('/api/questions/add', (req, res) => {
   fs.writeFile(questionsFilePath, JSON.stringify(masterQuestions, null, 2), 'utf8', (err) => {
     if (err) return res.status(500).json({ success: false, message: 'Error saving file.' });
     return res.json({ success: true, totalQuestions: masterQuestions.length });
+  });
+});
+
+// API: Bulk Add Questions (From CSV or JSON)
+app.post('/api/questions/bulk', (req, res) => {
+  const { password, questions } = req.body;
+  if (password !== ADMIN_PASSWORD) {
+    return res.status(401).json({ success: false, message: 'Invalid admin passcode.' });
+  }
+  if (!Array.isArray(questions) || questions.length === 0) {
+    return res.status(400).json({ success: false, message: 'No valid questions array provided.' });
+  }
+
+  const validQuestions = [];
+  for (const q of questions) {
+    if (q.category && q.question && Array.isArray(q.options) && q.options.length === 4 && q.answer !== undefined) {
+      const formatted = {
+        category: q.category.trim(),
+        question: q.question.trim(),
+        options: q.options.map(opt => String(opt).trim()),
+        answer: parseInt(q.answer, 10)
+      };
+      if (q.image && String(q.image).trim() !== '') formatted.image = String(q.image).trim();
+      validQuestions.push(formatted);
+    }
+  }
+
+  if (validQuestions.length === 0) {
+    return res.status(400).json({ success: false, message: 'None of the submitted rows passed validation.' });
+  }
+
+  masterQuestions.push(...validQuestions);
+  fs.writeFile(questionsFilePath, JSON.stringify(masterQuestions, null, 2), 'utf8', (err) => {
+    if (err) return res.status(500).json({ success: false, message: 'Error saving file.' });
+    return res.json({ success: true, addedCount: validQuestions.length, totalQuestions: masterQuestions.length });
   });
 });
 
@@ -218,6 +253,7 @@ io.on('connection', (socket) => {
       else if (requestedCategory === 'bible') matchCat = cat.includes('bible');
       else if (requestedCategory === 'movie') matchCat = cat.includes('movie');
       else if (requestedCategory === 'logos') matchCat = cat.includes('logo');
+      else if (requestedCategory === 'music') matchCat = cat.includes('music') || cat.includes('pop culture');
       if (!matchCat) return false;
 
       switch (requestedDifficulty) {
