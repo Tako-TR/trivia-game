@@ -354,7 +354,7 @@ function getStreakMultiplier(streak) {
 }
 
 function getStreakLabel(streak) {
-  if (streak >= 20) return '👑 Trivia Deity (3.0x)';
+  if (streak >= 20) return '👑 Trivia Legend (3.0x)';
   if (streak >= 10) return '🚀 Unstoppable (2.0x)';
   if (streak >= 5) return '⚡ On Fire! (1.5x)';
   if (streak >= 2) return '🔥 Warm Up (1.2x)';
