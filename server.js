@@ -18,6 +18,7 @@ const pool = process.env.DATABASE_URL
   : null;
 
 const memoryPlayers = {};
+const memoryRoomScores = {}; // "username:roomCode" -> { username, roomCode, high_score, career_score, games_played }
 
 async function initDb() {
   if (!pool) {
@@ -37,6 +38,15 @@ async function initDb() {
       );
       ALTER TABLE players ADD COLUMN IF NOT EXISTS avatar VARCHAR(10) DEFAULT '🚀';
 
+      CREATE TABLE IF NOT EXISTS room_scores (
+        username VARCHAR(30) NOT NULL,
+        room_code VARCHAR(20) NOT NULL,
+        high_score INT DEFAULT 0,
+        career_score INT DEFAULT 0,
+        games_played INT DEFAULT 0,
+        PRIMARY KEY (username, room_code)
+      );
+
       CREATE TABLE IF NOT EXISTS category_scores (
         username VARCHAR(30) NOT NULL,
         category VARCHAR(30) NOT NULL,
@@ -46,9 +56,9 @@ async function initDb() {
         PRIMARY KEY (username, category)
       );
     `);
-    console.log('Database initialized and migrated successfully.');
+    console.log('Database initialized with room_scores successfully.');
   } catch (err) {
-    console.error('Error creating/migrating database tables:', err);
+    console.error('Error initializing database tables:', err);
   }
 }
 initDb();
@@ -98,9 +108,6 @@ function shuffle(array) {
   return arr;
 }
 
-/* =========================================================
-   MULTI-ROOM ARCHITECTURE (6 ROOMS CONFIGURATION)
-========================================================= */
 const MAX_ROOMS = 6;
 const ROOM_NAMES = {
   'ROOM1': 'Room 1',
@@ -344,19 +351,31 @@ app.post('/api/players/action', async (req, res) => {
     if (action === 'reset_scores') {
       if (pool) {
         await pool.query('UPDATE players SET high_score = 0, career_score = 0, games_played = 0, updated_at = NOW() WHERE username = $1;', [cleanUser]);
+        await pool.query('UPDATE room_scores SET high_score = 0, career_score = 0, games_played = 0 WHERE username = $1;', [cleanUser]);
         await pool.query('UPDATE category_scores SET high_score = 0, career_score = 0, games_played = 0 WHERE username = $1;', [cleanUser]);
       } else if (memoryPlayers[cleanUser]) {
         memoryPlayers[cleanUser].high_score = 0;
         memoryPlayers[cleanUser].career_score = 0;
         memoryPlayers[cleanUser].games_played = 0;
+        Object.keys(memoryRoomScores).forEach(k => {
+          if (k.startsWith(`${cleanUser}:`)) {
+            memoryRoomScores[k].high_score = 0;
+            memoryRoomScores[k].career_score = 0;
+            memoryRoomScores[k].games_played = 0;
+          }
+        });
       }
       return res.json({ success: true, message: `Scores reset for ${cleanUser}.` });
     } else if (action === 'delete_ban') {
       if (pool) {
         await pool.query('DELETE FROM players WHERE username = $1;', [cleanUser]);
+        await pool.query('DELETE FROM room_scores WHERE username = $1;', [cleanUser]);
         await pool.query('DELETE FROM category_scores WHERE username = $1;', [cleanUser]);
       }
       delete memoryPlayers[cleanUser];
+      Object.keys(memoryRoomScores).forEach(k => {
+        if (k.startsWith(`${cleanUser}:`)) delete memoryRoomScores[k];
+      });
 
       for (const code of Object.keys(rooms)) {
         disconnectPlayerByUsername(rooms[code], cleanUser, 'Your profile was removed by the administrator.');
@@ -377,6 +396,7 @@ app.post('/api/players/bulk', async (req, res) => {
     if (action === 'reset_all_scores') {
       if (pool) {
         await pool.query('UPDATE players SET high_score = 0, career_score = 0, games_played = 0, updated_at = NOW();');
+        await pool.query('UPDATE room_scores SET high_score = 0, career_score = 0, games_played = 0;');
         await pool.query('UPDATE category_scores SET high_score = 0, career_score = 0, games_played = 0;');
       }
       Object.keys(memoryPlayers).forEach(u => {
@@ -384,13 +404,20 @@ app.post('/api/players/bulk', async (req, res) => {
         memoryPlayers[u].career_score = 0;
         memoryPlayers[u].games_played = 0;
       });
+      Object.keys(memoryRoomScores).forEach(k => {
+        memoryRoomScores[k].high_score = 0;
+        memoryRoomScores[k].career_score = 0;
+        memoryRoomScores[k].games_played = 0;
+      });
       return res.json({ success: true, message: 'All player scores reset to 0.' });
     } else if (action === 'wipe_all_players') {
       if (pool) {
         await pool.query('TRUNCATE TABLE category_scores;');
+        await pool.query('TRUNCATE TABLE room_scores;');
         await pool.query('TRUNCATE TABLE players;');
       }
       Object.keys(memoryPlayers).forEach(k => delete memoryPlayers[k]);
+      Object.keys(memoryRoomScores).forEach(k => delete memoryRoomScores[k]);
 
       for (const code of Object.keys(rooms)) {
         Object.keys(rooms[code].activeSockets).forEach((id) => {
@@ -426,24 +453,56 @@ function disconnectPlayerByUsername(room, username, reason) {
   io.to(room.code).emit('game:player_list', getLobbyPlayers(room));
 }
 
+/* =========================================================
+   SCOPED LEADERBOARDS: GLOBAL (ALL ROOMS) OR BY SPECIFIC ROOM
+========================================================= */
 app.get('/api/leaderboards', async (req, res) => {
+  const roomScope = (req.query.room || 'all').toUpperCase();
   const category = (req.query.category || 'all').toLowerCase();
 
   if (!pool) {
-    const list = Object.values(memoryPlayers);
-    const highScores = [...list].sort((a, b) => b.high_score - a.high_score).slice(0, 100).map(p => ({ username: p.username, avatar: p.avatar, score: p.high_score, games_played: p.games_played }));
-    const careerScores = [...list].sort((a, b) => b.career_score - a.career_score).slice(0, 100).map(p => ({ username: p.username, avatar: p.avatar, score: p.career_score, games_played: p.games_played }));
-    return res.json({ highScores, careerScores });
+    if (roomScope === 'ALL') {
+      const list = Object.values(memoryPlayers);
+      const highScores = [...list].sort((a, b) => b.high_score - a.high_score).slice(0, 100).map(p => ({ username: p.username, avatar: p.avatar, score: p.high_score, games_played: p.games_played }));
+      const careerScores = [...list].sort((a, b) => b.career_score - a.career_score).slice(0, 100).map(p => ({ username: p.username, avatar: p.avatar, score: p.career_score, games_played: p.games_played }));
+      return res.json({ highScores, careerScores });
+    } else {
+      const list = Object.values(memoryRoomScores).filter(r => r.room_code === roomScope);
+      const highScores = [...list].sort((a, b) => b.high_score - a.high_score).slice(0, 100).map(r => ({ username: r.username, avatar: (memoryPlayers[r.username] || {}).avatar || '🚀', score: r.high_score, games_played: r.games_played }));
+      const careerScores = [...list].sort((a, b) => b.career_score - a.career_score).slice(0, 100).map(r => ({ username: r.username, avatar: (memoryPlayers[r.username] || {}).avatar || '🚀', score: r.career_score, games_played: r.games_played }));
+      return res.json({ highScores, careerScores });
+    }
   }
 
   try {
-    if (category === 'all') {
-      const highScores = (await pool.query('SELECT username, avatar, high_score AS score, games_played FROM players ORDER BY high_score DESC LIMIT 100;')).rows;
-      const careerScores = (await pool.query('SELECT username, avatar, career_score AS score, games_played FROM players ORDER BY career_score DESC LIMIT 100;')).rows;
-      return res.json({ highScores, careerScores });
+    if (roomScope === 'ALL') {
+      if (category === 'all') {
+        const highScores = (await pool.query('SELECT username, avatar, high_score AS score, games_played FROM players ORDER BY high_score DESC LIMIT 100;')).rows;
+        const careerScores = (await pool.query('SELECT username, avatar, career_score AS score, games_played FROM players ORDER BY career_score DESC LIMIT 100;')).rows;
+        return res.json({ highScores, careerScores });
+      } else {
+        const highScores = (await pool.query('SELECT p.username, p.avatar, c.high_score AS score, c.games_played FROM category_scores c JOIN players p ON c.username = p.username WHERE c.category = $1 ORDER BY c.high_score DESC LIMIT 100;', [category])).rows;
+        const careerScores = (await pool.query('SELECT p.username, p.avatar, c.career_score AS score, c.games_played FROM category_scores c JOIN players p ON c.username = p.username WHERE c.category = $1 ORDER BY c.career_score DESC LIMIT 100;', [category])).rows;
+        return res.json({ highScores, careerScores });
+      }
     } else {
-      const highScores = (await pool.query('SELECT p.username, p.avatar, c.high_score AS score, c.games_played FROM category_scores c JOIN players p ON c.username = p.username WHERE c.category = $1 ORDER BY c.high_score DESC LIMIT 100;', [category])).rows;
-      const careerScores = (await pool.query('SELECT p.username, p.avatar, c.career_score AS score, c.games_played FROM category_scores c JOIN players p ON c.username = p.username WHERE c.category = $1 ORDER BY c.career_score DESC LIMIT 100;', [category])).rows;
+      // Room-specific leaderboard
+      const highScores = (await pool.query(`
+        SELECT r.username, p.avatar, r.high_score AS score, r.games_played 
+        FROM room_scores r 
+        LEFT JOIN players p ON r.username = p.username 
+        WHERE r.room_code = $1 
+        ORDER BY r.high_score DESC LIMIT 100;
+      `, [roomScope])).rows;
+
+      const careerScores = (await pool.query(`
+        SELECT r.username, p.avatar, r.career_score AS score, r.games_played 
+        FROM room_scores r 
+        LEFT JOIN players p ON r.username = p.username 
+        WHERE r.room_code = $1 
+        ORDER BY r.career_score DESC LIMIT 100;
+      `, [roomScope])).rows;
+
       return res.json({ highScores, careerScores });
     }
   } catch (err) {
@@ -798,7 +857,6 @@ function endRound(room) {
 
   const isMilestone = totalQuestions > 10 && finishedQuestionNum % 10 === 0 && finishedQuestionNum < totalQuestions;
 
-  // Broadcast results to HOST
   io.to(room.code).emit('game:round_ended', {
     correctAnswer: correctIdx,
     correctAnswerText: currentQ.options[correctIdx],
@@ -814,7 +872,6 @@ function endRound(room) {
     milestoneNumber: finishedQuestionNum
   });
 
-  // Broadcast to each player
   Object.keys(room.activeSockets).forEach((sockId) => {
     const socket = io.sockets.sockets.get(sockId);
     if (socket) {
@@ -874,6 +931,7 @@ async function finishGameAndSaveStats(room) {
     if (p.username) {
       if (pool) {
         try {
+          // 1. Update Global Player Record (All Rooms Combined)
           await pool.query(
             `UPDATE players 
              SET high_score = GREATEST(high_score, $1),
@@ -884,6 +942,19 @@ async function finishGameAndSaveStats(room) {
             [p.score, p.username]
           );
 
+          // 2. Update Per-Room Record (Room Specific)
+          await pool.query(
+            `INSERT INTO room_scores (username, room_code, high_score, career_score, games_played)
+             VALUES ($1, $2, $3, $3, 1)
+             ON CONFLICT (username, room_code)
+             DO UPDATE SET
+               high_score = GREATEST(room_scores.high_score, EXCLUDED.high_score),
+               career_score = room_scores.career_score + EXCLUDED.career_score,
+               games_played = room_scores.games_played + 1;`,
+            [p.username, room.code, p.score]
+          );
+
+          // 3. Update Category Record
           if (room.currentGameCategory && !room.currentGameCategory.startsWith('Preset:') && room.currentGameCategory !== 'all') {
             await pool.query(
               `INSERT INTO category_scores (username, category, high_score, career_score, games_played)
@@ -899,10 +970,20 @@ async function finishGameAndSaveStats(room) {
         } catch (err) {
           console.error(`Error saving stats for ${p.username}:`, err);
         }
-      } else if (memoryPlayers[p.username]) {
-        memoryPlayers[p.username].high_score = Math.max(memoryPlayers[p.username].high_score, p.score);
-        memoryPlayers[p.username].career_score += p.score;
-        memoryPlayers[p.username].games_played += 1;
+      } else {
+        if (memoryPlayers[p.username]) {
+          memoryPlayers[p.username].high_score = Math.max(memoryPlayers[p.username].high_score, p.score);
+          memoryPlayers[p.username].career_score += p.score;
+          memoryPlayers[p.username].games_played += 1;
+        }
+        const roomKey = `${p.username}:${room.code}`;
+        if (!memoryRoomScores[roomKey]) {
+          memoryRoomScores[roomKey] = { username: p.username, room_code: room.code, high_score: p.score, career_score: p.score, games_played: 1 };
+        } else {
+          memoryRoomScores[roomKey].high_score = Math.max(memoryRoomScores[roomKey].high_score, p.score);
+          memoryRoomScores[roomKey].career_score += p.score;
+          memoryRoomScores[roomKey].games_played += 1;
+        }
       }
     }
   }
