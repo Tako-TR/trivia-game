@@ -7,8 +7,10 @@
   <link rel="stylesheet" href="style.css">
   <script src="/socket.io/socket.io.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+  <!-- Confetti Canvas Library -->
+  <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.2/dist/confetti.browser.min.js"></script>
   <style>
-    .container { max-width: 820px; }
+    .container { max-width: 860px; }
     .tab-bar {
       display: flex;
       justify-content: center;
@@ -113,6 +115,80 @@
       border-radius: 6px;
       font-weight: 600;
     }
+
+    /* Podium Styles */
+    .podium-container {
+      display: flex;
+      justify-content: center;
+      align-items: flex-end;
+      gap: 1rem;
+      margin: 2rem auto 1.5rem;
+      height: 260px;
+      max-width: 550px;
+      padding: 0 1rem;
+    }
+    .podium-slot {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      flex: 1;
+      animation: popUp 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+    }
+    .podium-slot.first { order: 2; }
+    .podium-slot.second { order: 1; animation-delay: 0.15s; }
+    .podium-slot.third { order: 3; animation-delay: 0.3s; }
+    .podium-avatar {
+      font-size: 2.2rem;
+      margin-bottom: 0.35rem;
+    }
+    .podium-name {
+      font-size: 1rem;
+      font-weight: 800;
+      color: #f8fafc;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      max-width: 110px;
+    }
+    .podium-score {
+      font-size: 0.85rem;
+      color: #94a3b8;
+      font-weight: 600;
+      margin-bottom: 0.5rem;
+    }
+    .podium-step {
+      width: 100%;
+      border-radius: 12px 12px 0 0;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      font-size: 1.5rem;
+      font-weight: 900;
+      color: #0f172a;
+      box-shadow: 0 -4px 15px rgba(0,0,0,0.3);
+    }
+    .first .podium-step {
+      height: 140px;
+      background: linear-gradient(180deg, #facc15, #ca8a04);
+      border: 2px solid #fef08a;
+      border-bottom: none;
+    }
+    .second .podium-step {
+      height: 100px;
+      background: linear-gradient(180deg, #cbd5e1, #64748b);
+      border: 2px solid #f1f5f9;
+      border-bottom: none;
+    }
+    .third .podium-step {
+      height: 70px;
+      background: linear-gradient(180deg, #fdba74, #c2410c);
+      border: 2px solid #fed7aa;
+      border-bottom: none;
+    }
+    @keyframes popUp {
+      from { transform: translateY(50px); opacity: 0; }
+      to { transform: translateY(0); opacity: 1; }
+    }
   </style>
 </head>
 <body>
@@ -214,12 +290,18 @@
         <button class="btn-danger stop-game-btn">Stop / End Game</button>
       </div>
 
-      <!-- Game Over Screen -->
+      <!-- Game Over Podium Screen -->
       <div id="host-game-over" class="hidden">
-        <h1 style="color: #f59e0b;">Game Over!</h1>
-        <p class="question-text">Final Standings (Stats saved to Hall of Fame)</p>
+        <h1 style="color: #facc15; font-size: 2.2rem; margin-bottom: 0.25rem;">Champion Crowned!</h1>
+        <p class="question-text">Final Podium Standings</p>
+
+        <!-- Stepped 3D Podium Container -->
+        <div id="podium-area" class="podium-container"></div>
+
+        <h2 style="font-size: 1.1rem; color: #94a3b8; margin-top: 1rem;">Complete Rankings</h2>
         <ul id="host-final-leaderboard" class="leaderboard"></ul>
-        <button id="btn-restart" style="background-color: #3b82f6; margin-top: 1rem;">Back to Lobby</button>
+        
+        <button id="btn-restart" style="background-color: #3b82f6; margin-top: 1.25rem;">Back to Lobby</button>
       </div>
     </div>
 
@@ -319,6 +401,7 @@
     const hostGame = document.getElementById('host-game');
     const hostRoundEnd = document.getElementById('host-round-end');
     const hostGameOver = document.getElementById('host-game-over');
+    const podiumArea = document.getElementById('podium-area');
     const playerCount = document.getElementById('player-count');
     const hostLobbyPlayers = document.getElementById('host-lobby-players');
     const hostCategory = document.getElementById('host-category');
@@ -417,13 +500,98 @@
       hostGameOver.classList.remove('hidden');
 
       const leaderboard = Array.isArray(data) ? data : data.leaderboard;
+
+      // Render podium
+      renderPodium(leaderboard);
+
+      // Render full list
       hostFinalLeaderboard.innerHTML = '';
       leaderboard.forEach((p, idx) => {
         const li = document.createElement('li');
         li.innerHTML = `<span>#${idx + 1} ${p.name}</span><strong>${p.score} pts</strong>`;
         hostFinalLeaderboard.appendChild(li);
       });
+
+      // Fire celebratory confetti cascade
+      triggerVictoryConfetti();
     });
+
+    function renderPodium(players) {
+      podiumArea.innerHTML = '';
+      if (!players || players.length === 0) return;
+
+      const p1 = players[0] || null;
+      const p2 = players[1] || null;
+      const p3 = players[2] || null;
+
+      let html = '';
+
+      // 2nd Place
+      if (p2) {
+        html += `
+          <div class="podium-slot second">
+            <div class="podium-avatar">🥈</div>
+            <div class="podium-name">${p2.name}</div>
+            <div class="podium-score">${Number(p2.score).toLocaleString()} pts</div>
+            <div class="podium-step">2</div>
+          </div>
+        `;
+      }
+
+      // 1st Place
+      if (p1) {
+        html += `
+          <div class="podium-slot first">
+            <div class="podium-avatar">👑</div>
+            <div class="podium-name">${p1.name}</div>
+            <div class="podium-score">${Number(p1.score).toLocaleString()} pts</div>
+            <div class="podium-step">1</div>
+          </div>
+        `;
+      }
+
+      // 3rd Place
+      if (p3) {
+        html += `
+          <div class="podium-slot third">
+            <div class="podium-avatar">🥉</div>
+            <div class="podium-name">${p3.name}</div>
+            <div class="podium-score">${Number(p3.score).toLocaleString()} pts</div>
+            <div class="podium-step">3</div>
+          </div>
+        `;
+      }
+
+      podiumArea.innerHTML = html;
+    }
+
+    function triggerVictoryConfetti() {
+      if (typeof confetti !== 'function') return;
+
+      const duration = 3.5 * 1000;
+      const end = Date.now() + duration;
+
+      (function frame() {
+        confetti({
+          particleCount: 4,
+          angle: 60,
+          spread: 60,
+          origin: { x: 0, y: 0.65 },
+          colors: ['#facc15', '#38bdf8', '#10b981', '#f43f5e']
+        });
+        confetti({
+          particleCount: 4,
+          angle: 120,
+          spread: 60,
+          origin: { x: 1, y: 0.65 },
+          colors: ['#facc15', '#38bdf8', '#10b981', '#f43f5e']
+        });
+
+        if (Date.now() < end) {
+          requestAnimationFrame(frame);
+        }
+      }());
+    }
   </script>
 </body>
 </html>
