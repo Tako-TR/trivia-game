@@ -18,7 +18,7 @@ const pool = process.env.DATABASE_URL
   : null;
 
 const memoryPlayers = {};
-const memoryRoomScores = {}; // "username:roomCode" -> { username, roomCode, high_score, career_score, games_played }
+const memoryRoomScores = {};
 
 async function initDb() {
   if (!pool) {
@@ -56,7 +56,7 @@ async function initDb() {
         PRIMARY KEY (username, category)
       );
     `);
-    console.log('Database initialized with room_scores successfully.');
+    console.log('Database initialized successfully.');
   } catch (err) {
     console.error('Error initializing database tables:', err);
   }
@@ -159,7 +159,7 @@ function isPlayerCurrentlyOnline(username) {
 }
 
 /* =========================================================
-   ADMIN API: QUESTIONS, GENERATOR, PRESETS & PLAYERS
+   ADMIN API: QUESTIONS, CSV PARSER, GEMINI AI, PRESETS & PLAYERS
 ========================================================= */
 
 app.post('/api/questions/list', (req, res) => {
@@ -193,7 +193,7 @@ app.post('/api/questions/edit', (req, res) => {
 
   const qIndex = parseInt(index, 10);
   if (isNaN(qIndex) || qIndex < 0 || qIndex >= masterQuestions.length) {
-    return res.status(400).json({ success: false, message: 'Invalid index.' });
+    return res.status(400).json({ success: false, message: 'Invalid question index.' });
   }
   if (!category || !question || !Array.isArray(options) || options.length !== 4 || answer === undefined) {
     return res.status(400).json({ success: false, message: 'Missing required fields.' });
@@ -250,43 +250,73 @@ app.post('/api/questions/delete', (req, res) => {
   saveQuestionsToFile(res, { success: true, totalQuestions: masterQuestions.length });
 });
 
-app.post('/api/questions/generate', (req, res) => {
+// AI-Powered Question Generator using Gemini API
+app.post('/api/questions/generate', async (req, res) => {
   const { password, category, difficulty, count } = req.body;
   if (password !== ADMIN_PASSWORD) return res.status(401).json({ success: false, message: 'Invalid admin passcode.' });
 
   const num = Math.min(Math.max(parseInt(count, 10) || 3, 1), 10);
-  const targetCategory = (category || 'Bible').trim();
+  const targetCategory = (category || 'Bible Trivia').trim();
   const targetDifficulty = (difficulty || 'Easy').trim();
 
-  const curatedBank = [
-    { cat: 'Bible', diff: 'Easy', q: 'How many days and nights did it rain during the Great Flood?', o: ['7', '12', '40', '100'], a: 2 },
-    { cat: 'Bible', diff: 'Easy', q: 'What sea did Moses part to help the Israelites escape Egypt?', o: ['Dead Sea', 'Red Sea', 'Mediterranean Sea', 'Sea of Galilee'], a: 1 },
-    { cat: 'Bible', diff: 'Medium', q: 'Which prophet was swallowed by a great fish after trying to flee to Tarshish?', o: ['Elijah', 'Jonah', 'Amos', 'Micah'], a: 1 },
-    { cat: 'Bible', diff: 'Hard', q: 'In the book of Revelation, what is the name of the star that falls into the waters making them bitter?', o: ['Wormwood', 'Lucifer', 'Orion', 'Arcturus'], a: 0 },
-    { cat: 'Movie Quotes', diff: 'Easy', q: '"May the Force be with you" originates from which franchise?', o: ['Star Trek', 'Star Wars', 'Dune', 'Battlestar Galactica'], a: 1 },
-    { cat: 'Movie Quotes', diff: 'Medium', q: 'Which 1994 film features the quote: "Mama always said life was like a box of chocolates"?', o: ['The Shawshank Redemption', 'Pulp Fiction', 'Forrest Gump', 'Speed'], a: 2 },
-    { cat: 'Movie Quotes', diff: 'Hard', q: '"I love the smell of napalm in the morning" is spoken by Robert Duvall in which film?', o: ['Platoon', 'Apocalypse Now', 'Full Metal Jacket', 'The Deer Hunter'], a: 1 },
-    { cat: 'Pop Culture & Music', diff: 'Easy', q: 'Which pop star is famously known as the "Queen of Pop"?', o: ['Madonna', 'Britney Spears', 'Lady Gaga', 'Whitney Houston'], a: 0 },
-    { cat: 'Pop Culture & Music', diff: 'Medium', q: 'What year did MTV officially launch on cable television?', o: ['1978', '1981', '1985', '1989'], a: 1 },
-    { cat: 'Brand Logos', diff: 'Easy', q: 'What mythological creature is featured on the Starbucks coffee logo?', o: ['Pegasus', 'Twin-tailed Siren', 'Phoenix', 'Sphinx'], a: 1 },
-    { cat: 'Brand Logos', diff: 'Medium', q: 'The Nike logo is universally known by what name?', o: ['The Bolt', 'The Swoosh', 'The Wave', 'The Stripe'], a: 1 }
-  ];
-
-  let matches = curatedBank.filter(item => item.cat.toLowerCase().includes(targetCategory.toLowerCase()));
-  if (matches.length === 0) matches = curatedBank;
-
-  const results = [];
-  for (let i = 0; i < num; i++) {
-    const template = matches[i % matches.length];
-    results.push({
-      category: `${targetCategory}: ${targetDifficulty}`,
-      question: template.q,
-      options: [...template.o],
-      answer: template.a
-    });
+  const apiKey = process.env.GEMINI_API_KEY;
+  if (!apiKey) {
+    return res.status(500).json({ success: false, message: 'GEMINI_API_KEY environment variable is not configured on the server.' });
   }
 
-  return res.json({ success: true, questions: results });
+  const prompt = `Generate exactly ${num} trivia questions about "${targetCategory}" with a difficulty level of "${targetDifficulty}".
+You must return the result strictly as a JSON array of objects, with no markdown code blocks, no backticks, and no extra text.
+Each object must have these exact keys:
+- "question": string (the trivia prompt)
+- "options": array of 4 strings (potential answers)
+- "answer": integer (index 0 to 3 pointing to the correct option)
+
+Example format:
+[
+  {
+    "question": "What is the capital of France?",
+    "options": ["London", "Berlin", "Paris", "Madrid"],
+    "answer": 2
+  }
+]`;
+
+  try {
+    const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${apiKey}`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        contents: [{ parts: [{ text: prompt }] }],
+        generationConfig: { temperature: 0.9, responseMimeType: "application/json" }
+      })
+    });
+
+    const data = await response.json();
+    if (!response.ok) {
+      throw new Error(data.error?.message || 'Failed to communicate with Gemini API.');
+    }
+
+    const rawText = data.candidates?.[0]?.content?.parts?.[0]?.text;
+    if (!rawText) throw new Error('Empty response received from Gemini.');
+
+    const cleanedJson = rawText.replace(/```json/g, '').replace(/```/g, '').trim();
+    const parsedQuestions = JSON.parse(cleanedJson);
+
+    if (!Array.isArray(parsedQuestions) || parsedQuestions.length === 0) {
+      throw new Error('Gemini did not return a valid question array.');
+    }
+
+    const formattedQuestions = parsedQuestions.map(q => ({
+      category: `${targetCategory}: ${targetDifficulty}`,
+      question: String(q.question).trim(),
+      options: Array.isArray(q.options) ? q.options.map(opt => String(opt).trim()) : ['A', 'B', 'C', 'D'],
+      answer: Math.min(Math.max(parseInt(q.answer, 10) || 0, 0), 3)
+    }));
+
+    return res.json({ success: true, questions: formattedQuestions });
+  } catch (err) {
+    console.error('Gemini Generation Error:', err);
+    return res.status(500).json({ success: false, message: `AI Generation Error: ${err.message}` });
+  }
 });
 
 app.get('/api/presets/list', (req, res) => {
@@ -453,9 +483,6 @@ function disconnectPlayerByUsername(room, username, reason) {
   io.to(room.code).emit('game:player_list', getLobbyPlayers(room));
 }
 
-/* =========================================================
-   SCOPED LEADERBOARDS: GLOBAL (ALL ROOMS) OR BY SPECIFIC ROOM
-========================================================= */
 app.get('/api/leaderboards', async (req, res) => {
   const roomScope = (req.query.room || 'all').toUpperCase();
   const category = (req.query.category || 'all').toLowerCase();
@@ -486,7 +513,6 @@ app.get('/api/leaderboards', async (req, res) => {
         return res.json({ highScores, careerScores });
       }
     } else {
-      // Room-specific leaderboard
       const highScores = (await pool.query(`
         SELECT r.username, p.avatar, r.high_score AS score, r.games_played 
         FROM room_scores r 
@@ -931,7 +957,6 @@ async function finishGameAndSaveStats(room) {
     if (p.username) {
       if (pool) {
         try {
-          // 1. Update Global Player Record (All Rooms Combined)
           await pool.query(
             `UPDATE players 
              SET high_score = GREATEST(high_score, $1),
@@ -942,7 +967,6 @@ async function finishGameAndSaveStats(room) {
             [p.score, p.username]
           );
 
-          // 2. Update Per-Room Record (Room Specific)
           await pool.query(
             `INSERT INTO room_scores (username, room_code, high_score, career_score, games_played)
              VALUES ($1, $2, $3, $3, 1)
@@ -954,7 +978,6 @@ async function finishGameAndSaveStats(room) {
             [p.username, room.code, p.score]
           );
 
-          // 3. Update Category Record
           if (room.currentGameCategory && !room.currentGameCategory.startsWith('Preset:') && room.currentGameCategory !== 'all') {
             await pool.query(
               `INSERT INTO category_scores (username, category, high_score, career_score, games_played)
