@@ -13,7 +13,6 @@ const PORT = process.env.PORT || 3000;
 const QUESTION_DURATION = 15;
 const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || 'admin123';
 
-// Database setup
 const pool = process.env.DATABASE_URL
   ? new Pool({ connectionString: process.env.DATABASE_URL, ssl: { rejectUnauthorized: false } })
   : null;
@@ -52,7 +51,6 @@ initDb();
 app.use(express.json({ limit: '10mb' }));
 app.use(express.static(path.join(__dirname, 'public')));
 
-// Questions loader
 const questionsFilePath = path.join(__dirname, 'questions.json');
 let masterQuestions = [];
 try {
@@ -61,7 +59,6 @@ try {
   console.error('Error loading questions.json:', err);
 }
 
-// Fisher-Yates array shuffle
 function shuffle(array) {
   const arr = [...array];
   for (let i = arr.length - 1; i > 0; i--) {
@@ -81,23 +78,16 @@ let timeLeft = QUESTION_DURATION;
 let roundActive = false;
 let currentGameCategory = 'all';
 
-/* =========================================================
-   ADMIN API: QUESTIONS & PLAYER/LEADERBOARD MANAGEMENT
-========================================================= */
-
+// Admin API
 app.post('/api/questions/list', (req, res) => {
   const { password } = req.body;
-  if (password !== ADMIN_PASSWORD) {
-    return res.status(401).json({ success: false, message: 'Invalid admin passcode.' });
-  }
+  if (password !== ADMIN_PASSWORD) return res.status(401).json({ success: false, message: 'Invalid admin passcode.' });
   return res.json({ success: true, questions: masterQuestions });
 });
 
 app.post('/api/questions/add', (req, res) => {
   const { password, category, difficulty, question, options, answer, image } = req.body;
-  if (password !== ADMIN_PASSWORD) {
-    return res.status(401).json({ success: false, message: 'Invalid admin passcode.' });
-  }
+  if (password !== ADMIN_PASSWORD) return res.status(401).json({ success: false, message: 'Invalid admin passcode.' });
   if (!category || !difficulty || !question || !Array.isArray(options) || options.length !== 4 || answer === undefined) {
     return res.status(400).json({ success: false, message: 'Missing required fields.' });
   }
@@ -119,11 +109,9 @@ app.post('/api/questions/add', (req, res) => {
 
 app.post('/api/questions/bulk', (req, res) => {
   const { password, questions } = req.body;
-  if (password !== ADMIN_PASSWORD) {
-    return res.status(401).json({ success: false, message: 'Invalid admin passcode.' });
-  }
+  if (password !== ADMIN_PASSWORD) return res.status(401).json({ success: false, message: 'Invalid admin passcode.' });
   if (!Array.isArray(questions) || questions.length === 0) {
-    return res.status(400).json({ success: false, message: 'No valid questions array provided.' });
+    return res.status(400).json({ success: false, message: 'No questions array provided.' });
   }
 
   const validQuestions = [];
@@ -132,7 +120,7 @@ app.post('/api/questions/bulk', (req, res) => {
       const formatted = {
         category: q.category.trim(),
         question: q.question.trim(),
-        options: q.options.map((opt) => String(opt).trim()),
+        options: q.options.map(opt => String(opt).trim()),
         answer: parseInt(q.answer, 10)
       };
       if (q.image && String(q.image).trim() !== '') formatted.image = String(q.image).trim();
@@ -140,9 +128,7 @@ app.post('/api/questions/bulk', (req, res) => {
     }
   }
 
-  if (validQuestions.length === 0) {
-    return res.status(400).json({ success: false, message: 'None of the submitted rows passed validation.' });
-  }
+  if (validQuestions.length === 0) return res.status(400).json({ success: false, message: 'No valid rows found.' });
 
   masterQuestions.push(...validQuestions);
   fs.writeFile(questionsFilePath, JSON.stringify(masterQuestions, null, 2), 'utf8', (err) => {
@@ -153,32 +139,26 @@ app.post('/api/questions/bulk', (req, res) => {
 
 app.post('/api/questions/delete', (req, res) => {
   const { password, index } = req.body;
-  if (password !== ADMIN_PASSWORD) {
-    return res.status(401).json({ success: false, message: 'Invalid admin passcode.' });
-  }
+  if (password !== ADMIN_PASSWORD) return res.status(401).json({ success: false, message: 'Invalid admin passcode.' });
   const qIndex = parseInt(index, 10);
   if (isNaN(qIndex) || qIndex < 0 || qIndex >= masterQuestions.length) {
-    return res.status(400).json({ success: false, message: 'Invalid question index.' });
+    return res.status(400).json({ success: false, message: 'Invalid index.' });
   }
 
   masterQuestions.splice(qIndex, 1);
   fs.writeFile(questionsFilePath, JSON.stringify(masterQuestions, null, 2), 'utf8', (err) => {
-    if (err) return res.status(500).json({ success: false, message: 'Error writing questions.json.' });
+    if (err) return res.status(500).json({ success: false, message: 'Error writing file.' });
     return res.json({ success: true, totalQuestions: masterQuestions.length });
   });
 });
 
 app.post('/api/players/list', async (req, res) => {
   const { password } = req.body;
-  if (password !== ADMIN_PASSWORD) {
-    return res.status(401).json({ success: false, message: 'Invalid admin passcode.' });
-  }
+  if (password !== ADMIN_PASSWORD) return res.status(401).json({ success: false, message: 'Invalid admin passcode.' });
   if (!pool) return res.json({ success: true, players: [] });
 
   try {
-    const result = await pool.query(
-      'SELECT username, high_score, career_score, games_played, updated_at FROM players ORDER BY career_score DESC;'
-    );
+    const result = await pool.query('SELECT username, high_score, career_score, games_played, updated_at FROM players ORDER BY career_score DESC;');
     res.json({ success: true, players: result.rows });
   } catch (err) {
     res.status(500).json({ success: false, message: err.message });
@@ -187,9 +167,7 @@ app.post('/api/players/list', async (req, res) => {
 
 app.post('/api/players/action', async (req, res) => {
   const { password, username, action } = req.body;
-  if (password !== ADMIN_PASSWORD) {
-    return res.status(401).json({ success: false, message: 'Invalid admin passcode.' });
-  }
+  if (password !== ADMIN_PASSWORD) return res.status(401).json({ success: false, message: 'Invalid admin passcode.' });
   if (!username) return res.status(400).json({ success: false, message: 'Username required.' });
 
   const cleanUser = username.trim().toLowerCase();
@@ -197,14 +175,8 @@ app.post('/api/players/action', async (req, res) => {
   try {
     if (action === 'reset_scores') {
       if (pool) {
-        await pool.query(
-          'UPDATE players SET high_score = 0, career_score = 0, games_played = 0, updated_at = NOW() WHERE username = $1;',
-          [cleanUser]
-        );
-        await pool.query(
-          'UPDATE category_scores SET high_score = 0, career_score = 0, games_played = 0 WHERE username = $1;',
-          [cleanUser]
-        );
+        await pool.query('UPDATE players SET high_score = 0, career_score = 0, games_played = 0, updated_at = NOW() WHERE username = $1;', [cleanUser]);
+        await pool.query('UPDATE category_scores SET high_score = 0, career_score = 0, games_played = 0 WHERE username = $1;', [cleanUser]);
       }
       return res.json({ success: true, message: `Scores reset for ${cleanUser}.` });
     } else if (action === 'delete_ban') {
@@ -223,9 +195,7 @@ app.post('/api/players/action', async (req, res) => {
 
 app.post('/api/players/bulk', async (req, res) => {
   const { password, action } = req.body;
-  if (password !== ADMIN_PASSWORD) {
-    return res.status(401).json({ success: false, message: 'Invalid admin passcode.' });
-  }
+  if (password !== ADMIN_PASSWORD) return res.status(401).json({ success: false, message: 'Invalid admin passcode.' });
 
   try {
     if (action === 'reset_all_scores') {
@@ -233,7 +203,7 @@ app.post('/api/players/bulk', async (req, res) => {
         await pool.query('UPDATE players SET high_score = 0, career_score = 0, games_played = 0, updated_at = NOW();');
         await pool.query('UPDATE category_scores SET high_score = 0, career_score = 0, games_played = 0;');
       }
-      return res.json({ success: true, message: 'All player scores have been reset to 0.' });
+      return res.json({ success: true, message: 'All player scores reset to 0.' });
     } else if (action === 'wipe_all_players') {
       if (pool) {
         await pool.query('TRUNCATE TABLE category_scores;');
@@ -248,7 +218,7 @@ app.post('/api/players/bulk', async (req, res) => {
       });
       activeSockets = {};
       io.emit('game:player_list', []);
-      return res.json({ success: true, message: 'All player profiles and leaderboards wiped.' });
+      return res.json({ success: true, message: 'All player profiles wiped.' });
     }
     return res.status(400).json({ success: false, message: 'Invalid bulk action.' });
   } catch (err) {
@@ -270,29 +240,18 @@ function disconnectPlayerByUsername(username, reason) {
   io.emit('game:player_list', getLobbyPlayers());
 }
 
-// API: Fetch Top 100 Leaderboards (Overall or Category-Specific)
 app.get('/api/leaderboards', async (req, res) => {
   if (!pool) return res.json({ highScores: [], careerScores: [] });
   const category = (req.query.category || 'all').toLowerCase();
 
   try {
     if (category === 'all') {
-      const highScores = (await pool.query(
-        'SELECT username, high_score AS score, games_played FROM players ORDER BY high_score DESC LIMIT 100;'
-      )).rows;
-      const careerScores = (await pool.query(
-        'SELECT username, career_score AS score, games_played FROM players ORDER BY career_score DESC LIMIT 100;'
-      )).rows;
+      const highScores = (await pool.query('SELECT username, high_score AS score, games_played FROM players ORDER BY high_score DESC LIMIT 100;')).rows;
+      const careerScores = (await pool.query('SELECT username, career_score AS score, games_played FROM players ORDER BY career_score DESC LIMIT 100;')).rows;
       return res.json({ highScores, careerScores });
     } else {
-      const highScores = (await pool.query(
-        'SELECT username, high_score AS score, games_played FROM category_scores WHERE category = $1 ORDER BY high_score DESC LIMIT 100;',
-        [category]
-      )).rows;
-      const careerScores = (await pool.query(
-        'SELECT username, career_score AS score, games_played FROM category_scores WHERE category = $1 ORDER BY career_score DESC LIMIT 100;',
-        [category]
-      )).rows;
+      const highScores = (await pool.query('SELECT username, high_score AS score, games_played FROM category_scores WHERE category = $1 ORDER BY high_score DESC LIMIT 100;', [category])).rows;
+      const careerScores = (await pool.query('SELECT username, career_score AS score, games_played FROM category_scores WHERE category = $1 ORDER BY career_score DESC LIMIT 100;', [category])).rows;
       return res.json({ highScores, careerScores });
     }
   } catch (err) {
@@ -300,10 +259,7 @@ app.get('/api/leaderboards', async (req, res) => {
   }
 });
 
-/* =========================================================
-   SOCKET.IO GAME LOGIC
-========================================================= */
-
+// Socket.io Events
 io.on('connection', (socket) => {
   socket.on('player:auth', async ({ username, pin }) => {
     const cleanUser = (username || '').trim().toLowerCase();
@@ -480,6 +436,11 @@ function endRound() {
   });
 
   const leaderboard = getCurrentGameStandings();
+  const finishedQuestionNum = currentQuestionIndex + 1;
+  const totalQuestions = activeQuestions.length;
+
+  // Check if a 10-question milestone occurred and more questions remain
+  const isMilestone = totalQuestions > 10 && finishedQuestionNum % 10 === 0 && finishedQuestionNum < totalQuestions;
 
   io.sockets.sockets.forEach((socket) => {
     const p = activeSockets[socket.id];
@@ -491,13 +452,29 @@ function endRound() {
       leaderboard: leaderboard,
       myRank: rankIndex !== -1 ? rankIndex + 1 : null,
       myPointsEarned: p ? p.roundPointsEarned : 0,
-      myTotalScore: p ? p.score : 0
+      myTotalScore: p ? p.score : 0,
+      isMilestone: isMilestone,
+      milestoneNumber: finishedQuestionNum
     });
   });
 
-  intermissionTimer = setTimeout(() => {
-    startNextQuestion();
-  }, 5000);
+  if (isMilestone) {
+    // 5 seconds for round result + 10 seconds for current match leaderboard review
+    intermissionTimer = setTimeout(() => {
+      io.emit('game:milestone_leaderboard', {
+        questionNumber: finishedQuestionNum,
+        leaderboard: leaderboard
+      });
+
+      intermissionTimer = setTimeout(() => {
+        startNextQuestion();
+      }, 10000);
+    }, 5000);
+  } else {
+    intermissionTimer = setTimeout(() => {
+      startNextQuestion();
+    }, 5000);
+  }
 }
 
 async function finishGameAndSaveStats() {
@@ -507,7 +484,6 @@ async function finishGameAndSaveStats() {
     for (const p of Object.values(activeSockets)) {
       if (p.username) {
         try {
-          // 1. Update overall player record
           await pool.query(
             `UPDATE players 
              SET high_score = GREATEST(high_score, $1),
@@ -518,7 +494,6 @@ async function finishGameAndSaveStats() {
             [p.score, p.username]
           );
 
-          // 2. If a specific category was played, update that category's leaderboard
           if (currentGameCategory && currentGameCategory !== 'all') {
             await pool.query(
               `INSERT INTO category_scores (username, category, high_score, career_score, games_played)
