@@ -113,6 +113,7 @@ function getOrCreateRoom(rawRoomCode) {
       questionTimer: null,
       intermissionTimer: null,
       timeLeft: QUESTION_DURATION,
+      questionStartTime: 0,
       roundActive: false,
       currentGameCategory: 'all',
       previousRankings: {}
@@ -136,6 +137,10 @@ function isPlayerCurrentlyOnline(username) {
   }
   return false;
 }
+
+/* =========================================================
+   ADMIN API: QUESTIONS, GENERATOR, PRESETS & PLAYERS
+========================================================= */
 
 app.post('/api/questions/list', (req, res) => {
   const { password } = req.body;
@@ -223,6 +228,46 @@ app.post('/api/questions/delete', (req, res) => {
 
   masterQuestions.splice(qIndex, 1);
   saveQuestionsToFile(res, { success: true, totalQuestions: masterQuestions.length });
+});
+
+// Built-in Question Generator
+app.post('/api/questions/generate', (req, res) => {
+  const { password, category, difficulty, count } = req.body;
+  if (password !== ADMIN_PASSWORD) return res.status(401).json({ success: false, message: 'Invalid admin passcode.' });
+
+  const num = Math.min(Math.max(parseInt(count, 10) || 3, 1), 10);
+  const targetCategory = (category || 'Bible').trim();
+  const targetDifficulty = (difficulty || 'Easy').trim();
+
+  const curatedBank = [
+    { cat: 'Bible', diff: 'Easy', q: 'How many days and nights did it rain during the Great Flood?', o: ['7', '12', '40', '100'], a: 2 },
+    { cat: 'Bible', diff: 'Easy', q: 'What sea did Moses part to help the Israelites escape Egypt?', o: ['Dead Sea', 'Red Sea', 'Mediterranean Sea', 'Sea of Galilee'], a: 1 },
+    { cat: 'Bible', diff: 'Medium', q: 'Which prophet was swallowed by a great fish after trying to flee to Tarshish?', o: ['Elijah', 'Jonah', 'Amos', 'Micah'], a: 1 },
+    { cat: 'Bible', diff: 'Hard', q: 'In the book of Revelation, what is the name of the star that falls into the waters making them bitter?', o: ['Wormwood', 'Lucifer', 'Orion', 'Arcturus'], a: 0 },
+    { cat: 'Movie Quotes', diff: 'Easy', q: '"May the Force be with you" originates from which franchise?', o: ['Star Trek', 'Star Wars', 'Dune', 'Battlestar Galactica'], a: 1 },
+    { cat: 'Movie Quotes', diff: 'Medium', q: 'Which 1994 film features the quote: "Mama always said life was like a box of chocolates"?', o: ['The Shawshank Redemption', 'Pulp Fiction', 'Forrest Gump', 'Speed'], a: 2 },
+    { cat: 'Movie Quotes', diff: 'Hard', q: '"I love the smell of napalm in the morning" is spoken by Robert Duvall in which film?', o: ['Platoon', 'Apocalypse Now', 'Full Metal Jacket', 'The Deer Hunter'], a: 1 },
+    { cat: 'Pop Culture & Music', diff: 'Easy', q: 'Which pop star is famously known as the "Queen of Pop"?', o: ['Madonna', 'Britney Spears', 'Lady Gaga', 'Whitney Houston'], a: 0 },
+    { cat: 'Pop Culture & Music', diff: 'Medium', q: 'What year did MTV officially launch on cable television?', o: ['1978', '1981', '1985', '1989'], a: 1 },
+    { cat: 'Brand Logos', diff: 'Easy', q: 'What mythological creature is featured on the Starbucks coffee logo?', o: ['Pegasus', 'Twin-tailed Siren', 'Phoenix', 'Sphinx'], a: 1 },
+    { cat: 'Brand Logos', diff: 'Medium', q: 'The Nike logo is universally known by what name?', o: ['The Bolt', 'The Swoosh', 'The Wave', 'The Stripe'], a: 1 }
+  ];
+
+  let matches = curatedBank.filter(item => item.cat.toLowerCase().includes(targetCategory.toLowerCase()));
+  if (matches.length === 0) matches = curatedBank;
+
+  const results = [];
+  for (let i = 0; i < num; i++) {
+    const template = matches[i % matches.length];
+    results.push({
+      category: `${targetCategory}: ${targetDifficulty}`,
+      question: template.q,
+      options: [...template.o],
+      answer: template.a
+    });
+  }
+
+  return res.json({ success: true, questions: results });
 });
 
 app.get('/api/presets/list', (req, res) => {
@@ -472,6 +517,7 @@ io.on('connection', (socket) => {
         score: 0,
         currentAnswer: null,
         answerTimeLeft: 0,
+        reactionSeconds: null,
         roundPointsEarned: 0,
         streak: 0
       };
@@ -497,8 +543,12 @@ io.on('connection', (socket) => {
     if (!room) return;
 
     if (room.roundActive && room.activeSockets[socket.id] && room.activeSockets[socket.id].currentAnswer === null) {
+      const now = Date.now();
+      const elapsedSeconds = Math.max(0.1, (now - room.questionStartTime) / 1000);
+
       room.activeSockets[socket.id].currentAnswer = answerIndex;
       room.activeSockets[socket.id].answerTimeLeft = room.timeLeft;
+      room.activeSockets[socket.id].reactionSeconds = parseFloat(elapsedSeconds.toFixed(2));
       socket.emit('player:answer_received', answerIndex);
 
       io.to(room.code).emit('game:submission_update', {
@@ -538,6 +588,7 @@ io.on('connection', (socket) => {
       room.activeSockets[id].score = 0;
       room.activeSockets[id].currentAnswer = null;
       room.activeSockets[id].answerTimeLeft = 0;
+      room.activeSockets[id].reactionSeconds = null;
       room.activeSockets[id].roundPointsEarned = 0;
       room.activeSockets[id].streak = 0;
     });
@@ -624,12 +675,14 @@ function startNextQuestion(room) {
   Object.keys(room.activeSockets).forEach((id) => {
     room.activeSockets[id].currentAnswer = null;
     room.activeSockets[id].answerTimeLeft = 0;
+    room.activeSockets[id].reactionSeconds = null;
     room.activeSockets[id].roundPointsEarned = 0;
   });
 
   const currentQ = room.activeQuestions[room.currentQuestionIndex];
   room.roundActive = true;
   room.timeLeft = QUESTION_DURATION;
+  room.questionStartTime = Date.now();
 
   const connectedList = Object.values(room.activeSockets).map(p => ({
     name: p.username,
@@ -645,13 +698,17 @@ function startNextQuestion(room) {
     questionNumber: room.currentQuestionIndex + 1,
     totalQuestions: room.activeQuestions.length,
     timeLeft: room.timeLeft,
+    duration: QUESTION_DURATION,
     connectedPlayers: connectedList
   });
 
   clearInterval(room.questionTimer);
   room.questionTimer = setInterval(() => {
     room.timeLeft--;
-    io.to(room.code).emit('game:timer_tick', room.timeLeft);
+    io.to(room.code).emit('game:timer_tick', {
+      timeLeft: room.timeLeft,
+      duration: QUESTION_DURATION
+    });
     if (room.timeLeft <= 0) {
       clearInterval(room.questionTimer);
       endRound(room);
@@ -667,6 +724,10 @@ function endRound(room) {
   const distribution = [0, 0, 0, 0];
   let unansweredCount = 0;
 
+  // Speed Demon & Snail Tracking
+  let fastestPlayer = null;
+  let slowestPlayer = null;
+
   Object.keys(room.activeSockets).forEach((id) => {
     const p = room.activeSockets[id];
 
@@ -679,9 +740,23 @@ function endRound(room) {
 
       p.roundPointsEarned = earned;
       p.score += earned;
+
+      // Check Fastest Correct Answer
+      if (p.reactionSeconds !== null) {
+        if (!fastestPlayer || p.reactionSeconds < fastestPlayer.time) {
+          fastestPlayer = { name: p.username, avatar: p.avatar, time: p.reactionSeconds };
+        }
+      }
     } else {
       p.streak = 0;
       p.roundPointsEarned = 0;
+    }
+
+    // Check Slowest Responder (any submitted answer)
+    if (p.reactionSeconds !== null) {
+      if (!slowestPlayer || p.reactionSeconds > slowestPlayer.time) {
+        slowestPlayer = { name: p.username, avatar: p.avatar, time: p.reactionSeconds };
+      }
     }
 
     if (p.currentAnswer !== null && p.currentAnswer >= 0 && p.currentAnswer <= 3) {
@@ -699,7 +774,6 @@ function endRound(room) {
   leaderboard.forEach((player, currentIdx) => {
     const currentRank = currentIdx + 1;
     const prevRank = room.previousRankings[player.name];
-
     if (prevRank === undefined) {
       player.rankDelta = 0;
     } else {
@@ -713,7 +787,7 @@ function endRound(room) {
 
   const isMilestone = totalQuestions > 10 && finishedQuestionNum % 10 === 0 && finishedQuestionNum < totalQuestions;
 
-  // 1. Send round results and animated rank movement to the HOST
+  // 1. Broadcast round results + Speed Demon & Snail Award to HOST
   io.to(room.code).emit('game:round_ended', {
     correctAnswer: correctIdx,
     correctAnswerText: currentQ.options[correctIdx],
@@ -723,11 +797,13 @@ function endRound(room) {
     totalResponders: totalResponders,
     unansweredCount: unansweredCount,
     leaderboard: leaderboard,
+    fastestPlayer: fastestPlayer,
+    slowestPlayer: slowestPlayer,
     isMilestone: isMilestone,
     milestoneNumber: finishedQuestionNum
   });
 
-  // 2. Send personalized stats + haptics to each player
+  // 2. Broadcast personalized stats to each player
   Object.keys(room.activeSockets).forEach((sockId) => {
     const socket = io.sockets.sockets.get(sockId);
     if (socket) {
@@ -749,8 +825,11 @@ function endRound(room) {
         myPointsEarned: p ? p.roundPointsEarned : 0,
         myTotalScore: p ? p.score : 0,
         myStreak: p ? p.streak : 0,
+        myReactionTime: p ? p.reactionSeconds : null,
         streakMultiplier: p ? getStreakMultiplier(p.streak) : 1.0,
         streakLabel: p ? getStreakLabel(p.streak) : '',
+        fastestPlayer: fastestPlayer,
+        slowestPlayer: slowestPlayer,
         isMilestone: isMilestone,
         milestoneNumber: finishedQuestionNum
       });
@@ -818,6 +897,8 @@ async function finishGameAndSaveStats(room) {
   }
 
   io.to(room.code).emit('game:over', {
+    roomCode: room.code,
+    category: room.currentGameCategory,
     leaderboard: standings
   });
 
@@ -826,6 +907,8 @@ async function finishGameAndSaveStats(room) {
     if (socket) {
       const rankIndex = standings.findIndex((item) => item.id === sockId);
       socket.emit('game:over', {
+        roomCode: room.code,
+        category: room.currentGameCategory,
         leaderboard: standings,
         myRank: rankIndex !== -1 ? rankIndex + 1 : null
       });
