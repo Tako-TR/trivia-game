@@ -3,21 +3,37 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Trivia Host Control</title>
+  <title>Trivia Admin & Database Manager</title>
   <link rel="stylesheet" href="style.css">
-  <script src="/socket.io/socket.io.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
-  <!-- Confetti Canvas Library -->
-  <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.2/dist/confetti.browser.min.js"></script>
   <style>
-    .container { max-width: 860px; }
-    .tab-bar {
+    .container { max-width: 950px; }
+    .auth-banner {
+      background-color: #0f172a;
+      border: 1px solid #334155;
+      padding: 1.25rem;
+      border-radius: 12px;
+      margin-bottom: 1.5rem;
+      display: flex;
+      gap: 0.75rem;
+      align-items: center;
+      justify-content: center;
+      flex-wrap: wrap;
+    }
+    .auth-banner input {
+      background-color: #1e293b;
+      color: #fff;
+      border: 1px solid #475569;
+      padding: 0.6rem 1rem;
+      border-radius: 8px;
+      font-size: 0.95rem;
+    }
+    .admin-nav {
       display: flex;
       justify-content: center;
       gap: 0.5rem;
-      margin: 1rem 0;
+      margin-bottom: 1.5rem;
     }
-    .tab-btn {
+    .admin-nav button {
       background-color: #1e293b;
       color: #94a3b8;
       border: 1px solid #334155;
@@ -26,567 +42,606 @@
       font-weight: 700;
       cursor: pointer;
     }
-    .tab-btn.active {
+    .admin-nav button.active {
       background-color: #38bdf8;
       color: #0f172a;
       border-color: #38bdf8;
     }
-    .hall-of-fame-panel {
-      background-color: #0f172a;
-      border: 1px solid #334155;
-      padding: 1.25rem;
-      border-radius: 12px;
-      margin: 1rem auto;
-      max-height: 480px;
-      overflow-y: auto;
-    }
-    .lobby-header-card {
+    .filter-bar {
       display: flex;
-      flex-direction: column;
-      align-items: center;
-      margin: 1.25rem 0;
-    }
-    .qr-card {
-      background: linear-gradient(145deg, #1e293b, #0f172a);
-      border: 2px solid #38bdf8;
-      border-radius: 16px;
-      padding: 1.25rem;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      box-shadow: 0 10px 25px -5px rgba(56, 189, 248, 0.25);
-    }
-    .qr-card h2 { font-size: 1.1rem; color: #38bdf8; margin: 0 0 0.25rem 0; }
-    .qr-card p { font-size: 0.85rem; color: #94a3b8; margin: 0 0 0.75rem 0; }
-    #qrcode { background: #0f172a; padding: 10px; border-radius: 12px; display: inline-block; border: 1px solid #334155; }
-    .settings-panel {
-      background-color: #0f172a;
-      border: 1px solid #334155;
-      padding: 1.25rem;
-      border-radius: 10px;
-      margin: 1rem auto;
-      max-width: 500px;
-      display: flex;
-      flex-direction: column;
-      gap: 0.85rem;
-      text-align: left;
-    }
-    .setting-row { display: flex; flex-direction: column; gap: 0.35rem; }
-    .setting-row label { font-size: 0.8rem; font-weight: 700; color: #94a3b8; text-transform: uppercase; }
-    select {
-      background-color: #1e293b;
-      color: #38bdf8;
-      border: 1px solid #475569;
-      padding: 0.65rem 1rem;
-      border-radius: 8px;
-      font-size: 0.95rem;
-      font-weight: 600;
-    }
-    .btn-danger { background-color: #dc2626 !important; color: #fff; margin-top: 1.25rem; }
-    .answer-reveal-box {
-      background-color: #064e3b;
-      border: 2px solid #10b981;
-      padding: 1.25rem;
-      border-radius: 10px;
-      margin: 1.25rem 0;
-    }
-    .answer-reveal-label { font-size: 0.8rem; text-transform: uppercase; color: #6ee7b7; margin-bottom: 0.25rem; }
-    .answer-reveal-text { font-size: 1.5rem; font-weight: 800; color: #fff; }
-    .trivia-image-box {
-      margin: 1rem auto;
-      background-color: #fff;
-      padding: 0.85rem;
-      border-radius: 12px;
-      display: inline-block;
-    }
-    .trivia-image { max-height: 180px; max-width: 100%; object-fit: contain; display: block; }
-    .host-links {
-      display: flex;
-      gap: 0.75rem;
-      justify-content: center;
+      gap: 1rem;
+      margin-bottom: 1rem;
       flex-wrap: wrap;
     }
-    .host-link-btn {
+    .filter-bar input, .filter-bar select {
+      background-color: #0f172a;
       color: #38bdf8;
-      font-size: 0.85rem;
-      text-decoration: none;
-      border: 1px dashed #38bdf8;
-      padding: 0.4rem 0.85rem;
-      border-radius: 6px;
-      font-weight: 600;
+      border: 1px solid #334155;
+      padding: 0.6rem 1rem;
+      border-radius: 8px;
+      font-size: 0.95rem;
+      flex: 1;
+      min-width: 200px;
     }
-
-    /* Podium Styles */
-    .podium-container {
-      display: flex;
-      justify-content: center;
-      align-items: flex-end;
-      gap: 1rem;
-      margin: 2rem auto 1.5rem;
-      height: 260px;
-      max-width: 550px;
-      padding: 0 1rem;
-    }
-    .podium-slot {
+    .q-list {
       display: flex;
       flex-direction: column;
-      align-items: center;
-      flex: 1;
-      animation: popUp 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+      gap: 1rem;
+      max-height: 550px;
+      overflow-y: auto;
+      padding-right: 0.5rem;
     }
-    .podium-slot.first { order: 2; }
-    .podium-slot.second { order: 1; animation-delay: 0.15s; }
-    .podium-slot.third { order: 3; animation-delay: 0.3s; }
-    .podium-avatar {
-      font-size: 2.2rem;
-      margin-bottom: 0.35rem;
+    .q-card {
+      background-color: #0f172a;
+      border: 1px solid #334155;
+      border-radius: 10px;
+      padding: 1.25rem;
+      text-align: left;
+      display: flex;
+      gap: 1.25rem;
+      align-items: flex-start;
     }
-    .podium-name {
-      font-size: 1rem;
-      font-weight: 800;
-      color: #f8fafc;
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
-      max-width: 110px;
-    }
-    .podium-score {
-      font-size: 0.85rem;
-      color: #94a3b8;
-      font-weight: 600;
+    .q-card:hover { border-color: #475569; }
+    .q-info { flex: 1; }
+    .q-badge {
+      display: inline-block;
+      background-color: #1e293b;
+      color: #38bdf8;
+      font-size: 0.75rem;
+      font-weight: 700;
+      padding: 0.2rem 0.6rem;
+      border-radius: 4px;
       margin-bottom: 0.5rem;
     }
-    .podium-step {
+    .q-title { font-size: 1.05rem; font-weight: 700; color: #f8fafc; margin-bottom: 0.6rem; }
+    .q-options { display: grid; grid-template-columns: 1fr 1fr; gap: 0.4rem; font-size: 0.85rem; }
+    .q-opt { padding: 0.35rem 0.6rem; border-radius: 6px; background-color: #1e293b; color: #94a3b8; }
+    .q-opt.correct { background-color: #064e3b; color: #6ee7b7; font-weight: 700; border: 1px solid #10b981; }
+    .q-img-thumb { max-width: 80px; max-height: 80px; object-fit: contain; background: #fff; padding: 6px; border-radius: 6px; }
+    .btn-danger {
+      background-color: #dc2626 !important;
+      color: #fff;
+      border: none;
+      padding: 0.45rem 0.85rem;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 0.85rem;
+      font-weight: 700;
+    }
+    .btn-danger:hover { background-color: #b91c1c !important; }
+    .btn-warning {
+      background-color: #f59e0b !important;
+      color: #0f172a;
+      border: none;
+      padding: 0.45rem 0.85rem;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 0.85rem;
+      font-weight: 700;
+    }
+    .btn-warning:hover { background-color: #d97706 !important; }
+    .top-actions {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 1rem;
+      flex-wrap: wrap;
+      gap: 0.5rem;
+    }
+    .bulk-danger-box {
+      background-color: #1c1917;
+      border: 1px dashed #ef4444;
+      border-radius: 10px;
+      padding: 1.25rem;
+      margin-bottom: 1.5rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 1rem;
+      text-align: left;
+    }
+    .player-table {
       width: 100%;
-      border-radius: 12px 12px 0 0;
+      border-collapse: collapse;
+      text-align: left;
+      font-size: 0.95rem;
+    }
+    .player-table th {
+      background-color: #1e293b;
+      color: #94a3b8;
+      padding: 0.75rem 1rem;
+      text-transform: uppercase;
+      font-size: 0.75rem;
+      letter-spacing: 0.05em;
+    }
+    .player-table td {
+      padding: 0.75rem 1rem;
+      border-bottom: 1px solid #334155;
+      color: #f8fafc;
+    }
+    .player-table tr:hover { background-color: rgba(30, 41, 59, 0.5); }
+    .modal-backdrop {
+      position: fixed;
+      top: 0; left: 0; width: 100%; height: 100%;
+      background: rgba(0, 0, 0, 0.75);
       display: flex;
       justify-content: center;
       align-items: center;
-      font-size: 1.5rem;
-      font-weight: 900;
-      color: #0f172a;
-      box-shadow: 0 -4px 15px rgba(0,0,0,0.3);
+      z-index: 1000;
     }
-    .first .podium-step {
-      height: 140px;
-      background: linear-gradient(180deg, #facc15, #ca8a04);
-      border: 2px solid #fef08a;
-      border-bottom: none;
+    .modal-box {
+      background-color: #0f172a;
+      border: 1px solid #38bdf8;
+      border-radius: 12px;
+      width: 90%;
+      max-width: 600px;
+      padding: 1.5rem;
+      text-align: left;
     }
-    .second .podium-step {
-      height: 100px;
-      background: linear-gradient(180deg, #cbd5e1, #64748b);
-      border: 2px solid #f1f5f9;
-      border-bottom: none;
-    }
-    .third .podium-step {
-      height: 70px;
-      background: linear-gradient(180deg, #fdba74, #c2410c);
-      border: 2px solid #fed7aa;
-      border-bottom: none;
-    }
-    @keyframes popUp {
-      from { transform: translateY(50px); opacity: 0; }
-      to { transform: translateY(0); opacity: 1; }
+    .modal-box textarea {
+      width: 100%;
+      height: 160px;
+      background-color: #1e293b;
+      color: #f8fafc;
+      border: 1px solid #475569;
+      border-radius: 8px;
+      padding: 0.75rem;
+      font-family: monospace;
+      font-size: 0.85rem;
+      margin: 0.75rem 0;
+      box-sizing: border-box;
     }
   </style>
 </head>
 <body>
   <div class="container">
-    <h1>Host Screen</h1>
+    <h1>Database & Admin Manager</h1>
+    <p class="question-text" style="margin-bottom: 1.5rem;">Manage questions, registered players, and reset leaderboards</p>
 
-    <div class="tab-bar">
-      <button id="tab-btn-lobby" class="tab-btn active">Live Game Lobby</button>
-      <button id="tab-btn-hall" class="tab-btn">All-Time Hall of Fame</button>
+    <!-- Passcode Authentication -->
+    <div class="auth-banner">
+      <label for="admin-pass" style="font-size: 0.85rem; font-weight: 700; color: #94a3b8; text-transform: uppercase;">Host Passcode</label>
+      <input type="password" id="admin-pass" placeholder="admin123">
+      <button id="btn-load" style="background-color: #38bdf8; color: #0f172a; padding: 0.6rem 1.25rem; font-weight: 700; border-radius: 8px;">Unlock Console</button>
     </div>
 
-    <!-- Main Host Game Lobby -->
-    <div id="host-lobby-view">
-      <div id="host-lobby">
-        <div class="lobby-header-card">
-          <div class="qr-card">
-            <h2>Scan to Join & Save Score</h2>
-            <p>Point phone camera here to join the lobby</p>
-            <div id="qrcode"></div>
-          </div>
-        </div>
-
-        <div style="color: #94a3b8;">Players logged in: <strong id="player-count" style="color: #38bdf8;">0</strong></div>
-        
-        <div class="settings-panel">
-          <!-- Category Selector (Includes Pop Culture & Music) -->
-          <div class="setting-row">
-            <label for="category-select">Select Category</label>
-            <select id="category-select">
-              <option value="all" selected>Mixed (All Categories)</option>
-              <option value="music">Pop Culture & Music Only</option>
-              <option value="logos">Brand Logos Only</option>
-              <option value="bible">Bible Trivia Only</option>
-              <option value="movie">Movie Quotes Only</option>
-            </select>
-          </div>
-
-          <div class="setting-row">
-            <label for="difficulty-select">Select Difficulty</label>
-            <select id="difficulty-select">
-              <option value="all" selected>Mixed (All Difficulties)</option>
-              <option value="easy">Easy Only</option>
-              <option value="medium">Medium Only</option>
-              <option value="hard">Hard Only</option>
-              <option value="easy_medium">Easy & Medium</option>
-              <option value="medium_hard">Medium & Hard</option>
-            </select>
-          </div>
-
-          <div class="setting-row">
-            <label for="question-count">Number of Questions</label>
-            <select id="question-count">
-              <option value="5">5 Questions</option>
-              <option value="10" selected>10 Questions</option>
-              <option value="15">15 Questions</option>
-              <option value="20">20 Questions</option>
-              <option value="25">25 Questions</option>
-              <option value="50">50 Questions</option>
-              <option value="100">All Available Questions</option>
-            </select>
-          </div>
-        </div>
-
-        <div style="display: flex; flex-direction: column; align-items: center; gap: 0.75rem;">
-          <button id="btn-start" style="background-color: #10b981; min-width: 220px;">Start Game</button>
-          <div class="host-links">
-            <a href="/add.html" class="host-link-btn">+ Add Questions</a>
-            <a href="/manage.html" class="host-link-btn">⚙ Manage Questions</a>
-          </div>
-        </div>
-
-        <h2 style="margin-top: 1.5rem; font-size: 1.15rem;">Connected Players</h2>
-        <ul id="host-lobby-players" class="leaderboard"></ul>
+    <!-- Manager Workspace -->
+    <div id="manager-panel" class="hidden">
+      <div class="admin-nav">
+        <button id="nav-questions" class="active">Question Library</button>
+        <button id="nav-players">Players & Leaderboards</button>
       </div>
 
-      <!-- Live Game Screen -->
-      <div id="host-game" class="hidden">
-        <div id="host-category" class="badge">Category</div>
-        <div id="host-timer" class="timer">15</div>
-
-        <div id="host-image-container" class="trivia-image-box hidden">
-          <img id="host-question-image" class="trivia-image" src="" alt="Trivia Visual">
+      <!-- SECTION 1: QUESTION LIBRARY -->
+      <div id="section-questions">
+        <div class="top-actions">
+          <span style="color: #94a3b8;">Total Questions: <strong id="total-count" style="color: #38bdf8;">0</strong></span>
+          <div style="display: flex; gap: 0.5rem; flex-wrap: wrap;">
+            <button id="btn-open-import" style="background-color: #f59e0b; color: #0f172a; font-weight: 700; font-size: 0.85rem; padding: 0.45rem 0.85rem; border-radius: 6px; border: none; cursor: pointer;">📥 Bulk Import CSV</button>
+            <a href="/add.html" style="background-color: #10b981; color: #fff; padding: 0.45rem 0.85rem; border-radius: 6px; text-decoration: none; font-weight: 700; font-size: 0.85rem;">+ Add Single</a>
+            <a href="/host.html" style="border: 1px solid #475569; color: #94a3b8; padding: 0.45rem 0.85rem; border-radius: 6px; text-decoration: none; font-size: 0.85rem;">Back to Host</a>
+          </div>
         </div>
 
-        <p id="host-question" class="question-text">Question</p>
-        <div id="host-options" class="options-grid"></div>
-
-        <button class="btn-danger stop-game-btn">Stop / End Game</button>
-      </div>
-
-      <!-- Round End Screen -->
-      <div id="host-round-end" class="hidden">
-        <h1>Round Results</h1>
-        <div class="answer-reveal-box">
-          <div class="answer-reveal-label">Correct Answer</div>
-          <div id="host-correct-answer" class="answer-reveal-text">---</div>
+        <div class="filter-bar">
+          <input type="text" id="search-input" placeholder="Search questions or answers...">
+          <select id="category-filter">
+            <option value="all">All Categories & Difficulties</option>
+            <option value="logos">Brand Logos</option>
+            <option value="music">Music & Pop Culture</option>
+            <option value="bible">Bible</option>
+            <option value="movie">Movie Quotes</option>
+            <option value="easy">Easy Only</option>
+            <option value="medium">Medium Only</option>
+            <option value="hard">Hard Only</option>
+          </select>
         </div>
-        <p style="color: #f59e0b; font-weight: 600;">Next question loading in 5 seconds...</p>
-        <h2>Current Standings</h2>
-        <ul id="host-leaderboard" class="leaderboard"></ul>
-        <button class="btn-danger stop-game-btn">Stop / End Game</button>
+
+        <div id="question-list" class="q-list"></div>
       </div>
 
-      <!-- Game Over Podium Screen -->
-      <div id="host-game-over" class="hidden">
-        <h1 style="color: #facc15; font-size: 2.2rem; margin-bottom: 0.25rem;">Champion Crowned!</h1>
-        <p class="question-text">Final Podium Standings</p>
+      <!-- SECTION 2: PLAYERS & LEADERBOARD CONTROLS -->
+      <div id="section-players" class="hidden">
+        <!-- Danger Zone Bulk Actions -->
+        <div class="bulk-danger-box">
+          <div>
+            <h3 style="margin: 0 0 0.25rem 0; color: #f87171; font-size: 1.1rem;">Leaderboard & Player Reset Controls</h3>
+            <p style="margin: 0; font-size: 0.85rem; color: #a8a29e;">Bulk operations apply to all registered players permanently.</p>
+          </div>
+          <div style="display: flex; gap: 0.75rem; flex-wrap: wrap;">
+            <button id="btn-bulk-reset-scores" class="btn-warning">Reset All Scores to 0</button>
+            <button id="btn-bulk-wipe-players" class="btn-danger">Wipe All Accounts</button>
+          </div>
+        </div>
 
-        <div id="podium-area" class="podium-container"></div>
+        <div class="top-actions">
+          <span style="color: #94a3b8;">Registered Accounts: <strong id="player-count" style="color: #38bdf8;">0</strong></span>
+          <input type="text" id="player-search" placeholder="Search usernames..." style="background-color: #0f172a; color: #38bdf8; border: 1px solid #334155; padding: 0.4rem 0.8rem; border-radius: 6px;">
+        </div>
 
-        <h2 style="font-size: 1.1rem; color: #94a3b8; margin-top: 1rem;">Complete Rankings</h2>
-        <ul id="host-final-leaderboard" class="leaderboard"></ul>
-        
-        <button id="btn-restart" style="background-color: #3b82f6; margin-top: 1.25rem;">Back to Lobby</button>
+        <div style="background-color: #0f172a; border: 1px solid #334155; border-radius: 10px; overflow: hidden;">
+          <table class="player-table">
+            <thead>
+              <tr>
+                <th>Username</th>
+                <th>Single Best</th>
+                <th>Career XP</th>
+                <th>Games</th>
+                <th style="text-align: right;">Actions</th>
+              </tr>
+            </thead>
+            <tbody id="player-list-body"></tbody>
+          </table>
+        </div>
       </div>
     </div>
+  </div>
 
-    <!-- Hall of Fame Tab -->
-    <div id="host-hall-view" class="hidden">
-      <div class="tab-bar">
-        <button id="btn-show-highscore" class="tab-btn active">Top Single-Game Scores</button>
-        <button id="btn-show-career" class="tab-btn">Top Career Cumulative XP</button>
-      </div>
+  <!-- Bulk Import Modal -->
+  <div id="import-modal" class="modal-backdrop hidden">
+    <div class="modal-box">
+      <h2 style="margin-top: 0; color: #38bdf8; font-size: 1.3rem;">Bulk CSV Import</h2>
+      <p style="font-size: 0.85rem; color: #94a3b8; margin-bottom: 0.5rem;">
+        Format per line:<br>
+        <code>Category: Difficulty, Question, Option1, Option2, Option3, Option4, Answer(0-3), OptionalImageUrl</code>
+      </p>
 
-      <div class="hall-of-fame-panel">
-        <ul id="hall-of-fame-list" class="leaderboard">
-          <li>Loading Hall of Fame records...</li>
-        </ul>
+      <input type="file" id="csv-file-input" accept=".csv, .txt" style="color: #94a3b8; font-size: 0.85rem; margin-bottom: 0.5rem;">
+      <textarea id="csv-text-input" placeholder="Music: Easy, Who sang Thriller?, Prince, Michael Jackson, Lionel Richie, Usher, 1, "></textarea>
+
+      <div style="display: flex; justify-content: flex-end; gap: 0.75rem;">
+        <button id="btn-cancel-import" style="background: none; border: 1px solid #475569; color: #94a3b8; padding: 0.5rem 1rem; border-radius: 6px; cursor: pointer;">Cancel</button>
+        <button id="btn-submit-import" style="background-color: #10b981; color: #fff; font-weight: 700; border: none; padding: 0.5rem 1.25rem; border-radius: 6px; cursor: pointer;">Process & Import</button>
       </div>
     </div>
   </div>
 
   <script>
-    const socket = io();
+    const adminPassInput = document.getElementById('admin-pass');
+    const btnLoad = document.getElementById('btn-load');
+    const managerPanel = document.getElementById('manager-panel');
 
-    new QRCode(document.getElementById("qrcode"), {
-      text: window.location.origin,
-      width: 160,
-      height: 160,
-      colorDark: "#38bdf8",
-      colorLight: "#0f172a",
-      correctLevel: QRCode.CorrectLevel.M
+    const navQuestions = document.getElementById('nav-questions');
+    const navPlayers = document.getElementById('nav-players');
+    const sectionQuestions = document.getElementById('section-questions');
+    const sectionPlayers = document.getElementById('section-players');
+
+    const questionList = document.getElementById('question-list');
+    const totalCount = document.getElementById('total-count');
+    const searchInput = document.getElementById('search-input');
+    const categoryFilter = document.getElementById('category-filter');
+
+    const playerCount = document.getElementById('player-count');
+    const playerSearch = document.getElementById('player-search');
+    const playerListBody = document.getElementById('player-list-body');
+    const btnBulkResetScores = document.getElementById('btn-bulk-reset-scores');
+    const btnBulkWipePlayers = document.getElementById('btn-bulk-wipe-players');
+
+    const importModal = document.getElementById('import-modal');
+    const btnOpenImport = document.getElementById('btn-open-import');
+    const btnCancelImport = document.getElementById('btn-cancel-import');
+    const btnSubmitImport = document.getElementById('btn-submit-import');
+    const csvFileInput = document.getElementById('csv-file-input');
+    const csvTextInput = document.getElementById('csv-text-input');
+
+    let allQuestions = [];
+    let allPlayers = [];
+
+    // Tab Navigation
+    navQuestions.addEventListener('click', () => {
+      navQuestions.classList.add('active');
+      navPlayers.classList.remove('active');
+      sectionQuestions.classList.remove('hidden');
+      sectionPlayers.classList.add('hidden');
     });
 
-    const hostLobbyView = document.getElementById('host-lobby-view');
-    const hostHallView = document.getElementById('host-hall-view');
-    const tabBtnLobby = document.getElementById('tab-btn-lobby');
-    const tabBtnHall = document.getElementById('tab-btn-hall');
-
-    const btnShowHighScore = document.getElementById('btn-show-highscore');
-    const btnShowCareer = document.getElementById('btn-show-career');
-    const hallOfFameList = document.getElementById('hall-of-fame-list');
-
-    let hallData = { highScores: [], careerScores: [] };
-    let currentHallTab = 'high';
-
-    tabBtnLobby.addEventListener('click', () => {
-      tabBtnLobby.classList.add('active');
-      tabBtnHall.classList.remove('active');
-      hostLobbyView.classList.remove('hidden');
-      hostHallView.classList.add('hidden');
+    navPlayers.addEventListener('click', () => {
+      navPlayers.classList.add('active');
+      navQuestions.classList.remove('active');
+      sectionPlayers.classList.remove('hidden');
+      sectionQuestions.classList.add('hidden');
+      loadPlayers();
     });
 
-    tabBtnHall.addEventListener('click', () => {
-      tabBtnHall.classList.add('active');
-      tabBtnLobby.classList.remove('active');
-      hostHallView.classList.remove('hidden');
-      hostLobbyView.classList.add('hidden');
-      loadHallOfFame();
+    btnLoad.addEventListener('click', () => {
+      loadQuestions();
+      loadPlayers();
+    });
+    adminPassInput.addEventListener('keypress', (e) => {
+      if (e.key === 'Enter') {
+        loadQuestions();
+        loadPlayers();
+      }
     });
 
-    btnShowHighScore.addEventListener('click', () => {
-      btnShowHighScore.classList.add('active');
-      btnShowCareer.classList.remove('active');
-      currentHallTab = 'high';
-      renderHallList();
-    });
+    /* =========================================================
+       QUESTIONS TAB FUNCTIONS
+    ========================================================= */
+    async function loadQuestions() {
+      const password = adminPassInput.value.trim();
+      if (!password) return alert('Enter your host passcode.');
 
-    btnShowCareer.addEventListener('click', () => {
-      btnShowCareer.classList.add('active');
-      btnShowHighScore.classList.remove('active');
-      currentHallTab = 'career';
-      renderHallList();
-    });
-
-    async function loadHallOfFame() {
       try {
-        const res = await fetch('/api/leaderboards');
-        hallData = await res.json();
-        renderHallList();
+        const res = await fetch('/api/questions/list', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ password })
+        });
+        const data = await res.json();
+        if (res.ok && data.success) {
+          allQuestions = data.questions;
+          totalCount.textContent = allQuestions.length;
+          managerPanel.classList.remove('hidden');
+          renderQuestionList();
+        } else {
+          alert(data.message || 'Access denied.');
+        }
       } catch (e) {
-        hallOfFameList.innerHTML = '<li>Unable to load Hall of Fame.</li>';
+        alert('Server connection error.');
       }
     }
 
-    function renderHallList() {
-      hallOfFameList.innerHTML = '';
-      const list = currentHallTab === 'high' ? hallData.highScores : hallData.careerScores;
-      if (!list || list.length === 0) {
-        hallOfFameList.innerHTML = '<li>No records logged yet. Play a game to record scores!</li>';
+    searchInput.addEventListener('input', renderQuestionList);
+    categoryFilter.addEventListener('change', renderQuestionList);
+
+    function renderQuestionList() {
+      const query = searchInput.value.toLowerCase().trim();
+      const filter = categoryFilter.value.toLowerCase();
+      questionList.innerHTML = '';
+
+      const filtered = allQuestions
+        .map((q, originalIndex) => ({ ...q, originalIndex }))
+        .filter(q => {
+          const cat = (q.category || '').toLowerCase();
+          const matchesQuery = !query || q.question.toLowerCase().includes(query) || q.options.some(opt => opt.toLowerCase().includes(query));
+          const matchesCat = filter === 'all' || cat.includes(filter);
+          return matchesQuery && matchesCat;
+        });
+
+      if (filtered.length === 0) {
+        questionList.innerHTML = '<div style="color: #64748b; padding: 2rem; text-align: center;">No questions match filter.</div>';
         return;
       }
-      list.forEach((p, idx) => {
-        const li = document.createElement('li');
-        li.innerHTML = `<span>#${idx + 1} ${p.username} (${p.games_played} games)</span><strong style="color:#38bdf8;">${Number(p.score).toLocaleString()} pts</strong>`;
-        hallOfFameList.appendChild(li);
+
+      filtered.forEach(q => {
+        const card = document.createElement('div');
+        card.className = 'q-card';
+        const imgHtml = q.image ? `<img src="${q.image}" class="q-img-thumb" alt="thumb">` : '';
+        const optionsHtml = q.options.map((opt, i) => {
+          const isCorrect = i === q.answer;
+          return `<div class="q-opt ${isCorrect ? 'correct' : ''}">${isCorrect ? '✓ ' : ''}${opt}</div>`;
+        }).join('');
+
+        card.innerHTML = `
+          ${imgHtml}
+          <div class="q-info">
+            <span class="q-badge">${q.category}</span>
+            <div class="q-title">${q.question}</div>
+            <div class="q-options">${optionsHtml}</div>
+          </div>
+          <button class="btn-danger" onclick="deleteQuestion(${q.originalIndex})">Delete</button>
+        `;
+        questionList.appendChild(card);
       });
     }
 
-    const hostLobby = document.getElementById('host-lobby');
-    const hostGame = document.getElementById('host-game');
-    const hostRoundEnd = document.getElementById('host-round-end');
-    const hostGameOver = document.getElementById('host-game-over');
-    const podiumArea = document.getElementById('podium-area');
-    const playerCount = document.getElementById('player-count');
-    const hostLobbyPlayers = document.getElementById('host-lobby-players');
-    const hostCategory = document.getElementById('host-category');
-    const hostTimer = document.getElementById('host-timer');
-    const hostQuestion = document.getElementById('host-question');
-    const hostImageContainer = document.getElementById('host-image-container');
-    const hostQuestionImage = document.getElementById('host-question-image');
-    const hostOptions = document.getElementById('host-options');
-    const hostCorrectAnswer = document.getElementById('host-correct-answer');
-    const hostLeaderboard = document.getElementById('host-leaderboard');
-    const hostFinalLeaderboard = document.getElementById('host-final-leaderboard');
-    const btnStart = document.getElementById('btn-start');
-    const btnRestart = document.getElementById('btn-restart');
-    const categorySelect = document.getElementById('category-select');
-    const difficultySelect = document.getElementById('difficulty-select');
-    const questionCountSelect = document.getElementById('question-count');
+    window.deleteQuestion = async function(index) {
+      const q = allQuestions[index];
+      if (!confirm(`Permanently delete:\n\n"${q.question}"?`)) return;
+      const password = adminPassInput.value.trim();
 
-    btnStart.addEventListener('click', () => {
-      socket.emit('host:start_game', {
-        category: categorySelect.value,
-        difficulty: difficultySelect.value,
-        count: questionCountSelect.value
+      const res = await fetch('/api/questions/delete', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ password, index })
       });
-    });
-
-    document.querySelectorAll('.stop-game-btn').forEach(btn => {
-      btn.addEventListener('click', () => {
-        if (confirm("End the game now? Final scores will still be saved to the database.")) {
-          socket.emit('host:stop_game');
-        }
-      });
-    });
-
-    btnRestart.addEventListener('click', () => {
-      hostGameOver.classList.add('hidden');
-      hostLobby.classList.remove('hidden');
-    });
-
-    socket.on('game:player_list', (players) => {
-      playerCount.textContent = players.length;
-      hostLobbyPlayers.innerHTML = '';
-      players.forEach(p => {
-        const li = document.createElement('li');
-        li.innerHTML = `<span>${p.name}</span>`;
-        hostLobbyPlayers.appendChild(li);
-      });
-    });
-
-    socket.on('game:new_question', (data) => {
-      hostLobby.classList.add('hidden');
-      hostRoundEnd.classList.add('hidden');
-      hostGameOver.classList.add('hidden');
-      hostGame.classList.remove('hidden');
-
-      hostCategory.textContent = `${data.category} (${data.questionNumber}/${data.totalQuestions})`;
-      hostTimer.textContent = data.timeLeft;
-      hostQuestion.textContent = data.question;
-
-      if (data.image) {
-        hostQuestionImage.src = data.image;
-        hostImageContainer.classList.remove('hidden');
+      const data = await res.json();
+      if (res.ok && data.success) {
+        allQuestions.splice(index, 1);
+        totalCount.textContent = allQuestions.length;
+        renderQuestionList();
       } else {
-        hostQuestionImage.src = '';
-        hostImageContainer.classList.add('hidden');
+        alert(data.message || 'Delete error.');
       }
+    };
 
-      hostOptions.innerHTML = '';
-      data.options.forEach(opt => {
-        const div = document.createElement('button');
-        div.textContent = opt;
-        div.disabled = true;
-        hostOptions.appendChild(div);
-      });
+    /* =========================================================
+       CSV IMPORT MODAL
+    ========================================================= */
+    btnOpenImport.addEventListener('click', () => { importModal.classList.remove('hidden'); });
+    btnCancelImport.addEventListener('click', () => { importModal.classList.add('hidden'); });
+
+    csvFileInput.addEventListener('change', (e) => {
+      const file = e.target.files[0];
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = (event) => { csvTextInput.value = event.target.result; };
+      reader.readAsText(file);
     });
 
-    socket.on('game:timer_tick', (timeLeft) => {
-      hostTimer.textContent = timeLeft;
-    });
-
-    socket.on('game:round_ended', (data) => {
-      hostGame.classList.add('hidden');
-      hostRoundEnd.classList.remove('hidden');
-      hostCorrectAnswer.textContent = data.correctAnswerText;
-
-      hostLeaderboard.innerHTML = '';
-      data.leaderboard.forEach(p => {
-        const li = document.createElement('li');
-        li.innerHTML = `<span>${p.name}</span><strong>${p.score} pts</strong>`;
-        hostLeaderboard.appendChild(li);
-      });
-    });
-
-    socket.on('game:over', (data) => {
-      hostGame.classList.add('hidden');
-      hostRoundEnd.classList.add('hidden');
-      hostGameOver.classList.remove('hidden');
-
-      const leaderboard = Array.isArray(data) ? data : data.leaderboard;
-
-      renderPodium(leaderboard);
-
-      hostFinalLeaderboard.innerHTML = '';
-      leaderboard.forEach((p, idx) => {
-        const li = document.createElement('li');
-        li.innerHTML = `<span>#${idx + 1} ${p.name}</span><strong>${p.score} pts</strong>`;
-        hostFinalLeaderboard.appendChild(li);
-      });
-
-      triggerVictoryConfetti();
-    });
-
-    function renderPodium(players) {
-      podiumArea.innerHTML = '';
-      if (!players || players.length === 0) return;
-
-      const p1 = players[0] || null;
-      const p2 = players[1] || null;
-      const p3 = players[2] || null;
-
-      let html = '';
-
-      if (p2) {
-        html += `
-          <div class="podium-slot second">
-            <div class="podium-avatar">🥈</div>
-            <div class="podium-name">${p2.name}</div>
-            <div class="podium-score">${Number(p2.score).toLocaleString()} pts</div>
-            <div class="podium-step">2</div>
-          </div>
-        `;
+    function parseCSVLine(line) {
+      const regex = /(?:^|,)(?:"([^"]*(?:""[^"]*)*)"|([^,]*))/g;
+      const matches = [];
+      let match;
+      while ((match = regex.exec(line)) !== null) {
+        if (match[1] !== undefined) matches.push(match[1].replace(/""/g, '"').trim());
+        else if (match[2] !== undefined) matches.push(match[2].trim());
       }
-
-      if (p1) {
-        html += `
-          <div class="podium-slot first">
-            <div class="podium-avatar">👑</div>
-            <div class="podium-name">${p1.name}</div>
-            <div class="podium-score">${Number(p1.score).toLocaleString()} pts</div>
-            <div class="podium-step">1</div>
-          </div>
-        `;
-      }
-
-      if (p3) {
-        html += `
-          <div class="podium-slot third">
-            <div class="podium-avatar">🥉</div>
-            <div class="podium-name">${p3.name}</div>
-            <div class="podium-score">${Number(p3.score).toLocaleString()} pts</div>
-            <div class="podium-step">3</div>
-          </div>
-        `;
-      }
-
-      podiumArea.innerHTML = html;
+      return matches;
     }
 
-    function triggerVictoryConfetti() {
-      if (typeof confetti !== 'function') return;
+    btnSubmitImport.addEventListener('click', async () => {
+      const text = csvTextInput.value.trim();
+      if (!text) return alert('Please enter CSV data.');
+      const lines = text.split(/\r?\n/).map(l => l.trim()).filter(l => l.length > 0);
+      const parsedQuestions = [];
 
-      const duration = 3.5 * 1000;
-      const end = Date.now() + duration;
-
-      (function frame() {
-        confetti({
-          particleCount: 4,
-          angle: 60,
-          spread: 60,
-          origin: { x: 0, y: 0.65 },
-          colors: ['#facc15', '#38bdf8', '#10b981', '#f43f5e']
-        });
-        confetti({
-          particleCount: 4,
-          angle: 120,
-          spread: 60,
-          origin: { x: 1, y: 0.65 },
-          colors: ['#facc15', '#38bdf8', '#10b981', '#f43f5e']
-        });
-
-        if (Date.now() < end) {
-          requestAnimationFrame(frame);
+      for (let i = 0; i < lines.length; i++) {
+        if (i === 0 && lines[i].toLowerCase().startsWith('category')) continue;
+        const cols = parseCSVLine(lines[i]);
+        if (cols.length >= 7) {
+          const [cat, quest, o1, o2, o3, o4, ans, img] = cols;
+          const answerNum = parseInt(ans, 10);
+          if (!isNaN(answerNum) && answerNum >= 0 && answerNum <= 3) {
+            parsedQuestions.push({
+              category: cat,
+              question: quest,
+              options: [o1, o2, o3, o4],
+              answer: answerNum,
+              image: img || null
+            });
+          }
         }
-      }());
+      }
+
+      if (parsedQuestions.length === 0) return alert('No rows matched the 7-column CSV requirement.');
+
+      const password = adminPassInput.value.trim();
+      const res = await fetch('/api/questions/bulk', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ password, questions: parsedQuestions })
+      });
+      const data = await res.json();
+      if (res.ok && data.success) {
+        alert(`Successfully imported ${data.addedCount} new questions!`);
+        importModal.classList.add('hidden');
+        csvTextInput.value = '';
+        csvFileInput.value = '';
+        loadQuestions();
+      } else {
+        alert(data.message || 'Import error.');
+      }
+    });
+
+    /* =========================================================
+       PLAYERS & LEADERBOARD FUNCTIONS
+    ========================================================= */
+    async function loadPlayers() {
+      const password = adminPassInput.value.trim();
+      if (!password) return;
+
+      try {
+        const res = await fetch('/api/players/list', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ password })
+        });
+        const data = await res.json();
+        if (res.ok && data.success) {
+          allPlayers = data.players;
+          playerCount.textContent = allPlayers.length;
+          renderPlayerTable();
+        }
+      } catch (e) {}
     }
+
+    playerSearch.addEventListener('input', renderPlayerTable);
+
+    function renderPlayerTable() {
+      const query = playerSearch.value.toLowerCase().trim();
+      playerListBody.innerHTML = '';
+
+      const filtered = allPlayers.filter(p => !query || p.username.toLowerCase().includes(query));
+
+      if (filtered.length === 0) {
+        playerListBody.innerHTML = '<tr><td colspan="5" style="text-align:center; color:#64748b; padding:1.5rem;">No players found.</td></tr>';
+        return;
+      }
+
+      filtered.forEach(p => {
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+          <td><strong>${p.username}</strong></td>
+          <td style="color:#38bdf8;">${Number(p.high_score).toLocaleString()} pts</td>
+          <td style="color:#10b981;">${Number(p.career_score).toLocaleString()} pts</td>
+          <td>${p.games_played}</td>
+          <td style="text-align: right;">
+            <button class="btn-warning" onclick="resetPlayerScores('${p.username}')" style="margin-right:0.4rem;">Reset Score</button>
+            <button class="btn-danger" onclick="deleteBanPlayer('${p.username}')">Ban / Delete</button>
+          </td>
+        `;
+        playerListBody.appendChild(tr);
+      });
+    }
+
+    // Individual Reset
+    window.resetPlayerScores = async function(username) {
+      if (!confirm(`Reset ${username}'s High Score and Career XP to 0?\n(Their username and PIN will remain active)`)) return;
+      const password = adminPassInput.value.trim();
+
+      const res = await fetch('/api/players/action', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ password, username, action: 'reset_scores' })
+      });
+      const data = await res.json();
+      if (res.ok && data.success) {
+        alert(data.message);
+        loadPlayers();
+      } else {
+        alert(data.message || 'Action failed.');
+      }
+    };
+
+    // Individual Delete / Ban
+    window.deleteBanPlayer = async function(username) {
+      if (!confirm(`Are you sure you want to completely DELETE & BAN ${username}?\nThis removes their login and all stats forever.`)) return;
+      const password = adminPassInput.value.trim();
+
+      const res = await fetch('/api/players/action', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ password, username, action: 'delete_ban' })
+      });
+      const data = await res.json();
+      if (res.ok && data.success) {
+        alert(data.message);
+        loadPlayers();
+      } else {
+        alert(data.message || 'Action failed.');
+      }
+    };
+
+    // Bulk Reset All Scores
+    btnBulkResetScores.addEventListener('click', async () => {
+      if (!confirm("WARNING: This will reset EVERY player's High Score and Career XP to 0.\nUser accounts and logins will stay intact. Proceed?")) return;
+      const password = adminPassInput.value.trim();
+
+      const res = await fetch('/api/players/bulk', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ password, action: 'reset_all_scores' })
+      });
+      const data = await res.json();
+      if (res.ok && data.success) {
+        alert(data.message);
+        loadPlayers();
+      } else {
+        alert(data.message || 'Action failed.');
+      }
+    });
+
+    // Bulk Wipe All Accounts
+    btnBulkWipePlayers.addEventListener('click', async () => {
+      const confirmText = prompt("DANGER: Type 'DELETE ALL' to permanently erase ALL player accounts, scores, and leaderboards:");
+      if (confirmText !== 'DELETE ALL') return alert('Action cancelled.');
+
+      const password = adminPassInput.value.trim();
+      const res = await fetch('/api/players/bulk', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ password, action: 'wipe_all_players' })
+      });
+      const data = await res.json();
+      if (res.ok && data.success) {
+        alert(data.message);
+        loadPlayers();
+      } else {
+        alert(data.message || 'Action failed.');
+      }
+    });
   </script>
 </body>
 </html>
