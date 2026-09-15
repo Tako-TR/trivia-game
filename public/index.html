@@ -34,7 +34,6 @@
       font-size: 1rem;
     }
 
-    /* Locked Room Box */
     .locked-room-box {
       background-color: rgba(56, 189, 248, 0.08);
       border: 1px dashed #38bdf8;
@@ -58,7 +57,6 @@
       letter-spacing: 0.05em;
     }
 
-    /* Avatar Picker */
     .avatar-grid {
       display: flex;
       gap: 0.5rem;
@@ -180,6 +178,17 @@
       0%, 100% { transform: scale(1); }
       50% { transform: scale(1.05); }
     }
+    .reaction-pill {
+      display: inline-block;
+      font-size: 0.85rem;
+      color: #38bdf8;
+      font-weight: 700;
+      background-color: rgba(56, 189, 248, 0.1);
+      border: 1px solid #0284c7;
+      padding: 0.25rem 0.65rem;
+      border-radius: 9999px;
+      margin-bottom: 0.5rem;
+    }
     .player-answer-reveal {
       background-color: #064e3b;
       border: 2px solid #10b981;
@@ -272,14 +281,12 @@
 </head>
 <body>
   <div class="container">
-    <!-- Login Screen -->
     <div id="join-screen">
       <h1>Trivia Login</h1>
       <p class="question-text">Pick your avatar and jump into the arena</p>
       <p id="auth-error" class="error-msg"></p>
 
       <form id="auth-form" class="auth-card">
-        <!-- Locked Room Display (Cannot be edited by players) -->
         <div class="locked-room-box">
           <span class="locked-room-label">Joining Room:</span>
           <span class="locked-room-val" id="display-assigned-room">ROOM1</span>
@@ -367,7 +374,7 @@
       <p id="status-message" class="badge hidden">Answer Submitted</p>
     </div>
 
-    <!-- Milestone Checkpoint Screen (Every 10 questions) -->
+    <!-- Milestone Screen -->
     <div id="milestone-screen" class="hidden">
       <h1 style="color: #38bdf8;">Checkpoint Standings!</h1>
       <p id="milestone-text" class="question-text" style="color: #f59e0b; font-weight: 700;">After 10 Questions</p>
@@ -381,6 +388,7 @@
       <h1 id="results-heading">Round Results</h1>
       <p id="result-feedback" class="question-text" style="margin-bottom: 0.25rem; font-weight: 700;"></p>
 
+      <div id="reaction-time-pill" class="reaction-pill hidden"></div>
       <div id="streak-banner" class="streak-banner hidden"></div>
 
       <div id="rank-indicator" class="rank-badge-box">
@@ -432,7 +440,6 @@
     let selectedAnswer = null;
     let chosenAvatar = '🚀';
 
-    // Room is set strictly via QR code URL (e.g. ?room=ROOM2), defaulting to ROOM1
     const urlParams = new URLSearchParams(window.location.search);
     const assignedRoomCode = (urlParams.get('room') || 'ROOM1').trim().toUpperCase();
 
@@ -480,6 +487,7 @@
     const optionsContainer = document.getElementById('options-container');
     const statusMessage = document.getElementById('status-message');
     const resultFeedback = document.getElementById('result-feedback');
+    const reactionTimePill = document.getElementById('reaction-time-pill');
     const streakBanner = document.getElementById('streak-banner');
     const playerRankDisplay = document.getElementById('player-rank-display');
     const playerDeltaDisplay = document.getElementById('player-delta-display');
@@ -621,6 +629,7 @@
       postGameViewToggle.classList.add('hidden');
       currentMatchContainer.classList.remove('hidden');
       alltimeContainer.classList.add('hidden');
+      reactionTimePill.classList.add('hidden');
       streakBanner.classList.add('hidden');
       gameScreen.classList.remove('hidden');
 
@@ -654,7 +663,8 @@
       });
     });
 
-    socket.on('game:timer_tick', (timeLeft) => {
+    socket.on('game:timer_tick', (data) => {
+      const timeLeft = typeof data === 'object' ? data.timeLeft : data;
       timerDisplay.textContent = timeLeft;
     });
 
@@ -666,6 +676,13 @@
       resultsHeading.textContent = "Round Results";
       playerCorrectAnswer.textContent = data.correctAnswerText;
       if (data.myRank) playerRankDisplay.textContent = `#${data.myRank}`;
+
+      if (data.myReactionTime !== null && data.myReactionTime !== undefined) {
+        reactionTimePill.textContent = `⏱ Locked in: ${data.myReactionTime}s`;
+        reactionTimePill.classList.remove('hidden');
+      } else {
+        reactionTimePill.classList.add('hidden');
+      }
 
       if (data.myRankDelta > 0) {
         playerDeltaDisplay.innerHTML = `<span style="color:#6ee7b7; font-weight:800;">▲ +${data.myRankDelta}</span>`;
@@ -718,6 +735,7 @@
 
       resultsHeading.textContent = "Match Complete!";
       answerRevealWrapper.classList.add('hidden');
+      reactionTimePill.classList.add('hidden');
       streakBanner.classList.add('hidden');
       postGameViewToggle.classList.remove('hidden');
 
