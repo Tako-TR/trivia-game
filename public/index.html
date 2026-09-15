@@ -7,6 +7,54 @@
   <link rel="stylesheet" href="style.css">
   <script src="/socket.io/socket.io.js"></script>
   <style>
+    .auth-card {
+      background-color: #0f172a;
+      border: 1px solid #334155;
+      padding: 1.5rem;
+      border-radius: 12px;
+      display: flex;
+      flex-direction: column;
+      gap: 0.85rem;
+      text-align: left;
+      margin: 1rem 0;
+    }
+    .auth-card label {
+      font-size: 0.8rem;
+      font-weight: 700;
+      color: #94a3b8;
+      text-transform: uppercase;
+    }
+    .auth-card input {
+      background-color: #1e293b;
+      color: #f8fafc;
+      border: 1px solid #475569;
+      padding: 0.75rem 1rem;
+      border-radius: 8px;
+      font-size: 1rem;
+    }
+    .stats-card {
+      background: linear-gradient(135deg, #1e293b, #0f172a);
+      border: 1px solid #38bdf8;
+      border-radius: 12px;
+      padding: 1rem;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 0.75rem;
+      margin: 1rem 0;
+      text-align: center;
+    }
+    .stat-item h3 {
+      font-size: 0.75rem;
+      color: #94a3b8;
+      text-transform: uppercase;
+      margin: 0;
+    }
+    .stat-item p {
+      font-size: 1.25rem;
+      font-weight: 800;
+      color: #38bdf8;
+      margin: 0.25rem 0 0 0;
+    }
     .rank-badge-box {
       display: inline-flex;
       align-items: center;
@@ -20,10 +68,6 @@
       font-weight: 700;
       color: #f8fafc;
       border: 1px solid #475569;
-    }
-    .rank-number {
-      color: #38bdf8;
-      font-size: 1.3rem;
     }
     .player-answer-reveal {
       background-color: #064e3b;
@@ -50,7 +94,6 @@
       padding: 0.75rem;
       border-radius: 10px;
       display: inline-block;
-      box-shadow: 0 4px 10px rgba(0,0,0,0.25);
     }
     .trivia-image {
       max-height: 140px;
@@ -58,29 +101,61 @@
       object-fit: contain;
       display: block;
     }
+    .error-msg {
+      color: #ef4444;
+      font-size: 0.9rem;
+      font-weight: 600;
+      display: none;
+    }
   </style>
 </head>
 <body>
   <div class="container">
-    <!-- Join Screen -->
+    <!-- Login Screen -->
     <div id="join-screen">
-      <h1>Join Trivia</h1>
-      <input type="text" id="player-name" placeholder="Enter your display name" maxlength="15">
-      <button id="btn-join">Join Game</button>
+      <h1>Trivia Login</h1>
+      <p class="question-text">Track your high scores & all-time career XP</p>
+      
+      <p id="auth-error" class="error-msg"></p>
+
+      <form id="auth-form" class="auth-card">
+        <div>
+          <label for="username-input">Username</label>
+          <input type="text" id="username-input" placeholder="e.g. Maverick" maxlength="20" required>
+        </div>
+        <div>
+          <label for="pin-input">4-Digit PIN</label>
+          <input type="password" id="pin-input" placeholder="e.g. 1234" maxlength="6" required>
+        </div>
+        <button type="submit" id="btn-login" style="background-color: #10b981; margin-top: 0.5rem;">Enter Arena</button>
+      </form>
     </div>
 
-    <!-- Lobby / Waiting Screen -->
+    <!-- Lobby / Profile Screen -->
     <div id="lobby-screen" class="hidden">
-      <h1>Welcome, <span id="display-player-name"></span>!</h1>
-      <p class="question-text">Waiting for the host to start the round...</p>
+      <h1>Ready, <span id="display-player-name" style="color: #38bdf8;"></span>!</h1>
+      
+      <!-- Personal Career Stats -->
+      <div class="stats-card">
+        <div class="stat-item">
+          <h3>Single High Score</h3>
+          <p id="stat-high-score">0</p>
+        </div>
+        <div class="stat-item">
+          <h3>Career Points</h3>
+          <p id="stat-career-score">0</p>
+        </div>
+      </div>
+
+      <p class="question-text">Waiting for the host to launch the game...</p>
+      <button id="btn-logout" style="background: none; border: 1px solid #475569; color: #94a3b8; padding: 0.4rem 1rem; border-radius: 6px; font-size: 0.85rem; cursor: pointer;">Log Out / Switch User</button>
     </div>
 
-    <!-- Game / Question Screen -->
+    <!-- Active Question Screen -->
     <div id="game-screen" class="hidden">
       <div id="category-badge" class="badge">Category</div>
       <div id="timer" class="timer">15</div>
 
-      <!-- Player Image Box -->
       <div id="player-image-container" class="trivia-image-box hidden">
         <img id="player-question-image" class="trivia-image" src="" alt="Trivia Visual">
       </div>
@@ -90,14 +165,14 @@
       <p id="status-message" class="badge hidden">Answer Submitted</p>
     </div>
 
-    <!-- Round Over Screen -->
+    <!-- Round End Screen -->
     <div id="results-screen" class="hidden">
       <h1>Round Results</h1>
       <p id="result-feedback" class="question-text" style="margin-bottom: 0.25rem; font-weight: 700;"></p>
 
       <div id="rank-indicator" class="rank-badge-box">
-        <span>Rank:</span>
-        <span id="player-rank-display" class="rank-number">#--</span>
+        <span>Game Rank:</span>
+        <span id="player-rank-display" style="color:#38bdf8; font-size:1.3rem;">#--</span>
       </div>
 
       <div class="player-answer-reveal">
@@ -105,7 +180,7 @@
         <div id="player-correct-answer" class="player-answer-text">---</div>
       </div>
 
-      <h2>Leaderboard</h2>
+      <h2>Current Match Standings</h2>
       <ul id="leaderboard-list" class="leaderboard"></ul>
     </div>
   </div>
@@ -119,9 +194,14 @@
     const gameScreen = document.getElementById('game-screen');
     const resultsScreen = document.getElementById('results-screen');
 
-    const playerNameInput = document.getElementById('player-name');
-    const btnJoin = document.getElementById('btn-join');
+    const authForm = document.getElementById('auth-form');
+    const usernameInput = document.getElementById('username-input');
+    const pinInput = document.getElementById('pin-input');
+    const authError = document.getElementById('auth-error');
     const displayPlayerName = document.getElementById('display-player-name');
+    const statHighScore = document.getElementById('stat-high-score');
+    const statCareerScore = document.getElementById('stat-career-score');
+    const btnLogout = document.getElementById('btn-logout');
 
     const categoryBadge = document.getElementById('category-badge');
     const timerDisplay = document.getElementById('timer');
@@ -135,16 +215,42 @@
     const playerCorrectAnswer = document.getElementById('player-correct-answer');
     const leaderboardList = document.getElementById('leaderboard-list');
 
-    btnJoin.addEventListener('click', () => {
-      const name = playerNameInput.value.trim();
-      if (!name) return;
-      socket.emit('player:join', name);
+    // Auto-login from saved credentials
+    const savedUser = localStorage.getItem('trivia_user');
+    const savedPin = localStorage.getItem('trivia_pin');
+    if (savedUser && savedPin) {
+      socket.emit('player:auth', { username: savedUser, pin: savedPin });
+    }
+
+    authForm.addEventListener('submit', (e) => {
+      e.preventDefault();
+      authError.style.display = 'none';
+      const username = usernameInput.value.trim();
+      const pin = pinInput.value.trim();
+      socket.emit('player:auth', { username, pin });
     });
 
-    socket.on('player:joined', (player) => {
-      displayPlayerName.textContent = player.name;
+    socket.on('player:auth_error', (msg) => {
+      authError.textContent = msg;
+      authError.style.display = 'block';
+    });
+
+    socket.on('player:authenticated', (data) => {
+      localStorage.setItem('trivia_user', data.username);
+      localStorage.setItem('trivia_pin', pinInput.value.trim() || savedPin);
+
+      displayPlayerName.textContent = data.username;
+      statHighScore.textContent = Number(data.highScore).toLocaleString() + ' pts';
+      statCareerScore.textContent = Number(data.careerScore).toLocaleString() + ' pts';
+
       joinScreen.classList.add('hidden');
       lobbyScreen.classList.remove('hidden');
+    });
+
+    btnLogout.addEventListener('click', () => {
+      localStorage.removeItem('trivia_user');
+      localStorage.removeItem('trivia_pin');
+      window.location.reload();
     });
 
     socket.on('game:new_question', (data) => {
@@ -158,7 +264,6 @@
       questionText.textContent = data.question;
       statusMessage.classList.add('hidden');
 
-      // Handle logo image
       if (data.image) {
         playerQuestionImage.src = data.image;
         playerImageContainer.classList.remove('hidden');
@@ -192,16 +297,13 @@
       resultsScreen.classList.remove('hidden');
 
       playerCorrectAnswer.textContent = data.correctAnswerText;
-
-      if (data.myRank) {
-        playerRankDisplay.textContent = `#${data.myRank}`;
-      }
+      if (data.myRank) playerRankDisplay.textContent = `#${data.myRank}`;
 
       if (selectedAnswer === data.correctAnswer) {
         resultFeedback.textContent = `Correct! +${data.myPointsEarned} pts`;
         resultFeedback.style.color = "#10b981";
       } else if (selectedAnswer === null) {
-        resultFeedback.textContent = "Time's up! No answer submitted.";
+        resultFeedback.textContent = "Time's up! +0 pts";
         resultFeedback.style.color = "#f59e0b";
       } else {
         resultFeedback.textContent = "Incorrect! +0 pts";
@@ -216,13 +318,11 @@
       resultsScreen.classList.remove('hidden');
 
       const leaderboard = Array.isArray(data) ? data : data.leaderboard;
-      const myRank = data.myRank;
-
-      if (myRank) {
-        playerRankDisplay.textContent = `#${myRank}`;
-        resultFeedback.textContent = `Game Over! You finished #${myRank}`;
+      if (data.myRank) {
+        playerRankDisplay.textContent = `#${data.myRank}`;
+        resultFeedback.textContent = `Match Finished! You finished #${data.myRank}`;
       } else {
-        resultFeedback.textContent = "Game Over! Final Standings:";
+        resultFeedback.textContent = "Match Over! Final Standings:";
       }
       resultFeedback.style.color = "#38bdf8";
 
