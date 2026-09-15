@@ -106,7 +106,6 @@
       gap: 0.4rem;
       min-width: 80px;
     }
-
     .btn-edit {
       background-color: #38bdf8 !important;
       color: #0f172a;
@@ -214,7 +213,7 @@
       margin-bottom: 0.25rem;
       display: block;
     }
-    .modal-box input[type="text"], .modal-box textarea {
+    .modal-box input[type="text"], .modal-box textarea, .modal-box select {
       width: 100%;
       background-color: #1e293b;
       color: #f8fafc;
@@ -241,7 +240,7 @@
       flex: 1;
     }
 
-    /* Preset Pack Builder Styles */
+    /* Preset Packs UI */
     .preset-builder-card {
       background-color: #0f172a;
       border: 1px solid #334155;
@@ -287,10 +286,7 @@
       user-select: none;
       transition: all 0.15s;
     }
-    .filter-pill input {
-      accent-color: #38bdf8;
-      cursor: pointer;
-    }
+    .filter-pill input { accent-color: #38bdf8; cursor: pointer; }
     .filter-pill.active {
       background-color: rgba(56, 189, 248, 0.15);
       border-color: #38bdf8;
@@ -314,15 +310,6 @@
       border-bottom: 1px solid #334155;
       font-size: 0.85rem;
       color: #f8fafc;
-    }
-    .preset-q-item:hover {
-      background-color: rgba(56, 189, 248, 0.05);
-    }
-    .preset-q-item input[type="checkbox"] {
-      width: 1.1rem;
-      height: 1.1rem;
-      accent-color: #10b981;
-      cursor: pointer;
     }
     .preset-badge {
       font-size: 0.7rem;
@@ -354,7 +341,7 @@
 <body>
   <div class="container">
     <h1>Database & Admin Manager</h1>
-    <p class="question-text" style="margin-bottom: 1.5rem;">Edit questions, build filtered game packs, and manage leaderboards</p>
+    <p class="question-text" style="margin-bottom: 1.5rem;">Edit questions, generate new sets, build game packs, and manage leaderboards</p>
 
     <!-- Passcode Authentication -->
     <div class="auth-banner">
@@ -376,6 +363,7 @@
         <div class="top-actions">
           <span style="color: #94a3b8;">Total Questions: <strong id="total-count" style="color: #38bdf8;">0</strong></span>
           <div style="display: flex; gap: 0.5rem; flex-wrap: wrap;">
+            <button id="btn-open-generator" style="background-color: #8b5cf6; color: #fff; font-weight: 700; font-size: 0.85rem; padding: 0.45rem 0.85rem; border-radius: 6px; border: none; cursor: pointer;">🤖 Generate Questions</button>
             <button id="btn-open-import" style="background-color: #f59e0b; color: #0f172a; font-weight: 700; font-size: 0.85rem; padding: 0.45rem 0.85rem; border-radius: 6px; border: none; cursor: pointer;">📥 Bulk Import CSV</button>
             <a href="/add.html" style="background-color: #10b981; color: #fff; padding: 0.45rem 0.85rem; border-radius: 6px; text-decoration: none; font-weight: 700; font-size: 0.85rem;">+ Add Single</a>
             <a href="/host.html" style="border: 1px solid #475569; color: #94a3b8; padding: 0.45rem 0.85rem; border-radius: 6px; text-decoration: none; font-size: 0.85rem;">Back to Host</a>
@@ -408,9 +396,7 @@
           <label for="preset-name-input" style="font-size: 0.8rem; font-weight: 700; color: #94a3b8; text-transform: uppercase;">Game Pack Name</label>
           <input type="text" id="preset-name-input" placeholder="e.g. Sunday School Hard, 80s Movies & Music, All-Star Trivia" style="width: 100%; background-color: #1e293b; color: #fff; border: 1px solid #475569; padding: 0.6rem; border-radius: 8px; margin: 0.3rem 0 0.75rem 0; box-sizing: border-box;">
 
-          <!-- Category & Difficulty Filter Box -->
           <div class="preset-filter-box">
-            <!-- Categories -->
             <div class="filter-group">
               <span class="filter-label">Categories:</span>
               <label class="filter-pill active" id="pill-cat-all"><input type="checkbox" id="chk-cat-all" checked> All</label>
@@ -420,7 +406,6 @@
               <label class="filter-pill" id="pill-cat-music"><input type="checkbox" class="chk-cat" value="music"> Pop Culture & Music</label>
             </div>
 
-            <!-- Difficulties -->
             <div class="filter-group">
               <span class="filter-label">Difficulty:</span>
               <label class="filter-pill active" id="pill-diff-all"><input type="checkbox" id="chk-diff-all" checked> All</label>
@@ -429,14 +414,12 @@
               <label class="filter-pill" id="pill-diff-hard"><input type="checkbox" class="chk-diff" value="hard"> Hard</label>
             </div>
 
-            <!-- Keyword Search -->
             <div class="filter-group">
               <span class="filter-label">Search:</span>
               <input type="text" id="preset-search-input" placeholder="Filter questions by keywords..." style="flex:1; background-color:#0f172a; color:#f8fafc; border:1px solid #475569; padding:0.4rem 0.75rem; border-radius:6px; font-size:0.85rem; margin-bottom:0;">
             </div>
           </div>
 
-          <!-- Selection Controls Bar -->
           <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 0.5rem; flex-wrap: wrap; gap: 0.5rem;">
             <span style="font-size: 0.85rem; color: #94a3b8;">
               Showing: <strong id="preset-showing-count" style="color:#f8fafc;">0</strong> | 
@@ -458,7 +441,7 @@
         <div id="presets-grid" class="presets-grid"></div>
       </div>
 
-      <!-- TAB 3: PLAYERS & LEADERBOARD CONTROLS -->
+      <!-- TAB 3: PLAYERS & LEADERBOARDS -->
       <div id="section-players" class="hidden">
         <div class="bulk-danger-box">
           <div>
@@ -480,7 +463,7 @@
           <table class="player-table">
             <thead>
               <tr>
-                <th>Username</th>
+                <th>Avatar & User</th>
                 <th>Single Best</th>
                 <th>Career XP</th>
                 <th>Games</th>
@@ -490,6 +473,44 @@
             <tbody id="player-list-body"></tbody>
           </table>
         </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Question Generator Modal -->
+  <div id="generator-modal" class="modal-backdrop hidden">
+    <div class="modal-box">
+      <h2 style="margin-top: 0; color: #8b5cf6; font-size: 1.3rem;">🤖 Generate Questions</h2>
+      <p style="font-size: 0.85rem; color: #94a3b8; margin-bottom: 0.75rem;">Generate balanced trivia questions with full answers ready to import.</p>
+
+      <label for="gen-category">Category</label>
+      <select id="gen-category">
+        <option value="Bible" selected>Bible Trivia</option>
+        <option value="Movie Quotes">Movie Quotes</option>
+        <option value="Pop Culture & Music">Pop Culture & Music</option>
+        <option value="Brand Logos">Brand Logos</option>
+      </select>
+
+      <label for="gen-difficulty">Difficulty</label>
+      <select id="gen-difficulty">
+        <option value="Easy" selected>Easy</option>
+        <option value="Medium">Medium</option>
+        <option value="Hard">Hard</option>
+      </select>
+
+      <label for="gen-count">How many questions?</label>
+      <select id="gen-count">
+        <option value="1">1 Question</option>
+        <option value="3" selected>3 Questions</option>
+        <option value="5">5 Questions</option>
+      </select>
+
+      <div id="gen-preview-box" style="margin: 1rem 0; max-height: 200px; overflow-y: auto; background:#1e293b; padding:0.6rem; border-radius:8px; display:none;"></div>
+
+      <div style="display: flex; justify-content: flex-end; gap: 0.75rem;">
+        <button id="btn-cancel-gen" style="background: none; border: 1px solid #475569; color: #94a3b8; padding: 0.5rem 1rem; border-radius: 6px; cursor: pointer;">Close</button>
+        <button id="btn-run-gen" style="background-color: #8b5cf6; color: #fff; font-weight: 700; border: none; padding: 0.5rem 1.25rem; border-radius: 6px; cursor: pointer;">Generate & Review</button>
+        <button id="btn-save-gen" style="background-color: #10b981; color: #fff; font-weight: 700; border: none; padding: 0.5rem 1.25rem; border-radius: 6px; cursor: pointer; display:none;">Add to Database</button>
       </div>
     </div>
   </div>
@@ -584,15 +605,25 @@
     const btnSavePreset = document.getElementById('btn-save-preset');
     const presetsGrid = document.getElementById('presets-grid');
 
-    // Category filter checkboxes
     const chkCatAll = document.getElementById('chk-cat-all');
     const chkCats = document.querySelectorAll('.chk-cat');
     const pillCatAll = document.getElementById('pill-cat-all');
 
-    // Difficulty filter checkboxes
     const chkDiffAll = document.getElementById('chk-diff-all');
     const chkDiffs = document.querySelectorAll('.chk-diff');
     const pillDiffAll = document.getElementById('pill-diff-all');
+
+    // Generator elements
+    const generatorModal = document.getElementById('generator-modal');
+    const btnOpenGenerator = document.getElementById('btn-open-generator');
+    const btnCancelGen = document.getElementById('btn-cancel-gen');
+    const btnRunGen = document.getElementById('btn-run-gen');
+    const btnSaveGen = document.getElementById('btn-save-gen');
+    const genCategory = document.getElementById('gen-category');
+    const genDifficulty = document.getElementById('gen-difficulty');
+    const genCount = document.getElementById('gen-count');
+    const genPreviewBox = document.getElementById('gen-preview-box');
+    let generatedBuffer = [];
 
     // Edit Modal elements
     const editModal = document.getElementById('edit-modal');
@@ -743,6 +774,76 @@
       });
     }
 
+    /* =========================================================
+       QUESTION GENERATOR MODAL LOGIC
+    ========================================================= */
+    btnOpenGenerator.addEventListener('click', () => {
+      generatorModal.classList.remove('hidden');
+      genPreviewBox.style.display = 'none';
+      btnSaveGen.style.display = 'none';
+    });
+
+    btnCancelGen.addEventListener('click', () => {
+      generatorModal.classList.add('hidden');
+    });
+
+    btnRunGen.addEventListener('click', async () => {
+      const password = adminPassInput.value.trim();
+      const category = genCategory.value;
+      const difficulty = genDifficulty.value;
+      const count = genCount.value;
+
+      btnRunGen.textContent = 'Generating...';
+      try {
+        const res = await fetch('/api/questions/generate', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ password, category, difficulty, count })
+        });
+        const data = await res.json();
+        btnRunGen.textContent = 'Generate & Review';
+
+        if (res.ok && data.success) {
+          generatedBuffer = data.questions;
+          genPreviewBox.innerHTML = '';
+          generatedBuffer.forEach((q, idx) => {
+            const row = document.createElement('div');
+            row.style.fontSize = '0.85rem';
+            row.style.borderBottom = '1px solid #334155';
+            row.style.padding = '0.4rem 0';
+            row.innerHTML = `<strong>#${idx + 1} (${q.category}):</strong> ${q.question}<br><span style="color:#10b981;">Correct: ${q.options[q.answer]}</span>`;
+            genPreviewBox.appendChild(row);
+          });
+          genPreviewBox.style.display = 'block';
+          btnSaveGen.style.display = 'inline-block';
+        } else {
+          alert(data.message || 'Generation failed.');
+        }
+      } catch (err) {
+        btnRunGen.textContent = 'Generate & Review';
+        alert('Server communication error.');
+      }
+    });
+
+    btnSaveGen.addEventListener('click', async () => {
+      if (generatedBuffer.length === 0) return;
+      const password = adminPassInput.value.trim();
+
+      const res = await fetch('/api/questions/bulk', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ password, questions: generatedBuffer })
+      });
+      const data = await res.json();
+      if (res.ok && data.success) {
+        alert(`Successfully added ${data.addedCount} generated questions to your library!`);
+        generatorModal.classList.add('hidden');
+        loadQuestions();
+      } else {
+        alert(data.message || 'Error saving generated questions.');
+      }
+    });
+
     window.openEditModal = function(index) {
       const q = allQuestions[index];
       if (!q) return;
@@ -827,8 +928,6 @@
     /* =========================================================
        CUSTOM GAME PACK BUILDER & FILTER LOGIC
     ========================================================= */
-
-    // Category Pill Listeners
     chkCatAll.addEventListener('change', () => {
       if (chkCatAll.checked) {
         chkCats.forEach(c => {
@@ -858,7 +957,6 @@
       });
     });
 
-    // Difficulty Pill Listeners
     chkDiffAll.addEventListener('change', () => {
       if (chkDiffAll.checked) {
         chkDiffs.forEach(d => {
@@ -904,19 +1002,16 @@
       allQuestions.forEach((q, idx) => {
         const cat = (q.category || '').toLowerCase();
 
-        // 1. Check Category Match
         let matchesCat = isAllCat;
         if (!matchesCat) {
           matchesCat = activeCats.some(selectedCat => cat.includes(selectedCat));
         }
 
-        // 2. Check Difficulty Match
         let matchesDiff = isAllDiff;
         if (!matchesDiff) {
           matchesDiff = activeDiffs.some(selectedDiff => cat.includes(selectedDiff));
         }
 
-        // 3. Check Keyword Search
         const matchesQuery = !query || q.question.toLowerCase().includes(query) || q.options.some(opt => opt.toLowerCase().includes(query));
 
         if (matchesCat && matchesDiff && matchesQuery) {
@@ -947,7 +1042,7 @@
       presetSelectedCount.textContent = selectedForPreset.size;
 
       if (currentlyVisibleIndices.length === 0) {
-        presetSelectList.innerHTML = '<div style="color: #64748b; padding: 1.5rem; text-align: center;">No questions match your current category / difficulty filters.</div>';
+        presetSelectList.innerHTML = '<div style="color: #64748b; padding: 1.5rem; text-align: center;">No questions match your current filters.</div>';
       }
     }
 
@@ -1162,7 +1257,7 @@
       filtered.forEach(p => {
         const tr = document.createElement('tr');
         tr.innerHTML = `
-          <td><strong>${p.username}</strong></td>
+          <td><strong>${p.avatar || '🚀'} ${p.username}</strong></td>
           <td style="color:#38bdf8;">${Number(p.high_score).toLocaleString()} pts</td>
           <td style="color:#10b981;">${Number(p.career_score).toLocaleString()} pts</td>
           <td>${p.games_played}</td>
@@ -1176,7 +1271,7 @@
     }
 
     window.resetPlayerScores = async function(username) {
-      if (!confirm(`Reset ${username}'s High Score and Career XP to 0?\n(Their username and PIN will remain active)`)) return;
+      if (!confirm(`Reset ${username}'s High Score and Career XP to 0?`)) return;
       const password = adminPassInput.value.trim();
 
       const res = await fetch('/api/players/action', {
@@ -1194,7 +1289,7 @@
     };
 
     window.deleteBanPlayer = async function(username) {
-      if (!confirm(`Are you sure you want to completely DELETE & BAN ${username}?\nThis removes their login and all stats forever.`)) return;
+      if (!confirm(`Permanently DELETE & BAN ${username}?`)) return;
       const password = adminPassInput.value.trim();
 
       const res = await fetch('/api/players/action', {
@@ -1212,7 +1307,7 @@
     };
 
     btnBulkResetScores.addEventListener('click', async () => {
-      if (!confirm("WARNING: This will reset EVERY player's High Score and Career XP to 0.\nUser accounts and logins will stay intact. Proceed?")) return;
+      if (!confirm("WARNING: Reset EVERY player's score to 0?")) return;
       const password = adminPassInput.value.trim();
 
       const res = await fetch('/api/players/bulk', {
@@ -1230,7 +1325,7 @@
     });
 
     btnBulkWipePlayers.addEventListener('click', async () => {
-      const confirmText = prompt("DANGER: Type 'DELETE ALL' to permanently erase ALL player accounts, scores, and leaderboards:");
+      const confirmText = prompt("DANGER: Type 'DELETE ALL' to erase ALL player accounts:");
       if (confirmText !== 'DELETE ALL') return alert('Action cancelled.');
 
       const password = adminPassInput.value.trim();
