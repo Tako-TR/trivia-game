@@ -214,10 +214,12 @@
         <div style="color: #94a3b8;">Players logged in: <strong id="player-count" style="color: #38bdf8;">0</strong></div>
         
         <div class="settings-panel">
+          <!-- Category Selector (Includes Pop Culture & Music) -->
           <div class="setting-row">
             <label for="category-select">Select Category</label>
             <select id="category-select">
               <option value="all" selected>Mixed (All Categories)</option>
+              <option value="music">Pop Culture & Music Only</option>
               <option value="logos">Brand Logos Only</option>
               <option value="bible">Bible Trivia Only</option>
               <option value="movie">Movie Quotes Only</option>
@@ -295,7 +297,6 @@
         <h1 style="color: #facc15; font-size: 2.2rem; margin-bottom: 0.25rem;">Champion Crowned!</h1>
         <p class="question-text">Final Podium Standings</p>
 
-        <!-- Stepped 3D Podium Container -->
         <div id="podium-area" class="podium-container"></div>
 
         <h2 style="font-size: 1.1rem; color: #94a3b8; margin-top: 1rem;">Complete Rankings</h2>
@@ -501,10 +502,8 @@
 
       const leaderboard = Array.isArray(data) ? data : data.leaderboard;
 
-      // Render podium
       renderPodium(leaderboard);
 
-      // Render full list
       hostFinalLeaderboard.innerHTML = '';
       leaderboard.forEach((p, idx) => {
         const li = document.createElement('li');
@@ -512,7 +511,6 @@
         hostFinalLeaderboard.appendChild(li);
       });
 
-      // Fire celebratory confetti cascade
       triggerVictoryConfetti();
     });
 
@@ -526,7 +524,6 @@
 
       let html = '';
 
-      // 2nd Place
       if (p2) {
         html += `
           <div class="podium-slot second">
@@ -538,7 +535,6 @@
         `;
       }
 
-      // 1st Place
       if (p1) {
         html += `
           <div class="podium-slot first">
@@ -550,7 +546,6 @@
         `;
       }
 
-      // 3rd Place
       if (p3) {
         html += `
           <div class="podium-slot third">
