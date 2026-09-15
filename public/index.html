@@ -289,7 +289,7 @@
       <form id="auth-form" class="auth-card">
         <div class="locked-room-box">
           <span class="locked-room-label">Joining Room:</span>
-          <span class="locked-room-val" id="display-assigned-room">ROOM1</span>
+          <span class="locked-room-val" id="display-assigned-room">Room 1</span>
         </div>
 
         <div>
@@ -320,7 +320,7 @@
 
     <!-- Lobby Screen -->
     <div id="lobby-screen" class="hidden">
-      <div class="room-tag" id="display-room-tag">ROOM: ROOM1</div>
+      <div class="room-tag" id="display-room-tag">ROOM: Room 1</div>
       <h1>Ready, <span id="display-player-avatar">🚀</span> <span id="display-player-name" style="color: #38bdf8;"></span>!</h1>
 
       <div class="stats-card">
@@ -383,7 +383,7 @@
       <p style="color: #94a3b8; font-size: 0.85rem; margin-top: 1rem;">Next question starts shortly...</p>
     </div>
 
-    <!-- Round End & Match Over Screen -->
+    <!-- Round End Screen -->
     <div id="results-screen" class="hidden">
       <h1 id="results-heading">Round Results</h1>
       <p id="result-feedback" class="question-text" style="margin-bottom: 0.25rem; font-weight: 700;"></p>
@@ -436,6 +436,15 @@
   </div>
 
   <script>
+    const ROOM_NAMES = {
+      'ROOM1': 'Room 1',
+      'ROOM2': 'Room 2 Fremont',
+      'ROOM3': 'Room 3 Fremont HS',
+      'ROOM4': 'Room 4 Fremont MS',
+      'ROOM5': 'Room 5 Sandusky',
+      'ROOM6': 'Room 6 Northwood'
+    };
+
     const socket = io();
     let selectedAnswer = null;
     let chosenAvatar = '🚀';
@@ -444,7 +453,7 @@
     const assignedRoomCode = (urlParams.get('room') || 'ROOM1').trim().toUpperCase();
 
     const displayAssignedRoom = document.getElementById('display-assigned-room');
-    displayAssignedRoom.textContent = assignedRoomCode;
+    displayAssignedRoom.textContent = ROOM_NAMES[assignedRoomCode] || assignedRoomCode;
 
     function haptic(pattern) {
       if ('vibrate' in navigator) {
@@ -556,9 +565,10 @@
       localStorage.setItem('trivia_pin', pinInput.value.trim() || savedPin);
       localStorage.setItem('trivia_avatar', data.avatar || chosenAvatar);
 
+      const displayName = data.roomName || ROOM_NAMES[data.roomCode] || data.roomCode;
       displayPlayerName.textContent = data.username;
       displayPlayerAvatar.textContent = data.avatar || '🚀';
-      displayRoomTag.textContent = `ROOM: ${data.roomCode}`;
+      displayRoomTag.textContent = `ROOM: ${displayName}`;
       statHighScore.textContent = Number(data.highScore).toLocaleString() + ' pts';
       statCareerScore.textContent = Number(data.careerScore).toLocaleString() + ' pts';
 
