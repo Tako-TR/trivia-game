@@ -18,7 +18,6 @@ const pool = process.env.DATABASE_URL
   ? new Pool({ connectionString: process.env.DATABASE_URL, ssl: { rejectUnauthorized: false } })
   : null;
 
-// Initialize Postgres tables automatically on startup
 async function initDb() {
   if (!pool) {
     console.warn('DATABASE_URL not detected. Persistent stats running in memory only.');
@@ -54,26 +53,16 @@ try {
   console.error('Error loading questions.json:', err);
 }
 
-// Fisher-Yates array shuffle
-function shuffle(array) {
-  const arr = [...array];
-  for (let i = arr.length - 1; i > 0; i--) {
-    const j = Math.floor(Math.random() * (i + 1));
-    [arr[i], arr[j]] = [arr[j], arr[i]];
+// API: Fetch all questions for Manager
+app.post('/api/questions/list', (req, res) => {
+  const { password } = req.body;
+  if (password !== ADMIN_PASSWORD) {
+    return res.status(401).json({ success: false, message: 'Invalid admin passcode.' });
   }
-  return arr;
-}
+  return res.json({ success: true, questions: masterQuestions });
+});
 
-// Active Game State
-let activeSockets = {}; // socketId -> { username, score, currentAnswer, answerTimeLeft, roundPointsEarned }
-let activeQuestions = [];
-let currentQuestionIndex = -1;
-let questionTimer = null;
-let intermissionTimer = null;
-let timeLeft = QUESTION_DURATION;
-let roundActive = false;
-
-// API: In-app question adder
+// API: Add Question
 app.post('/api/questions/add', (req, res) => {
   const { password, category, difficulty, question, options, answer, image } = req.body;
   if (password !== ADMIN_PASSWORD) {
@@ -98,6 +87,24 @@ app.post('/api/questions/add', (req, res) => {
   });
 });
 
+// API: Delete Question by Index
+app.post('/api/questions/delete', (req, res) => {
+  const { password, index } = req.body;
+  if (password !== ADMIN_PASSWORD) {
+    return res.status(401).json({ success: false, message: 'Invalid admin passcode.' });
+  }
+  const qIndex = parseInt(index, 10);
+  if (isNaN(qIndex) || qIndex < 0 || qIndex >= masterQuestions.length) {
+    return res.status(400).json({ success: false, message: 'Invalid question index.' });
+  }
+
+  masterQuestions.splice(qIndex, 1);
+  fs.writeFile(questionsFilePath, JSON.stringify(masterQuestions, null, 2), 'utf8', (err) => {
+    if (err) return res.status(500).json({ success: false, message: 'Error writing questions.json.' });
+    return res.json({ success: true, totalQuestions: masterQuestions.length });
+  });
+});
+
 // API: Fetch All-Time Leaderboards (Top 100)
 app.get('/api/leaderboards', async (req, res) => {
   if (!pool) return res.json({ highScores: [], careerScores: [] });
@@ -114,8 +121,26 @@ app.get('/api/leaderboards', async (req, res) => {
   }
 });
 
+// Fisher-Yates array shuffle
+function shuffle(array) {
+  const arr = [...array];
+  for (let i = arr.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [arr[i], arr[j]] = [arr[j], arr[i]];
+  }
+  return arr;
+}
+
+// Active Game State
+let activeSockets = {};
+let activeQuestions = [];
+let currentQuestionIndex = -1;
+let questionTimer = null;
+let intermissionTimer = null;
+let timeLeft = QUESTION_DURATION;
+let roundActive = false;
+
 io.on('connection', (socket) => {
-  // Player Auth / Login
   socket.on('player:auth', async ({ username, pin }) => {
     const cleanUser = (username || '').trim().toLowerCase();
     const cleanPin = (pin || '').trim();
@@ -135,7 +160,6 @@ io.on('connection', (socket) => {
           }
           playerProfile = existing.rows[0];
         } else {
-          // Register new player
           await pool.query(
             'INSERT INTO players (username, pin, high_score, career_score, games_played) VALUES ($1, $2, 0, 0, 0);',
             [cleanUser, cleanPin]
@@ -172,7 +196,6 @@ io.on('connection', (socket) => {
     }
   });
 
-  // Host starts game
   socket.on('host:start_game', (config) => {
     clearInterval(questionTimer);
     clearTimeout(intermissionTimer);
@@ -308,7 +331,6 @@ function endRound() {
   }, 5000);
 }
 
-// Persist stats to database on match conclusion
 async function finishGameAndSaveStats() {
   const standings = getCurrentGameStandings();
 
