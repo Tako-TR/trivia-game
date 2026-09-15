@@ -3,10 +3,10 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Trivia Question Manager</title>
+  <title>Trivia Admin & Database Manager</title>
   <link rel="stylesheet" href="style.css">
   <style>
-    .container { max-width: 900px; }
+    .container { max-width: 950px; }
     .auth-banner {
       background-color: #0f172a;
       border: 1px solid #334155;
@@ -26,6 +26,26 @@
       padding: 0.6rem 1rem;
       border-radius: 8px;
       font-size: 0.95rem;
+    }
+    .admin-nav {
+      display: flex;
+      justify-content: center;
+      gap: 0.5rem;
+      margin-bottom: 1.5rem;
+    }
+    .admin-nav button {
+      background-color: #1e293b;
+      color: #94a3b8;
+      border: 1px solid #334155;
+      padding: 0.6rem 1.25rem;
+      border-radius: 8px;
+      font-weight: 700;
+      cursor: pointer;
+    }
+    .admin-nav button.active {
+      background-color: #38bdf8;
+      color: #0f172a;
+      border-color: #38bdf8;
     }
     .filter-bar {
       display: flex;
@@ -47,7 +67,7 @@
       display: flex;
       flex-direction: column;
       gap: 1rem;
-      max-height: 600px;
+      max-height: 550px;
       overflow-y: auto;
       padding-right: 0.5rem;
     }
@@ -60,7 +80,6 @@
       display: flex;
       gap: 1.25rem;
       align-items: flex-start;
-      position: relative;
     }
     .q-card:hover { border-color: #475569; }
     .q-info { flex: 1; }
@@ -74,40 +93,13 @@
       border-radius: 4px;
       margin-bottom: 0.5rem;
     }
-    .q-title {
-      font-size: 1.1rem;
-      font-weight: 700;
-      color: #f8fafc;
-      margin-bottom: 0.6rem;
-    }
-    .q-options {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 0.4rem;
-      font-size: 0.9rem;
-    }
-    .q-opt {
-      padding: 0.35rem 0.6rem;
-      border-radius: 6px;
-      background-color: #1e293b;
-      color: #94a3b8;
-    }
-    .q-opt.correct {
-      background-color: #064e3b;
-      color: #6ee7b7;
-      font-weight: 700;
-      border: 1px solid #10b981;
-    }
-    .q-img-thumb {
-      max-width: 80px;
-      max-height: 80px;
-      object-fit: contain;
-      background: #fff;
-      padding: 6px;
-      border-radius: 6px;
-    }
-    .btn-delete {
-      background-color: #dc2626;
+    .q-title { font-size: 1.05rem; font-weight: 700; color: #f8fafc; margin-bottom: 0.6rem; }
+    .q-options { display: grid; grid-template-columns: 1fr 1fr; gap: 0.4rem; font-size: 0.85rem; }
+    .q-opt { padding: 0.35rem 0.6rem; border-radius: 6px; background-color: #1e293b; color: #94a3b8; }
+    .q-opt.correct { background-color: #064e3b; color: #6ee7b7; font-weight: 700; border: 1px solid #10b981; }
+    .q-img-thumb { max-width: 80px; max-height: 80px; object-fit: contain; background: #fff; padding: 6px; border-radius: 6px; }
+    .btn-danger {
+      background-color: #dc2626 !important;
       color: #fff;
       border: none;
       padding: 0.45rem 0.85rem;
@@ -116,7 +108,18 @@
       font-size: 0.85rem;
       font-weight: 700;
     }
-    .btn-delete:hover { background-color: #b91c1c; }
+    .btn-danger:hover { background-color: #b91c1c !important; }
+    .btn-warning {
+      background-color: #f59e0b !important;
+      color: #0f172a;
+      border: none;
+      padding: 0.45rem 0.85rem;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 0.85rem;
+      font-weight: 700;
+    }
+    .btn-warning:hover { background-color: #d97706 !important; }
     .top-actions {
       display: flex;
       justify-content: space-between;
@@ -125,8 +128,39 @@
       flex-wrap: wrap;
       gap: 0.5rem;
     }
-
-    /* Modal Styles */
+    .bulk-danger-box {
+      background-color: #1c1917;
+      border: 1px dashed #ef4444;
+      border-radius: 10px;
+      padding: 1.25rem;
+      margin-bottom: 1.5rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 1rem;
+      text-align: left;
+    }
+    .player-table {
+      width: 100%;
+      border-collapse: collapse;
+      text-align: left;
+      font-size: 0.95rem;
+    }
+    .player-table th {
+      background-color: #1e293b;
+      color: #94a3b8;
+      padding: 0.75rem 1rem;
+      text-transform: uppercase;
+      font-size: 0.75rem;
+      letter-spacing: 0.05em;
+    }
+    .player-table td {
+      padding: 0.75rem 1rem;
+      border-bottom: 1px solid #334155;
+      color: #f8fafc;
+    }
+    .player-table tr:hover { background-color: rgba(30, 41, 59, 0.5); }
     .modal-backdrop {
       position: fixed;
       top: 0; left: 0; width: 100%; height: 100%;
@@ -162,58 +196,99 @@
 </head>
 <body>
   <div class="container">
-    <h1>Question Manager</h1>
-    <p class="question-text" style="margin-bottom: 1.5rem;">Browse, inspect, filter, delete, or bulk-import questions directly into your dataset</p>
+    <h1>Database & Admin Manager</h1>
+    <p class="question-text" style="margin-bottom: 1.5rem;">Manage questions, registered players, and reset leaderboards</p>
 
     <!-- Passcode Authentication -->
     <div class="auth-banner">
       <label for="admin-pass" style="font-size: 0.85rem; font-weight: 700; color: #94a3b8; text-transform: uppercase;">Host Passcode</label>
       <input type="password" id="admin-pass" placeholder="admin123">
-      <button id="btn-load" style="background-color: #38bdf8; color: #0f172a; padding: 0.6rem 1.25rem; font-weight: 700; border-radius: 8px;">Unlock & Load</button>
+      <button id="btn-load" style="background-color: #38bdf8; color: #0f172a; padding: 0.6rem 1.25rem; font-weight: 700; border-radius: 8px;">Unlock Console</button>
     </div>
 
     <!-- Manager Workspace -->
     <div id="manager-panel" class="hidden">
-      <div class="top-actions">
-        <span style="color: #94a3b8;">Total Questions: <strong id="total-count" style="color: #38bdf8;">0</strong></span>
-        <div style="display: flex; gap: 0.5rem; flex-wrap: wrap;">
-          <button id="btn-open-import" style="background-color: #f59e0b; color: #0f172a; font-weight: 700; font-size: 0.85rem; padding: 0.45rem 0.85rem; border-radius: 6px; border: none; cursor: pointer;">📥 Bulk Import CSV</button>
-          <a href="/add.html" style="background-color: #10b981; color: #fff; padding: 0.45rem 0.85rem; border-radius: 6px; text-decoration: none; font-weight: 700; font-size: 0.85rem;">+ Add Single</a>
-          <a href="/host.html" style="border: 1px solid #475569; color: #94a3b8; padding: 0.45rem 0.85rem; border-radius: 6px; text-decoration: none; font-size: 0.85rem;">Back to Host</a>
+      <div class="admin-nav">
+        <button id="nav-questions" class="active">Question Library</button>
+        <button id="nav-players">Players & Leaderboards</button>
+      </div>
+
+      <!-- SECTION 1: QUESTION LIBRARY -->
+      <div id="section-questions">
+        <div class="top-actions">
+          <span style="color: #94a3b8;">Total Questions: <strong id="total-count" style="color: #38bdf8;">0</strong></span>
+          <div style="display: flex; gap: 0.5rem; flex-wrap: wrap;">
+            <button id="btn-open-import" style="background-color: #f59e0b; color: #0f172a; font-weight: 700; font-size: 0.85rem; padding: 0.45rem 0.85rem; border-radius: 6px; border: none; cursor: pointer;">📥 Bulk Import CSV</button>
+            <a href="/add.html" style="background-color: #10b981; color: #fff; padding: 0.45rem 0.85rem; border-radius: 6px; text-decoration: none; font-weight: 700; font-size: 0.85rem;">+ Add Single</a>
+            <a href="/host.html" style="border: 1px solid #475569; color: #94a3b8; padding: 0.45rem 0.85rem; border-radius: 6px; text-decoration: none; font-size: 0.85rem;">Back to Host</a>
+          </div>
+        </div>
+
+        <div class="filter-bar">
+          <input type="text" id="search-input" placeholder="Search questions or answers...">
+          <select id="category-filter">
+            <option value="all">All Categories & Difficulties</option>
+            <option value="logos">Brand Logos</option>
+            <option value="music">Music & Pop Culture</option>
+            <option value="bible">Bible</option>
+            <option value="movie">Movie Quotes</option>
+            <option value="easy">Easy Only</option>
+            <option value="medium">Medium Only</option>
+            <option value="hard">Hard Only</option>
+          </select>
+        </div>
+
+        <div id="question-list" class="q-list"></div>
+      </div>
+
+      <!-- SECTION 2: PLAYERS & LEADERBOARD CONTROLS -->
+      <div id="section-players" class="hidden">
+        <!-- Danger Zone Bulk Actions -->
+        <div class="bulk-danger-box">
+          <div>
+            <h3 style="margin: 0 0 0.25rem 0; color: #f87171; font-size: 1.1rem;">Leaderboard & Player Reset Controls</h3>
+            <p style="margin: 0; font-size: 0.85rem; color: #a8a29e;">Bulk operations apply to all registered players permanently.</p>
+          </div>
+          <div style="display: flex; gap: 0.75rem; flex-wrap: wrap;">
+            <button id="btn-bulk-reset-scores" class="btn-warning">Reset All Scores to 0</button>
+            <button id="btn-bulk-wipe-players" class="btn-danger">Wipe All Accounts</button>
+          </div>
+        </div>
+
+        <div class="top-actions">
+          <span style="color: #94a3b8;">Registered Accounts: <strong id="player-count" style="color: #38bdf8;">0</strong></span>
+          <input type="text" id="player-search" placeholder="Search usernames..." style="background-color: #0f172a; color: #38bdf8; border: 1px solid #334155; padding: 0.4rem 0.8rem; border-radius: 6px;">
+        </div>
+
+        <div style="background-color: #0f172a; border: 1px solid #334155; border-radius: 10px; overflow: hidden;">
+          <table class="player-table">
+            <thead>
+              <tr>
+                <th>Username</th>
+                <th>Single Best</th>
+                <th>Career XP</th>
+                <th>Games</th>
+                <th style="text-align: right;">Actions</th>
+              </tr>
+            </thead>
+            <tbody id="player-list-body"></tbody>
+          </table>
         </div>
       </div>
-
-      <!-- Live Search & Filter -->
-      <div class="filter-bar">
-        <input type="text" id="search-input" placeholder="Search by question text or option...">
-        <select id="category-filter">
-          <option value="all">All Categories & Difficulties</option>
-          <option value="logos">Brand Logos</option>
-          <option value="bible">Bible</option>
-          <option value="movie">Movie Quotes</option>
-          <option value="music">Music & Pop Culture</option>
-          <option value="easy">Easy Only</option>
-          <option value="medium">Medium Only</option>
-          <option value="hard">Hard Only</option>
-        </select>
-      </div>
-
-      <div id="question-list" class="q-list"></div>
     </div>
   </div>
 
   <!-- Bulk Import Modal -->
   <div id="import-modal" class="modal-backdrop hidden">
     <div class="modal-box">
-      <h2 style="margin-top: 0; color: #38bdf8; font-size: 1.3rem;">Bulk CSV / Spreadsheet Import</h2>
+      <h2 style="margin-top: 0; color: #38bdf8; font-size: 1.3rem;">Bulk CSV Import</h2>
       <p style="font-size: 0.85rem; color: #94a3b8; margin-bottom: 0.5rem;">
-        Paste CSV text (or select a <code>.csv</code> file). Format required per row:<br>
-        <code>Category: Difficulty, Question, Option1, Option2, Option3, Option4, AnswerIndex(0-3), OptionalImageUrl</code>
+        Format per line:<br>
+        <code>Category: Difficulty, Question, Option1, Option2, Option3, Option4, Answer(0-3), OptionalImageUrl</code>
       </p>
 
       <input type="file" id="csv-file-input" accept=".csv, .txt" style="color: #94a3b8; font-size: 0.85rem; margin-bottom: 0.5rem;">
-
-      <textarea id="csv-text-input" placeholder="Pop Culture: Easy, What is Adele's debut album?, 19, 21, 25, 30, 0, "></textarea>
+      <textarea id="csv-text-input" placeholder="Music: Easy, Who sang Thriller?, Prince, Michael Jackson, Lionel Richie, Usher, 1, "></textarea>
 
       <div style="display: flex; justify-content: flex-end; gap: 0.75rem;">
         <button id="btn-cancel-import" style="background: none; border: 1px solid #475569; color: #94a3b8; padding: 0.5rem 1rem; border-radius: 6px; cursor: pointer;">Cancel</button>
@@ -226,10 +301,22 @@
     const adminPassInput = document.getElementById('admin-pass');
     const btnLoad = document.getElementById('btn-load');
     const managerPanel = document.getElementById('manager-panel');
+
+    const navQuestions = document.getElementById('nav-questions');
+    const navPlayers = document.getElementById('nav-players');
+    const sectionQuestions = document.getElementById('section-questions');
+    const sectionPlayers = document.getElementById('section-players');
+
     const questionList = document.getElementById('question-list');
     const totalCount = document.getElementById('total-count');
     const searchInput = document.getElementById('search-input');
     const categoryFilter = document.getElementById('category-filter');
+
+    const playerCount = document.getElementById('player-count');
+    const playerSearch = document.getElementById('player-search');
+    const playerListBody = document.getElementById('player-list-body');
+    const btnBulkResetScores = document.getElementById('btn-bulk-reset-scores');
+    const btnBulkWipePlayers = document.getElementById('btn-bulk-wipe-players');
 
     const importModal = document.getElementById('import-modal');
     const btnOpenImport = document.getElementById('btn-open-import');
@@ -239,13 +326,41 @@
     const csvTextInput = document.getElementById('csv-text-input');
 
     let allQuestions = [];
+    let allPlayers = [];
 
-    btnLoad.addEventListener('click', loadQuestions);
-    adminPassInput.addEventListener('keypress', (e) => { if (e.key === 'Enter') loadQuestions(); });
+    // Tab Navigation
+    navQuestions.addEventListener('click', () => {
+      navQuestions.classList.add('active');
+      navPlayers.classList.remove('active');
+      sectionQuestions.classList.remove('hidden');
+      sectionPlayers.classList.add('hidden');
+    });
 
+    navPlayers.addEventListener('click', () => {
+      navPlayers.classList.add('active');
+      navQuestions.classList.remove('active');
+      sectionPlayers.classList.remove('hidden');
+      sectionQuestions.classList.add('hidden');
+      loadPlayers();
+    });
+
+    btnLoad.addEventListener('click', () => {
+      loadQuestions();
+      loadPlayers();
+    });
+    adminPassInput.addEventListener('keypress', (e) => {
+      if (e.key === 'Enter') {
+        loadQuestions();
+        loadPlayers();
+      }
+    });
+
+    /* =========================================================
+       QUESTIONS TAB FUNCTIONS
+    ========================================================= */
     async function loadQuestions() {
       const password = adminPassInput.value.trim();
-      if (!password) return alert('Please enter your host passcode.');
+      if (!password) return alert('Enter your host passcode.');
 
       try {
         const res = await fetch('/api/questions/list', {
@@ -254,27 +369,25 @@
           body: JSON.stringify({ password })
         });
         const data = await res.json();
-
         if (res.ok && data.success) {
           allQuestions = data.questions;
           totalCount.textContent = allQuestions.length;
           managerPanel.classList.remove('hidden');
-          renderList();
+          renderQuestionList();
         } else {
           alert(data.message || 'Access denied.');
         }
-      } catch (err) {
+      } catch (e) {
         alert('Server connection error.');
       }
     }
 
-    searchInput.addEventListener('input', renderList);
-    categoryFilter.addEventListener('change', renderList);
+    searchInput.addEventListener('input', renderQuestionList);
+    categoryFilter.addEventListener('change', renderQuestionList);
 
-    function renderList() {
+    function renderQuestionList() {
       const query = searchInput.value.toLowerCase().trim();
       const filter = categoryFilter.value.toLowerCase();
-
       questionList.innerHTML = '';
 
       const filtered = allQuestions
@@ -282,25 +395,19 @@
         .filter(q => {
           const cat = (q.category || '').toLowerCase();
           const matchesQuery = !query || q.question.toLowerCase().includes(query) || q.options.some(opt => opt.toLowerCase().includes(query));
-
-          let matchesCat = true;
-          if (filter !== 'all') {
-            matchesCat = cat.includes(filter);
-          }
+          const matchesCat = filter === 'all' || cat.includes(filter);
           return matchesQuery && matchesCat;
         });
 
       if (filtered.length === 0) {
-        questionList.innerHTML = '<div style="color: #64748b; padding: 2rem; text-align: center;">No questions match your filter.</div>';
+        questionList.innerHTML = '<div style="color: #64748b; padding: 2rem; text-align: center;">No questions match filter.</div>';
         return;
       }
 
       filtered.forEach(q => {
         const card = document.createElement('div');
         card.className = 'q-card';
-
         const imgHtml = q.image ? `<img src="${q.image}" class="q-img-thumb" alt="thumb">` : '';
-
         const optionsHtml = q.options.map((opt, i) => {
           const isCorrect = i === q.answer;
           return `<div class="q-opt ${isCorrect ? 'correct' : ''}">${isCorrect ? '✓ ' : ''}${opt}</div>`;
@@ -313,14 +420,35 @@
             <div class="q-title">${q.question}</div>
             <div class="q-options">${optionsHtml}</div>
           </div>
-          <button class="btn-delete" onclick="deleteQuestion(${q.originalIndex})">Delete</button>
+          <button class="btn-danger" onclick="deleteQuestion(${q.originalIndex})">Delete</button>
         `;
-
         questionList.appendChild(card);
       });
     }
 
-    // Modal Operations
+    window.deleteQuestion = async function(index) {
+      const q = allQuestions[index];
+      if (!confirm(`Permanently delete:\n\n"${q.question}"?`)) return;
+      const password = adminPassInput.value.trim();
+
+      const res = await fetch('/api/questions/delete', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ password, index })
+      });
+      const data = await res.json();
+      if (res.ok && data.success) {
+        allQuestions.splice(index, 1);
+        totalCount.textContent = allQuestions.length;
+        renderQuestionList();
+      } else {
+        alert(data.message || 'Delete error.');
+      }
+    };
+
+    /* =========================================================
+       CSV IMPORT MODAL
+    ========================================================= */
     btnOpenImport.addEventListener('click', () => { importModal.classList.remove('hidden'); });
     btnCancelImport.addEventListener('click', () => { importModal.classList.add('hidden'); });
 
@@ -328,38 +456,29 @@
       const file = e.target.files[0];
       if (!file) return;
       const reader = new FileReader();
-      reader.onload = (event) => {
-        csvTextInput.value = event.target.result;
-      };
+      reader.onload = (event) => { csvTextInput.value = event.target.result; };
       reader.readAsText(file);
     });
 
-    // Parse CSV line safely
     function parseCSVLine(line) {
       const regex = /(?:^|,)(?:"([^"]*(?:""[^"]*)*)"|([^,]*))/g;
       const matches = [];
       let match;
       while ((match = regex.exec(line)) !== null) {
-        if (match[1] !== undefined) {
-          matches.push(match[1].replace(/""/g, '"').trim());
-        } else if (match[2] !== undefined) {
-          matches.push(match[2].trim());
-        }
+        if (match[1] !== undefined) matches.push(match[1].replace(/""/g, '"').trim());
+        else if (match[2] !== undefined) matches.push(match[2].trim());
       }
       return matches;
     }
 
     btnSubmitImport.addEventListener('click', async () => {
       const text = csvTextInput.value.trim();
-      if (!text) return alert('Please paste CSV text or select a file.');
-
+      if (!text) return alert('Please enter CSV data.');
       const lines = text.split(/\r?\n/).map(l => l.trim()).filter(l => l.length > 0);
       const parsedQuestions = [];
 
       for (let i = 0; i < lines.length; i++) {
-        // Skip header row if user leaves one in
         if (i === 0 && lines[i].toLowerCase().startsWith('category')) continue;
-
         const cols = parseCSVLine(lines[i]);
         if (cols.length >= 7) {
           const [cat, quest, o1, o2, o3, o4, ans, img] = cols;
@@ -376,59 +495,153 @@
         }
       }
 
-      if (parsedQuestions.length === 0) {
-        return alert('No rows matched the 7-column CSV requirement.');
-      }
+      if (parsedQuestions.length === 0) return alert('No rows matched the 7-column CSV requirement.');
 
       const password = adminPassInput.value.trim();
-
-      try {
-        const res = await fetch('/api/questions/bulk', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ password, questions: parsedQuestions })
-        });
-        const data = await res.json();
-
-        if (res.ok && data.success) {
-          alert(`Successfully imported ${data.addedCount} new questions!`);
-          importModal.classList.add('hidden');
-          csvTextInput.value = '';
-          csvFileInput.value = '';
-          loadQuestions();
-        } else {
-          alert(data.message || 'Import failed.');
-        }
-      } catch (err) {
-        alert('Server communication error.');
+      const res = await fetch('/api/questions/bulk', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ password, questions: parsedQuestions })
+      });
+      const data = await res.json();
+      if (res.ok && data.success) {
+        alert(`Successfully imported ${data.addedCount} new questions!`);
+        importModal.classList.add('hidden');
+        csvTextInput.value = '';
+        csvFileInput.value = '';
+        loadQuestions();
+      } else {
+        alert(data.message || 'Import error.');
       }
     });
 
-    window.deleteQuestion = async function(index) {
-      const q = allQuestions[index];
-      if (!confirm(`Are you sure you want to permanently delete:\n\n"${q.question}"?`)) return;
-
+    /* =========================================================
+       PLAYERS & LEADERBOARD FUNCTIONS
+    ========================================================= */
+    async function loadPlayers() {
       const password = adminPassInput.value.trim();
+      if (!password) return;
 
       try {
-        const res = await fetch('/api/questions/delete', {
+        const res = await fetch('/api/players/list', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ password, index })
+          body: JSON.stringify({ password })
         });
         const data = await res.json();
-
         if (res.ok && data.success) {
-          allQuestions.splice(index, 1);
-          totalCount.textContent = allQuestions.length;
-          renderList();
-        } else {
-          alert(data.message || 'Error deleting question.');
+          allPlayers = data.players;
+          playerCount.textContent = allPlayers.length;
+          renderPlayerTable();
         }
-      } catch (err) {
-        alert('Server error.');
+      } catch (e) {}
+    }
+
+    playerSearch.addEventListener('input', renderPlayerTable);
+
+    function renderPlayerTable() {
+      const query = playerSearch.value.toLowerCase().trim();
+      playerListBody.innerHTML = '';
+
+      const filtered = allPlayers.filter(p => !query || p.username.toLowerCase().includes(query));
+
+      if (filtered.length === 0) {
+        playerListBody.innerHTML = '<tr><td colspan="5" style="text-align:center; color:#64748b; padding:1.5rem;">No players found.</td></tr>';
+        return;
+      }
+
+      filtered.forEach(p => {
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+          <td><strong>${p.username}</strong></td>
+          <td style="color:#38bdf8;">${Number(p.high_score).toLocaleString()} pts</td>
+          <td style="color:#10b981;">${Number(p.career_score).toLocaleString()} pts</td>
+          <td>${p.games_played}</td>
+          <td style="text-align: right;">
+            <button class="btn-warning" onclick="resetPlayerScores('${p.username}')" style="margin-right:0.4rem;">Reset Score</button>
+            <button class="btn-danger" onclick="deleteBanPlayer('${p.username}')">Ban / Delete</button>
+          </td>
+        `;
+        playerListBody.appendChild(tr);
+      });
+    }
+
+    // Individual Reset
+    window.resetPlayerScores = async function(username) {
+      if (!confirm(`Reset ${username}'s High Score and Career XP to 0?\n(Their username and PIN will remain active)`)) return;
+      const password = adminPassInput.value.trim();
+
+      const res = await fetch('/api/players/action', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ password, username, action: 'reset_scores' })
+      });
+      const data = await res.json();
+      if (res.ok && data.success) {
+        alert(data.message);
+        loadPlayers();
+      } else {
+        alert(data.message || 'Action failed.');
       }
     };
+
+    // Individual Delete / Ban
+    window.deleteBanPlayer = async function(username) {
+      if (!confirm(`Are you sure you want to completely DELETE & BAN ${username}?\nThis removes their login and all stats forever.`)) return;
+      const password = adminPassInput.value.trim();
+
+      const res = await fetch('/api/players/action', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ password, username, action: 'delete_ban' })
+      });
+      const data = await res.json();
+      if (res.ok && data.success) {
+        alert(data.message);
+        loadPlayers();
+      } else {
+        alert(data.message || 'Action failed.');
+      }
+    };
+
+    // Bulk Reset All Scores
+    btnBulkResetScores.addEventListener('click', async () => {
+      if (!confirm("WARNING: This will reset EVERY player's High Score and Career XP to 0.\nUser accounts and logins will stay intact. Proceed?")) return;
+      const password = adminPassInput.value.trim();
+
+      const res = await fetch('/api/players/bulk', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ password, action: 'reset_all_scores' })
+      });
+      const data = await res.json();
+      if (res.ok && data.success) {
+        alert(data.message);
+        loadPlayers();
+      } else {
+        alert(data.message || 'Action failed.');
+      }
+    });
+
+    // Bulk Wipe All Accounts
+    btnBulkWipePlayers.addEventListener('click', async () => {
+      const confirmText = prompt("DANGER: Type 'DELETE ALL' to permanently erase ALL player accounts, scores, and leaderboards:");
+      if (confirmText !== 'DELETE ALL') return alert('Action cancelled.');
+
+      const password = adminPassInput.value.trim();
+      const res = await fetch('/api/players/bulk', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ password, action: 'wipe_all_players' })
+      });
+      const data = await res.json();
+      if (res.ok && data.success) {
+        alert(data.message);
+        loadPlayers();
+      } else {
+        alert(data.message || 'Action failed.');
+      }
+    });
   </script>
 </body>
 </html>
