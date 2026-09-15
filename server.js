@@ -35,6 +35,8 @@ async function initDb() {
         games_played INT DEFAULT 0,
         updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
       );
+      ALTER TABLE players ADD COLUMN IF NOT EXISTS avatar VARCHAR(10) DEFAULT '🚀';
+
       CREATE TABLE IF NOT EXISTS category_scores (
         username VARCHAR(30) NOT NULL,
         category VARCHAR(30) NOT NULL,
@@ -44,9 +46,9 @@ async function initDb() {
         PRIMARY KEY (username, category)
       );
     `);
-    console.log('Database initialized successfully.');
+    console.log('Database initialized and migrated successfully.');
   } catch (err) {
-    console.error('Error creating database tables:', err);
+    console.error('Error creating/migrating database tables:', err);
   }
 }
 initDb();
@@ -113,7 +115,7 @@ function getOrCreateRoom(rawRoomCode) {
       timeLeft: QUESTION_DURATION,
       roundActive: false,
       currentGameCategory: 'all',
-      previousRankings: {} // username -> rank
+      previousRankings: {}
     };
   }
   return rooms[code];
@@ -485,6 +487,7 @@ io.on('connection', (socket) => {
 
       io.to(room.code).emit('game:player_list', getLobbyPlayers(room));
     } catch (err) {
+      console.error('Login error detail:', err);
       socket.emit('player:auth_error', 'Server error logging in.');
     }
   });
@@ -693,19 +696,17 @@ function endRound(room) {
   const totalQuestions = room.activeQuestions.length;
   const totalResponders = Object.keys(room.activeSockets).length;
 
-  // Calculate Rank Movement (▲ / ▼ / •)
   leaderboard.forEach((player, currentIdx) => {
     const currentRank = currentIdx + 1;
     const prevRank = room.previousRankings[player.name];
 
     if (prevRank === undefined) {
-      player.rankDelta = 0; // First round
+      player.rankDelta = 0;
     } else {
-      player.rankDelta = prevRank - currentRank; // Positive = climbed up
+      player.rankDelta = prevRank - currentRank;
     }
   });
 
-  // Save for next round's comparison
   const nextRankings = {};
   leaderboard.forEach((p, idx) => { nextRankings[p.name] = idx + 1; });
   room.previousRankings = nextRankings;
@@ -726,7 +727,7 @@ function endRound(room) {
     milestoneNumber: finishedQuestionNum
   });
 
-  // 2. Send personalized stats + haptic triggers to each player
+  // 2. Send personalized stats + haptics to each player
   Object.keys(room.activeSockets).forEach((sockId) => {
     const socket = io.sockets.sockets.get(sockId);
     if (socket) {
