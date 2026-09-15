@@ -723,6 +723,21 @@ function endRound(room) {
 
   const isMilestone = totalQuestions > 10 && finishedQuestionNum % 10 === 0 && finishedQuestionNum < totalQuestions;
 
+ // 1. Broadcast the round results, chart distribution, and standings to the HOST and entire room
+  io.to(room.code).emit('game:round_ended', {
+    correctAnswer: correctIdx,
+    correctAnswerText: currentQ.options[correctIdx],
+    questionText: currentQ.question,
+    options: currentQ.options,
+    distribution: distribution,
+    totalResponders: totalResponders,
+    unansweredCount: unansweredCount,
+    leaderboard: leaderboard,
+    isMilestone: isMilestone,
+    milestoneNumber: finishedQuestionNum
+  });
+
+  // 2. Send personalized player stats (points, rank, streak multiplier) to each individual player phone
   Object.keys(room.activeSockets).forEach((sockId) => {
     const socket = io.sockets.sockets.get(sockId);
     if (socket) {
