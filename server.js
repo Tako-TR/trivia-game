@@ -93,15 +93,42 @@ function shuffle(array) {
   return arr;
 }
 
-// Active Game State
-let activeSockets = {}; // socketId -> { username, score, currentAnswer, answerTimeLeft, roundPointsEarned, streak }
-let activeQuestions = [];
-let currentQuestionIndex = -1;
-let questionTimer = null;
-let intermissionTimer = null;
-let timeLeft = QUESTION_DURATION;
-let roundActive = false;
-let currentGameCategory = 'all';
+/* =========================================================
+   MULTI-ROOM STATE ARCHITECTURE (UP TO 4 ROOMS)
+========================================================= */
+const MAX_ROOMS = 4;
+// roomCode -> Room Object
+const rooms = {};
+
+function getOrCreateRoom(rawRoomCode) {
+  const code = (rawRoomCode || 'ROOM1').trim().toUpperCase();
+  if (!rooms[code]) {
+    if (Object.keys(rooms).length >= MAX_ROOMS) {
+      return null; // Room limit reached
+    }
+    rooms[code] = {
+      code: code,
+      activeSockets: {}, // socketId -> player state
+      activeQuestions: [],
+      currentQuestionIndex: -1,
+      questionTimer: null,
+      intermissionTimer: null,
+      timeLeft: QUESTION_DURATION,
+      roundActive: false,
+      currentGameCategory: 'all'
+    };
+  }
+  return rooms[code];
+}
+
+function getSocketRoom(socket) {
+  for (const code of Object.keys(rooms)) {
+    if (rooms[code].activeSockets[socket.id]) {
+      return rooms[code];
+    }
+  }
+  return null;
+}
 
 /* =========================================================
    ADMIN API: QUESTIONS, PRESETS & PLAYERS
@@ -150,9 +177,7 @@ app.post('/api/questions/edit', (req, res) => {
     options: options.map((opt) => String(opt).trim()),
     answer: parseInt(answer, 10)
   };
-  if (image && String(image).trim() !== '') {
-    updatedQ.image = String(image).trim();
-  }
+  if (image && String(image).trim() !== '') updatedQ.image = String(image).trim();
 
   masterQuestions[qIndex] = updatedQ;
   saveQuestionsToFile(res, { success: true, message: 'Question updated successfully.' });
@@ -162,7 +187,7 @@ app.post('/api/questions/bulk', (req, res) => {
   const { password, questions } = req.body;
   if (password !== ADMIN_PASSWORD) return res.status(401).json({ success: false, message: 'Invalid admin passcode.' });
   if (!Array.isArray(questions) || questions.length === 0) {
-    return res.status(400).json({ success: false, message: 'No questions array provided.' });
+    return res.status(400).json({ success: false, message: 'No questions provided.' });
   }
 
   const validQuestions = [];
@@ -227,9 +252,7 @@ app.post('/api/presets/delete', (req, res) => {
   const { password, name } = req.body;
   if (password !== ADMIN_PASSWORD) return res.status(401).json({ success: false, message: 'Invalid admin passcode.' });
 
-  if (!name || !gamePresets[name]) {
-    return res.status(400).json({ success: false, message: 'Preset not found.' });
-  }
+  if (!name || !gamePresets[name]) return res.status(400).json({ success: false, message: 'Preset not found.' });
 
   delete gamePresets[name];
   savePresetsToFile(res, { success: true, presets: gamePresets });
@@ -267,7 +290,10 @@ app.post('/api/players/action', async (req, res) => {
         await pool.query('DELETE FROM players WHERE username = $1;', [cleanUser]);
         await pool.query('DELETE FROM category_scores WHERE username = $1;', [cleanUser]);
       }
-      disconnectPlayerByUsername(cleanUser, 'Your profile has been removed by the administrator.');
+      // Kick across any room they are in
+      for (const code of Object.keys(rooms)) {
+        disconnectPlayerByUsername(rooms[code], cleanUser, 'Your profile was removed by the administrator.');
+      }
       return res.json({ success: true, message: `Player ${cleanUser} deleted and banned.` });
     }
     return res.status(400).json({ success: false, message: 'Invalid action.' });
@@ -292,15 +318,17 @@ app.post('/api/players/bulk', async (req, res) => {
         await pool.query('TRUNCATE TABLE category_scores;');
         await pool.query('TRUNCATE TABLE players;');
       }
-      Object.keys(activeSockets).forEach((id) => {
-        const sock = io.sockets.sockets.get(id);
-        if (sock) {
-          sock.emit('player:kicked', 'All player accounts were reset by the host.');
-          sock.disconnect(true);
-        }
-      });
-      activeSockets = {};
-      io.emit('game:player_list', []);
+      for (const code of Object.keys(rooms)) {
+        Object.keys(rooms[code].activeSockets).forEach((id) => {
+          const sock = io.sockets.sockets.get(id);
+          if (sock) {
+            sock.emit('player:kicked', 'All player accounts were reset by the host.');
+            sock.disconnect(true);
+          }
+        });
+        rooms[code].activeSockets = {};
+        io.to(code).emit('game:player_list', []);
+      }
       return res.json({ success: true, message: 'All player profiles wiped.' });
     }
     return res.status(400).json({ success: false, message: 'Invalid bulk action.' });
@@ -309,18 +337,19 @@ app.post('/api/players/bulk', async (req, res) => {
   }
 });
 
-function disconnectPlayerByUsername(username, reason) {
-  Object.keys(activeSockets).forEach((id) => {
-    if (activeSockets[id].username === username) {
+function disconnectPlayerByUsername(room, username, reason) {
+  if (!room) return;
+  Object.keys(room.activeSockets).forEach((id) => {
+    if (room.activeSockets[id].username === username) {
       const sock = io.sockets.sockets.get(id);
       if (sock) {
         sock.emit('player:kicked', reason || 'You were kicked from the match.');
         sock.disconnect(true);
       }
-      delete activeSockets[id];
+      delete room.activeSockets[id];
     }
   });
-  io.emit('game:player_list', getLobbyPlayers());
+  io.to(room.code).emit('game:player_list', getLobbyPlayers(room));
 }
 
 app.get('/api/leaderboards', async (req, res) => {
@@ -362,13 +391,33 @@ function getStreakLabel(streak) {
 }
 
 /* =========================================================
-   SOCKET.IO REAL-TIME LOGIC
+   SOCKET.IO REAL-TIME ROOM LOGIC
 ========================================================= */
 
 io.on('connection', (socket) => {
-  socket.on('player:auth', async ({ username, pin }) => {
+  // Host announces connection to a specific room
+  socket.on('host:join_room', (roomCode) => {
+    const room = getOrCreateRoom(roomCode);
+    if (!room) {
+      return socket.emit('room:error', `Maximum active rooms (${MAX_ROOMS}) reached.`);
+    }
+    socket.join(room.code);
+    socket.emit('host:room_joined', {
+      roomCode: room.code,
+      players: getLobbyPlayers(room)
+    });
+  });
+
+  // Player joins with username, PIN, and roomCode
+  socket.on('player:auth', async ({ username, pin, roomCode }) => {
     const cleanUser = (username || '').trim().toLowerCase();
     const cleanPin = (pin || '').trim();
+    const targetRoomCode = (roomCode || 'ROOM1').trim().toUpperCase();
+
+    const room = getOrCreateRoom(targetRoomCode);
+    if (!room) {
+      return socket.emit('player:auth_error', `Room ${targetRoomCode} is not available.`);
+    }
 
     if (!cleanUser || !cleanPin || cleanUser.length < 2 || cleanPin.length < 4) {
       return socket.emit('player:auth_error', 'Username (2+ chars) and 4-digit PIN required.');
@@ -392,7 +441,9 @@ io.on('connection', (socket) => {
         }
       }
 
-      activeSockets[socket.id] = {
+      socket.join(room.code);
+
+      room.activeSockets[socket.id] = {
         username: cleanUser,
         score: 0,
         currentAnswer: null,
@@ -403,79 +454,87 @@ io.on('connection', (socket) => {
 
       socket.emit('player:authenticated', {
         username: cleanUser,
+        roomCode: room.code,
         highScore: playerProfile.high_score,
         careerScore: playerProfile.career_score,
         gamesPlayed: playerProfile.games_played
       });
 
-      io.emit('game:player_list', getLobbyPlayers());
+      io.to(room.code).emit('game:player_list', getLobbyPlayers(room));
     } catch (err) {
       socket.emit('player:auth_error', 'Server error logging in.');
     }
   });
 
-  // Player answer submission with SMART FAST-FORWARD check
+  // Player submits answer
   socket.on('player:submit_answer', (answerIndex) => {
-    if (roundActive && activeSockets[socket.id] && activeSockets[socket.id].currentAnswer === null) {
-      activeSockets[socket.id].currentAnswer = answerIndex;
-      activeSockets[socket.id].answerTimeLeft = timeLeft;
+    const room = getSocketRoom(socket);
+    if (!room) return;
+
+    if (room.roundActive && room.activeSockets[socket.id] && room.activeSockets[socket.id].currentAnswer === null) {
+      room.activeSockets[socket.id].currentAnswer = answerIndex;
+      room.activeSockets[socket.id].answerTimeLeft = room.timeLeft;
       socket.emit('player:answer_received', answerIndex);
 
-      // Broadcast live submission to host for real-time checkmark updates
-      io.emit('game:submission_update', {
-        username: activeSockets[socket.id].username,
+      io.to(room.code).emit('game:submission_update', {
+        username: room.activeSockets[socket.id].username,
         socketId: socket.id,
-        submittedCount: Object.values(activeSockets).filter(p => p.currentAnswer !== null).length,
-        totalCount: Object.keys(activeSockets).length
+        submittedCount: Object.values(room.activeSockets).filter(p => p.currentAnswer !== null).length,
+        totalCount: Object.keys(room.activeSockets).length
       });
 
-      // SMART FAST-FORWARD: If all connected players have answered, cut the clock!
-      const totalPlayers = Object.keys(activeSockets).length;
-      const answeredPlayers = Object.values(activeSockets).filter(p => p.currentAnswer !== null).length;
+      // SMART FAST-FORWARD for this room
+      const totalPlayers = Object.keys(room.activeSockets).length;
+      const answeredPlayers = Object.values(room.activeSockets).filter(p => p.currentAnswer !== null).length;
 
       if (totalPlayers > 0 && answeredPlayers >= totalPlayers) {
-        clearInterval(questionTimer);
-        endRound();
+        clearInterval(room.questionTimer);
+        endRound(room);
       }
     }
   });
 
   socket.on('host:kick_player', (targetUsername) => {
-    disconnectPlayerByUsername(targetUsername, 'You have been removed by the host.');
+    const room = getSocketRoom(socket) || getOrCreateRoom('ROOM1');
+    if (room) disconnectPlayerByUsername(room, targetUsername, 'You have been removed by the host.');
   });
 
   socket.on('host:start_game', (config) => {
-    clearInterval(questionTimer);
-    clearTimeout(intermissionTimer);
+    const roomCode = (config.roomCode || 'ROOM1').trim().toUpperCase();
+    const room = getOrCreateRoom(roomCode);
+    if (!room) return;
 
-    Object.keys(activeSockets).forEach((id) => {
-      activeSockets[id].score = 0;
-      activeSockets[id].currentAnswer = null;
-      activeSockets[id].answerTimeLeft = 0;
-      activeSockets[id].roundPointsEarned = 0;
-      activeSockets[id].streak = 0;
+    clearInterval(room.questionTimer);
+    clearTimeout(room.intermissionTimer);
+
+    Object.keys(room.activeSockets).forEach((id) => {
+      room.activeSockets[id].score = 0;
+      room.activeSockets[id].currentAnswer = null;
+      room.activeSockets[id].answerTimeLeft = 0;
+      room.activeSockets[id].roundPointsEarned = 0;
+      room.activeSockets[id].streak = 0;
     });
 
     const chosenPreset = config.preset && config.preset !== 'none' ? gamePresets[config.preset] : null;
 
     if (chosenPreset && chosenPreset.length > 0) {
-      currentGameCategory = `Preset: ${config.preset}`;
+      room.currentGameCategory = `Preset: ${config.preset}`;
       const shuffled = shuffle(chosenPreset);
       const requestedCount = parseInt(config.count, 10) || shuffled.length;
-      activeQuestions = shuffled.slice(0, Math.min(requestedCount, shuffled.length));
+      room.activeQuestions = shuffled.slice(0, Math.min(requestedCount, shuffled.length));
     } else {
-      currentGameCategory = config.category || 'all';
+      room.currentGameCategory = config.category || 'all';
       const requestedDifficulty = config.difficulty || 'all';
       const requestedCount = parseInt(config.count, 10) || 10;
 
       let eligible = masterQuestions.filter((q) => {
         const cat = (q.category || '').toLowerCase();
         let matchCat = false;
-        if (currentGameCategory === 'all') matchCat = true;
-        else if (currentGameCategory === 'bible') matchCat = cat.includes('bible');
-        else if (currentGameCategory === 'movie') matchCat = cat.includes('movie');
-        else if (currentGameCategory === 'logos') matchCat = cat.includes('logo');
-        else if (currentGameCategory === 'music') matchCat = cat.includes('music') || cat.includes('pop culture');
+        if (room.currentGameCategory === 'all') matchCat = true;
+        else if (room.currentGameCategory === 'bible') matchCat = cat.includes('bible');
+        else if (room.currentGameCategory === 'movie') matchCat = cat.includes('movie');
+        else if (room.currentGameCategory === 'logos') matchCat = cat.includes('logo');
+        else if (room.currentGameCategory === 'music') matchCat = cat.includes('music') || cat.includes('pop culture');
         if (!matchCat) return false;
 
         switch (requestedDifficulty) {
@@ -491,93 +550,96 @@ io.on('connection', (socket) => {
       if (eligible.length === 0) eligible = masterQuestions;
 
       const shuffled = shuffle(eligible);
-      activeQuestions = shuffled.slice(0, Math.min(requestedCount, shuffled.length));
+      room.activeQuestions = shuffled.slice(0, Math.min(requestedCount, shuffled.length));
     }
 
-    currentQuestionIndex = -1;
-    startNextQuestion();
+    room.currentQuestionIndex = -1;
+    startNextQuestion(room);
   });
 
-  socket.on('host:stop_game', () => {
-    clearInterval(questionTimer);
-    clearTimeout(intermissionTimer);
-    roundActive = false;
-    finishGameAndSaveStats();
+  socket.on('host:stop_game', (roomCode) => {
+    const targetRoomCode = (roomCode || 'ROOM1').trim().toUpperCase();
+    const room = rooms[targetRoomCode];
+    if (!room) return;
+
+    clearInterval(room.questionTimer);
+    clearTimeout(room.intermissionTimer);
+    room.roundActive = false;
+    finishGameAndSaveStats(room);
   });
 
   socket.on('disconnect', () => {
-    if (activeSockets[socket.id]) {
-      delete activeSockets[socket.id];
-      io.emit('game:player_list', getLobbyPlayers());
+    const room = getSocketRoom(socket);
+    if (room && room.activeSockets[socket.id]) {
+      delete room.activeSockets[socket.id];
+      io.to(room.code).emit('game:player_list', getLobbyPlayers(room));
 
-      // If during an active round a player disconnects, check if all remaining answered
-      if (roundActive) {
-        const totalPlayers = Object.keys(activeSockets).length;
-        const answeredPlayers = Object.values(activeSockets).filter(p => p.currentAnswer !== null).length;
+      if (room.roundActive) {
+        const totalPlayers = Object.keys(room.activeSockets).length;
+        const answeredPlayers = Object.values(room.activeSockets).filter(p => p.currentAnswer !== null).length;
         if (totalPlayers > 0 && answeredPlayers >= totalPlayers) {
-          clearInterval(questionTimer);
-          endRound();
+          clearInterval(room.questionTimer);
+          endRound(room);
         }
       }
     }
   });
 });
 
-function startNextQuestion() {
-  currentQuestionIndex++;
-  if (currentQuestionIndex >= activeQuestions.length) {
-    roundActive = false;
-    finishGameAndSaveStats();
+function startNextQuestion(room) {
+  room.currentQuestionIndex++;
+  if (room.currentQuestionIndex >= room.activeQuestions.length) {
+    room.roundActive = false;
+    finishGameAndSaveStats(room);
     return;
   }
 
-  Object.keys(activeSockets).forEach((id) => {
-    activeSockets[id].currentAnswer = null;
-    activeSockets[id].answerTimeLeft = 0;
-    activeSockets[id].roundPointsEarned = 0;
+  Object.keys(room.activeSockets).forEach((id) => {
+    room.activeSockets[id].currentAnswer = null;
+    room.activeSockets[id].answerTimeLeft = 0;
+    room.activeSockets[id].roundPointsEarned = 0;
   });
 
-  const currentQ = activeQuestions[currentQuestionIndex];
-  roundActive = true;
-  timeLeft = QUESTION_DURATION;
+  const currentQ = room.activeQuestions[room.currentQuestionIndex];
+  room.roundActive = true;
+  room.timeLeft = QUESTION_DURATION;
 
-  const connectedList = Object.values(activeSockets).map(p => ({ name: p.username, answered: false }));
+  const connectedList = Object.values(room.activeSockets).map(p => ({ name: p.username, answered: false }));
 
-  io.emit('game:new_question', {
+  io.to(room.code).emit('game:new_question', {
     category: currentQ.category,
     question: currentQ.question,
     image: currentQ.image || null,
     options: currentQ.options,
-    questionNumber: currentQuestionIndex + 1,
-    totalQuestions: activeQuestions.length,
-    timeLeft: timeLeft,
+    questionNumber: room.currentQuestionIndex + 1,
+    totalQuestions: room.activeQuestions.length,
+    timeLeft: room.timeLeft,
     connectedPlayers: connectedList
   });
 
-  clearInterval(questionTimer);
-  questionTimer = setInterval(() => {
-    timeLeft--;
-    io.emit('game:timer_tick', timeLeft);
-    if (timeLeft <= 0) {
-      clearInterval(questionTimer);
-      endRound();
+  clearInterval(room.questionTimer);
+  room.questionTimer = setInterval(() => {
+    room.timeLeft--;
+    io.to(room.code).emit('game:timer_tick', room.timeLeft);
+    if (room.timeLeft <= 0) {
+      clearInterval(room.questionTimer);
+      endRound(room);
     }
   }, 1000);
 }
 
-function endRound() {
-  roundActive = false;
-  const currentQ = activeQuestions[currentQuestionIndex];
+function endRound(room) {
+  room.roundActive = false;
+  const currentQ = room.activeQuestions[room.currentQuestionIndex];
   const correctIdx = currentQ.answer;
 
   const distribution = [0, 0, 0, 0];
   let unansweredCount = 0;
 
-  Object.keys(activeSockets).forEach((id) => {
-    const p = activeSockets[id];
+  Object.keys(room.activeSockets).forEach((id) => {
+    const p = room.activeSockets[id];
 
     if (p.currentAnswer === correctIdx) {
-      // Increment streak
       p.streak = (p.streak || 0) + 1;
       const multiplier = getStreakMultiplier(p.streak);
 
@@ -588,7 +650,6 @@ function endRound() {
       p.roundPointsEarned = earned;
       p.score += earned;
     } else {
-      // Streak broken
       p.streak = 0;
       p.roundPointsEarned = 0;
     }
@@ -600,61 +661,65 @@ function endRound() {
     }
   });
 
-  const leaderboard = getCurrentGameStandings();
-  const finishedQuestionNum = currentQuestionIndex + 1;
-  const totalQuestions = activeQuestions.length;
-  const totalResponders = Object.keys(activeSockets).length;
+  const leaderboard = getCurrentGameStandings(room);
+  const finishedQuestionNum = room.currentQuestionIndex + 1;
+  const totalQuestions = room.activeQuestions.length;
+  const totalResponders = Object.keys(room.activeSockets).length;
 
   const isMilestone = totalQuestions > 10 && finishedQuestionNum % 10 === 0 && finishedQuestionNum < totalQuestions;
 
-  io.sockets.sockets.forEach((socket) => {
-    const p = activeSockets[socket.id];
-    const rankIndex = leaderboard.findIndex((item) => item.id === socket.id);
-    socket.emit('game:round_ended', {
-      correctAnswer: correctIdx,
-      correctAnswerText: currentQ.options[correctIdx],
-      questionText: currentQ.question,
-      options: currentQ.options,
-      distribution: distribution,
-      totalResponders: totalResponders,
-      unansweredCount: unansweredCount,
-      leaderboard: leaderboard,
-      myRank: rankIndex !== -1 ? rankIndex + 1 : null,
-      myPointsEarned: p ? p.roundPointsEarned : 0,
-      myTotalScore: p ? p.score : 0,
-      myStreak: p ? p.streak : 0,
-      streakMultiplier: p ? getStreakMultiplier(p.streak) : 1.0,
-      streakLabel: p ? getStreakLabel(p.streak) : '',
-      isMilestone: isMilestone,
-      milestoneNumber: finishedQuestionNum
-    });
+  // Emit to sockets in this room only
+  Object.keys(room.activeSockets).forEach((sockId) => {
+    const socket = io.sockets.sockets.get(sockId);
+    if (socket) {
+      const p = room.activeSockets[sockId];
+      const rankIndex = leaderboard.findIndex((item) => item.id === sockId);
+      socket.emit('game:round_ended', {
+        correctAnswer: correctIdx,
+        correctAnswerText: currentQ.options[correctIdx],
+        questionText: currentQ.question,
+        options: currentQ.options,
+        distribution: distribution,
+        totalResponders: totalResponders,
+        unansweredCount: unansweredCount,
+        leaderboard: leaderboard,
+        myRank: rankIndex !== -1 ? rankIndex + 1 : null,
+        myPointsEarned: p ? p.roundPointsEarned : 0,
+        myTotalScore: p ? p.score : 0,
+        myStreak: p ? p.streak : 0,
+        streakMultiplier: p ? getStreakMultiplier(p.streak) : 1.0,
+        streakLabel: p ? getStreakLabel(p.streak) : '',
+        isMilestone: isMilestone,
+        milestoneNumber: finishedQuestionNum
+      });
+    }
   });
 
   const revealDuration = 7000;
 
   if (isMilestone) {
-    intermissionTimer = setTimeout(() => {
-      io.emit('game:milestone_leaderboard', {
+    room.intermissionTimer = setTimeout(() => {
+      io.to(room.code).emit('game:milestone_leaderboard', {
         questionNumber: finishedQuestionNum,
         leaderboard: leaderboard
       });
 
-      intermissionTimer = setTimeout(() => {
-        startNextQuestion();
+      room.intermissionTimer = setTimeout(() => {
+        startNextQuestion(room);
       }, 10000);
     }, revealDuration);
   } else {
-    intermissionTimer = setTimeout(() => {
-      startNextQuestion();
+    room.intermissionTimer = setTimeout(() => {
+      startNextQuestion(room);
     }, revealDuration);
   }
 }
 
-async function finishGameAndSaveStats() {
-  const standings = getCurrentGameStandings();
+async function finishGameAndSaveStats(room) {
+  const standings = getCurrentGameStandings(room);
 
   if (pool) {
-    for (const p of Object.values(activeSockets)) {
+    for (const p of Object.values(room.activeSockets)) {
       if (p.username) {
         try {
           await pool.query(
@@ -667,7 +732,7 @@ async function finishGameAndSaveStats() {
             [p.score, p.username]
           );
 
-          if (currentGameCategory && !currentGameCategory.startsWith('Preset:') && currentGameCategory !== 'all') {
+          if (room.currentGameCategory && !room.currentGameCategory.startsWith('Preset:') && room.currentGameCategory !== 'all') {
             await pool.query(
               `INSERT INTO category_scores (username, category, high_score, career_score, games_played)
                VALUES ($1, $2, $3, $3, 1)
@@ -676,7 +741,7 @@ async function finishGameAndSaveStats() {
                  high_score = GREATEST(category_scores.high_score, EXCLUDED.high_score),
                  career_score = category_scores.career_score + EXCLUDED.career_score,
                  games_played = category_scores.games_played + 1;`,
-              [p.username, currentGameCategory, p.score]
+              [p.username, room.currentGameCategory, p.score]
             );
           }
         } catch (err) {
@@ -686,28 +751,31 @@ async function finishGameAndSaveStats() {
     }
   }
 
-  io.sockets.sockets.forEach((socket) => {
-    const rankIndex = standings.findIndex((item) => item.id === socket.id);
-    socket.emit('game:over', {
-      leaderboard: standings,
-      myRank: rankIndex !== -1 ? rankIndex + 1 : null
-    });
+  Object.keys(room.activeSockets).forEach((sockId) => {
+    const socket = io.sockets.sockets.get(sockId);
+    if (socket) {
+      const rankIndex = standings.findIndex((item) => item.id === sockId);
+      socket.emit('game:over', {
+        leaderboard: standings,
+        myRank: rankIndex !== -1 ? rankIndex + 1 : null
+      });
+    }
   });
 }
 
-function getCurrentGameStandings() {
-  return Object.keys(activeSockets)
+function getCurrentGameStandings(room) {
+  return Object.keys(room.activeSockets)
     .map((id) => ({
       id: id,
-      name: activeSockets[id].username,
-      score: activeSockets[id].score,
-      streak: activeSockets[id].streak || 0
+      name: room.activeSockets[id].username,
+      score: room.activeSockets[id].score,
+      streak: room.activeSockets[id].streak || 0
     }))
     .sort((a, b) => b.score - a.score);
 }
 
-function getLobbyPlayers() {
-  return Object.values(activeSockets).map((p) => ({ name: p.username }));
+function getLobbyPlayers(room) {
+  return Object.values(room.activeSockets).map((p) => ({ name: p.username }));
 }
 
 server.listen(PORT, () => {
