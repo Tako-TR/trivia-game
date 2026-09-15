@@ -7,7 +7,6 @@
   <link rel="stylesheet" href="style.css">
   <script src="/socket.io/socket.io.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
-  <!-- Confetti Canvas Library -->
   <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.2/dist/confetti.browser.min.js"></script>
   <style>
     .container { max-width: 860px; }
@@ -39,6 +38,14 @@
       margin: 1rem auto;
       max-height: 480px;
       overflow-y: auto;
+    }
+    .hall-filter-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 1rem;
+      margin-bottom: 1rem;
+      flex-wrap: wrap;
     }
     .lobby-header-card {
       display: flex;
@@ -287,9 +294,23 @@
 
     <!-- Hall of Fame Tab -->
     <div id="host-hall-view" class="hidden">
-      <div class="tab-bar">
-        <button id="btn-show-highscore" class="tab-btn active">Top Single-Game Scores</button>
-        <button id="btn-show-career" class="tab-btn">Top Career Cumulative XP</button>
+      <div class="hall-filter-row">
+        <!-- Category Switcher for Leaderboard -->
+        <div style="display: flex; align-items: center; gap: 0.5rem;">
+          <label for="hall-category-select" style="font-size: 0.85rem; color: #94a3b8; font-weight: 700; text-transform: uppercase;">Category:</label>
+          <select id="hall-category-select" style="padding: 0.4rem 0.8rem; font-size: 0.9rem;">
+            <option value="all" selected>All Categories (Overall)</option>
+            <option value="bible">Bible Trivia</option>
+            <option value="movie">Movie Quotes</option>
+            <option value="logos">Brand Logos</option>
+            <option value="music">Pop Culture & Music</option>
+          </select>
+        </div>
+
+        <div class="tab-bar" style="margin: 0;">
+          <button id="btn-show-highscore" class="tab-btn active">Top Single-Game</button>
+          <button id="btn-show-career" class="tab-btn">Career Total XP</button>
+        </div>
       </div>
 
       <div class="hall-of-fame-panel">
@@ -317,6 +338,7 @@
     const tabBtnLobby = document.getElementById('tab-btn-lobby');
     const tabBtnHall = document.getElementById('tab-btn-hall');
 
+    const hallCategorySelect = document.getElementById('hall-category-select');
     const btnShowHighScore = document.getElementById('btn-show-highscore');
     const btnShowCareer = document.getElementById('btn-show-career');
     const hallOfFameList = document.getElementById('hall-of-fame-list');
@@ -339,6 +361,8 @@
       loadHallOfFame();
     });
 
+    hallCategorySelect.addEventListener('change', loadHallOfFame);
+
     btnShowHighScore.addEventListener('click', () => {
       btnShowHighScore.classList.add('active');
       btnShowCareer.classList.remove('active');
@@ -354,8 +378,9 @@
     });
 
     async function loadHallOfFame() {
+      const cat = hallCategorySelect.value;
       try {
-        const res = await fetch('/api/leaderboards');
+        const res = await fetch(`/api/leaderboards?category=${cat}`);
         hallData = await res.json();
         renderHallList();
       } catch (e) {
@@ -367,7 +392,7 @@
       hallOfFameList.innerHTML = '';
       const list = currentHallTab === 'high' ? hallData.highScores : hallData.careerScores;
       if (!list || list.length === 0) {
-        hallOfFameList.innerHTML = '<li>No records logged yet. Play a game to record scores!</li>';
+        hallOfFameList.innerHTML = '<li>No records logged for this category yet.</li>';
         return;
       }
       list.forEach((p, idx) => {
@@ -420,7 +445,6 @@
       hostLobby.classList.remove('hidden');
     });
 
-    // Render lobby players with live Kick button
     socket.on('game:player_list', (players) => {
       playerCount.textContent = players.length;
       hostLobbyPlayers.innerHTML = '';
