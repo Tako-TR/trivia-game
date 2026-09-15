@@ -29,6 +29,7 @@ async function initDb() {
       CREATE TABLE IF NOT EXISTS players (
         username VARCHAR(30) PRIMARY KEY,
         pin VARCHAR(10) NOT NULL,
+        avatar VARCHAR(10) DEFAULT '🚀',
         high_score INT DEFAULT 0,
         career_score INT DEFAULT 0,
         games_played INT DEFAULT 0,
@@ -101,9 +102,7 @@ const rooms = {};
 function getOrCreateRoom(rawRoomCode) {
   const code = (rawRoomCode || 'ROOM1').trim().toUpperCase();
   if (!rooms[code]) {
-    if (Object.keys(rooms).length >= MAX_ROOMS) {
-      return null;
-    }
+    if (Object.keys(rooms).length >= MAX_ROOMS) return null;
     rooms[code] = {
       code: code,
       activeSockets: {},
@@ -113,7 +112,8 @@ function getOrCreateRoom(rawRoomCode) {
       intermissionTimer: null,
       timeLeft: QUESTION_DURATION,
       roundActive: false,
-      currentGameCategory: 'all'
+      currentGameCategory: 'all',
+      previousRankings: {} // username -> rank
     };
   }
   return rooms[code];
@@ -121,9 +121,7 @@ function getOrCreateRoom(rawRoomCode) {
 
 function getSocketRoom(socket) {
   for (const code of Object.keys(rooms)) {
-    if (rooms[code].activeSockets[socket.id]) {
-      return rooms[code];
-    }
+    if (rooms[code].activeSockets[socket.id]) return rooms[code];
   }
   return null;
 }
@@ -131,9 +129,7 @@ function getSocketRoom(socket) {
 function isPlayerCurrentlyOnline(username) {
   for (const code of Object.keys(rooms)) {
     for (const id of Object.keys(rooms[code].activeSockets)) {
-      if (rooms[code].activeSockets[id].username === username) {
-        return true;
-      }
+      if (rooms[code].activeSockets[id].username === username) return true;
     }
   }
   return false;
@@ -170,7 +166,7 @@ app.post('/api/questions/edit', (req, res) => {
 
   const qIndex = parseInt(index, 10);
   if (isNaN(qIndex) || qIndex < 0 || qIndex >= masterQuestions.length) {
-    return res.status(400).json({ success: false, message: 'Invalid question index.' });
+    return res.status(400).json({ success: false, message: 'Invalid index.' });
   }
   if (!category || !question || !Array.isArray(options) || options.length !== 4 || answer === undefined) {
     return res.status(400).json({ success: false, message: 'Missing required fields.' });
@@ -256,7 +252,6 @@ app.post('/api/presets/save', (req, res) => {
 app.post('/api/presets/delete', (req, res) => {
   const { password, name } = req.body;
   if (password !== ADMIN_PASSWORD) return res.status(401).json({ success: false, message: 'Invalid admin passcode.' });
-
   if (!name || !gamePresets[name]) return res.status(400).json({ success: false, message: 'Preset not found.' });
 
   delete gamePresets[name];
@@ -272,7 +267,7 @@ app.post('/api/players/list', async (req, res) => {
   }
 
   try {
-    const result = await pool.query('SELECT username, high_score, career_score, games_played, updated_at FROM players ORDER BY career_score DESC;');
+    const result = await pool.query('SELECT username, avatar, high_score, career_score, games_played, updated_at FROM players ORDER BY career_score DESC;');
     res.json({ success: true, players: result.rows });
   } catch (err) {
     res.status(500).json({ success: false, message: err.message });
@@ -377,19 +372,19 @@ app.get('/api/leaderboards', async (req, res) => {
 
   if (!pool) {
     const list = Object.values(memoryPlayers);
-    const highScores = [...list].sort((a, b) => b.high_score - a.high_score).slice(0, 100).map(p => ({ username: p.username, score: p.high_score, games_played: p.games_played }));
-    const careerScores = [...list].sort((a, b) => b.career_score - a.career_score).slice(0, 100).map(p => ({ username: p.username, score: p.career_score, games_played: p.games_played }));
+    const highScores = [...list].sort((a, b) => b.high_score - a.high_score).slice(0, 100).map(p => ({ username: p.username, avatar: p.avatar, score: p.high_score, games_played: p.games_played }));
+    const careerScores = [...list].sort((a, b) => b.career_score - a.career_score).slice(0, 100).map(p => ({ username: p.username, avatar: p.avatar, score: p.career_score, games_played: p.games_played }));
     return res.json({ highScores, careerScores });
   }
 
   try {
     if (category === 'all') {
-      const highScores = (await pool.query('SELECT username, high_score AS score, games_played FROM players ORDER BY high_score DESC LIMIT 100;')).rows;
-      const careerScores = (await pool.query('SELECT username, career_score AS score, games_played FROM players ORDER BY career_score DESC LIMIT 100;')).rows;
+      const highScores = (await pool.query('SELECT username, avatar, high_score AS score, games_played FROM players ORDER BY high_score DESC LIMIT 100;')).rows;
+      const careerScores = (await pool.query('SELECT username, avatar, career_score AS score, games_played FROM players ORDER BY career_score DESC LIMIT 100;')).rows;
       return res.json({ highScores, careerScores });
     } else {
-      const highScores = (await pool.query('SELECT username, high_score AS score, games_played FROM category_scores WHERE category = $1 ORDER BY high_score DESC LIMIT 100;', [category])).rows;
-      const careerScores = (await pool.query('SELECT username, career_score AS score, games_played FROM category_scores WHERE category = $1 ORDER BY career_score DESC LIMIT 100;', [category])).rows;
+      const highScores = (await pool.query('SELECT p.username, p.avatar, c.high_score AS score, c.games_played FROM category_scores c JOIN players p ON c.username = p.username WHERE c.category = $1 ORDER BY c.high_score DESC LIMIT 100;', [category])).rows;
+      const careerScores = (await pool.query('SELECT p.username, p.avatar, c.career_score AS score, c.games_played FROM category_scores c JOIN players p ON c.username = p.username WHERE c.category = $1 ORDER BY c.career_score DESC LIMIT 100;', [category])).rows;
       return res.json({ highScores, careerScores });
     }
   } catch (err) {
@@ -416,9 +411,7 @@ function getStreakLabel(streak) {
 io.on('connection', (socket) => {
   socket.on('host:join_room', (roomCode) => {
     const room = getOrCreateRoom(roomCode);
-    if (!room) {
-      return socket.emit('room:error', `Maximum active rooms (${MAX_ROOMS}) reached.`);
-    }
+    if (!room) return socket.emit('room:error', `Maximum active rooms (${MAX_ROOMS}) reached.`);
     socket.join(room.code);
     socket.emit('host:room_joined', {
       roomCode: room.code,
@@ -426,9 +419,10 @@ io.on('connection', (socket) => {
     });
   });
 
-  socket.on('player:auth', async ({ username, pin, roomCode }) => {
+  socket.on('player:auth', async ({ username, pin, avatar, roomCode }) => {
     const cleanUser = (username || '').trim().toLowerCase();
     const cleanPin = (pin || '').trim();
+    const chosenAvatar = (avatar || '🚀').trim();
     const targetRoomCode = (roomCode || 'ROOM1').trim().toUpperCase();
 
     if (!cleanUser || !cleanPin || cleanUser.length < 2 || cleanPin.length < 4) {
@@ -436,41 +430,32 @@ io.on('connection', (socket) => {
     }
 
     const room = getOrCreateRoom(targetRoomCode);
-    if (!room) {
-      return socket.emit('player:auth_error', `Room ${targetRoomCode} is full or unavailable.`);
-    }
-
-    if (isPlayerCurrentlyOnline(cleanUser)) {
-      return socket.emit('player:auth_error', `"${cleanUser}" is already active in a room right now.`);
-    }
+    if (!room) return socket.emit('player:auth_error', `Room ${targetRoomCode} unavailable.`);
+    if (isPlayerCurrentlyOnline(cleanUser)) return socket.emit('player:auth_error', `"${cleanUser}" is already playing right now.`);
 
     try {
-      let playerProfile = { username: cleanUser, pin: cleanPin, high_score: 0, career_score: 0, games_played: 0 };
+      let playerProfile = { username: cleanUser, pin: cleanPin, avatar: chosenAvatar, high_score: 0, career_score: 0, games_played: 0 };
 
       if (pool) {
         const existing = await pool.query('SELECT * FROM players WHERE username = $1;', [cleanUser]);
         if (existing.rows.length > 0) {
           if (existing.rows[0].pin !== cleanPin) {
-            return socket.emit(
-              'player:auth_error',
-              `Username "${cleanUser}" is already taken. Choose a different name, or enter the correct PIN.`
-            );
+            return socket.emit('player:auth_error', `Username "${cleanUser}" taken. Pick another name or correct PIN.`);
           }
-          playerProfile = existing.rows[0];
+          await pool.query('UPDATE players SET avatar = $1 WHERE username = $2;', [chosenAvatar, cleanUser]);
+          playerProfile = { ...existing.rows[0], avatar: chosenAvatar };
         } else {
           await pool.query(
-            'INSERT INTO players (username, pin, high_score, career_score, games_played) VALUES ($1, $2, 0, 0, 0);',
-            [cleanUser, cleanPin]
+            'INSERT INTO players (username, pin, avatar, high_score, career_score, games_played) VALUES ($1, $2, $3, 0, 0, 0);',
+            [cleanUser, cleanPin, chosenAvatar]
           );
         }
       } else {
         if (memoryPlayers[cleanUser]) {
           if (memoryPlayers[cleanUser].pin !== cleanPin) {
-            return socket.emit(
-              'player:auth_error',
-              `Username "${cleanUser}" is already taken. Choose a different name, or enter the correct PIN.`
-            );
+            return socket.emit('player:auth_error', `Username "${cleanUser}" taken. Pick another name or correct PIN.`);
           }
+          memoryPlayers[cleanUser].avatar = chosenAvatar;
           playerProfile = memoryPlayers[cleanUser];
         } else {
           memoryPlayers[cleanUser] = playerProfile;
@@ -481,6 +466,7 @@ io.on('connection', (socket) => {
 
       room.activeSockets[socket.id] = {
         username: cleanUser,
+        avatar: chosenAvatar,
         score: 0,
         currentAnswer: null,
         answerTimeLeft: 0,
@@ -490,6 +476,7 @@ io.on('connection', (socket) => {
 
       socket.emit('player:authenticated', {
         username: cleanUser,
+        avatar: chosenAvatar,
         roomCode: room.code,
         highScore: playerProfile.high_score,
         careerScore: playerProfile.career_score,
@@ -513,6 +500,7 @@ io.on('connection', (socket) => {
 
       io.to(room.code).emit('game:submission_update', {
         username: room.activeSockets[socket.id].username,
+        avatar: room.activeSockets[socket.id].avatar,
         socketId: socket.id,
         submittedCount: Object.values(room.activeSockets).filter(p => p.currentAnswer !== null).length,
         totalCount: Object.keys(room.activeSockets).length
@@ -530,7 +518,7 @@ io.on('connection', (socket) => {
 
   socket.on('host:kick_player', (targetUsername) => {
     const room = getSocketRoom(socket) || getOrCreateRoom('ROOM1');
-    if (room) disconnectPlayerByUsername(room, targetUsername, 'You have been removed by the host.');
+    if (room) disconnectPlayerByUsername(room, targetUsername, 'You were removed by the host.');
   });
 
   socket.on('host:start_game', (config) => {
@@ -540,6 +528,8 @@ io.on('connection', (socket) => {
 
     clearInterval(room.questionTimer);
     clearTimeout(room.intermissionTimer);
+
+    room.previousRankings = {};
 
     Object.keys(room.activeSockets).forEach((id) => {
       room.activeSockets[id].score = 0;
@@ -638,7 +628,11 @@ function startNextQuestion(room) {
   room.roundActive = true;
   room.timeLeft = QUESTION_DURATION;
 
-  const connectedList = Object.values(room.activeSockets).map(p => ({ name: p.username, answered: false }));
+  const connectedList = Object.values(room.activeSockets).map(p => ({
+    name: p.username,
+    avatar: p.avatar,
+    answered: false
+  }));
 
   io.to(room.code).emit('game:new_question', {
     category: currentQ.category,
@@ -676,7 +670,6 @@ function endRound(room) {
     if (p.currentAnswer === correctIdx) {
       p.streak = (p.streak || 0) + 1;
       const multiplier = getStreakMultiplier(p.streak);
-
       const baseSpeedBonus = Math.round((Math.max(1, p.answerTimeLeft) / QUESTION_DURATION) * 500);
       const rawPoints = 500 + baseSpeedBonus;
       const earned = Math.round(rawPoints * multiplier);
@@ -700,9 +693,26 @@ function endRound(room) {
   const totalQuestions = room.activeQuestions.length;
   const totalResponders = Object.keys(room.activeSockets).length;
 
+  // Calculate Rank Movement (▲ / ▼ / •)
+  leaderboard.forEach((player, currentIdx) => {
+    const currentRank = currentIdx + 1;
+    const prevRank = room.previousRankings[player.name];
+
+    if (prevRank === undefined) {
+      player.rankDelta = 0; // First round
+    } else {
+      player.rankDelta = prevRank - currentRank; // Positive = climbed up
+    }
+  });
+
+  // Save for next round's comparison
+  const nextRankings = {};
+  leaderboard.forEach((p, idx) => { nextRankings[p.name] = idx + 1; });
+  room.previousRankings = nextRankings;
+
   const isMilestone = totalQuestions > 10 && finishedQuestionNum % 10 === 0 && finishedQuestionNum < totalQuestions;
 
-  // 1. Send round results and distribution chart to the HOST and everyone in room
+  // 1. Send round results and animated rank movement to the HOST
   io.to(room.code).emit('game:round_ended', {
     correctAnswer: correctIdx,
     correctAnswerText: currentQ.options[correctIdx],
@@ -716,12 +726,14 @@ function endRound(room) {
     milestoneNumber: finishedQuestionNum
   });
 
-  // 2. Send personalized streak/score data to each player phone
+  // 2. Send personalized stats + haptic triggers to each player
   Object.keys(room.activeSockets).forEach((sockId) => {
     const socket = io.sockets.sockets.get(sockId);
     if (socket) {
       const p = room.activeSockets[sockId];
       const rankIndex = leaderboard.findIndex((item) => item.id === sockId);
+      const playerItem = leaderboard[rankIndex];
+
       socket.emit('game:round_ended', {
         correctAnswer: correctIdx,
         correctAnswerText: currentQ.options[correctIdx],
@@ -732,6 +744,7 @@ function endRound(room) {
         unansweredCount: unansweredCount,
         leaderboard: leaderboard,
         myRank: rankIndex !== -1 ? rankIndex + 1 : null,
+        myRankDelta: playerItem ? playerItem.rankDelta : 0,
         myPointsEarned: p ? p.roundPointsEarned : 0,
         myTotalScore: p ? p.score : 0,
         myStreak: p ? p.streak : 0,
@@ -803,12 +816,10 @@ async function finishGameAndSaveStats(room) {
     }
   }
 
-  // 1. Broadcast game:over to the HOST and entire room
   io.to(room.code).emit('game:over', {
     leaderboard: standings
   });
 
-  // 2. Send personalized final rank to each player phone
   Object.keys(room.activeSockets).forEach((sockId) => {
     const socket = io.sockets.sockets.get(sockId);
     if (socket) {
@@ -826,6 +837,7 @@ function getCurrentGameStandings(room) {
     .map((id) => ({
       id: id,
       name: room.activeSockets[id].username,
+      avatar: room.activeSockets[id].avatar || '🚀',
       score: room.activeSockets[id].score,
       streak: room.activeSockets[id].streak || 0
     }))
@@ -833,7 +845,10 @@ function getCurrentGameStandings(room) {
 }
 
 function getLobbyPlayers(room) {
-  return Object.values(room.activeSockets).map((p) => ({ name: p.username }));
+  return Object.values(room.activeSockets).map((p) => ({
+    name: p.username,
+    avatar: p.avatar || '🚀'
+  }));
 }
 
 server.listen(PORT, () => {
