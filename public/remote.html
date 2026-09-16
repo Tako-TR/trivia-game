@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Trivia Mobile Remote</title>
+  <script src="/socket.io/socket.io.js"></script>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background-color: #0f172a;
+      color: #f8fafc;
+      margin: 0;
+      padding: 20px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+    .remote-container {
+      max-width: 400px;
+      width: 100%;
+      text-align: center;
+    }
+    h1 { color: #38bdf8; font-size: 1.5rem; margin-bottom: 5px; }
+    p { color: #94a3b8; font-size: 0.9rem; margin-bottom: 25px; }
+    
+    .card {
+      background: #1e293b;
+      border: 1px solid #334155;
+      border-radius: 12px;
+      padding: 20px;
+      margin-bottom: 20px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+      text-align: left;
+    }
+    .card label { font-size: 0.8rem; font-weight: bold; color: #38bdf8; text-transform: uppercase; display: block; margin-bottom: 8px; }
+    
+    select, input {
+      width: 100%;
+      background: #0f172a;
+      color: #38bdf8;
+      border: 1px solid #475569;
+      padding: 12px;
+      border-radius: 8px;
+      font-size: 1rem;
+      font-weight: bold;
+      box-sizing: border-box;
+      margin-bottom: 12px;
+    }
+    
+    .btn-action {
+      width: 100%;
+      padding: 16px;
+      border: none;
+      border-radius: 10px;
+      font-size: 1.1rem;
+      font-weight: 800;
+      cursor: pointer;
+      margin-bottom: 12px;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+    }
+    .btn-start { background-color: #10b981; color: white; }
+    .btn-start:active { background-color: #059669; }
+    
+    .btn-stop { background-color: #dc2626; color: white; }
+    .btn-stop:active { background-color: #b91c1c; }
+
+    #status-msg {
+      font-size: 0.85rem;
+      color: #10b981;
+      font-weight: bold;
+      margin-top: 10px;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="remote-container">
+    <h1>📱 Host Remote</h1>
+    <p>Control your trivia screen from your phone</p>
+
+    <div class="card">
+      <label for="remote-room">Active Room</label>
+      <select id="remote-room" onchange="changeRoom()">
+        <option value="ROOM1">Fremont Main</option>
+        <option value="ROOM2">Fremont HS</option>
+        <option value="ROOM3">Fremont MS</option>
+        <option value="ROOM4">Tiffin</option>
+        <option value="ROOM5">Sandusky</option>
+        <option value="ROOM6">Northwood</option>
+      </select>
+
+      <label for="remote-cat">Category</label>
+      <select id="remote-cat">
+        <option value="all">Mixed (All Categories)</option>
+        <option value="music">Pop Culture & Music</option>
+        <option value="bible">Bible Trivia</option>
+        <option value="movie">Movie Quotes</option>
+      </select>
+
+      <label for="remote-count">Questions</label>
+      <select id="remote-count">
+        <option value="10" selected>10 Questions</option>
+        <option value="15">15 Questions</option>
+        <option value="20">20 Questions</option>
+        <option value="50">50 Questions</option>
+      </select>
+    </div>
+
+    <button class="btn-action btn-start" onclick="sendStartGame()">▶ Start Game on Screen</button>
+    <button class="btn-action btn-stop" onclick="sendStopGame()">⏹ Stop / End Match</button>
+    
+    <div id="status-msg">Connected to Server</div>
+  </div>
+
+  <script>
+    const socket = io();
+    let currentRoom = 'ROOM1';
+
+    function changeRoom() {
+      currentRoom = document.getElementById('remote-room').value;
+      socket.emit('host:join_room', currentRoom);
+      document.getElementById('status-msg').textContent = `Switched to ${currentRoom}`;
+    }
+
+    function sendStartGame() {
+      const category = document.getElementById('remote-cat').value;
+      const count = document.getElementById('remote-count').value;
+
+      socket.emit('host:start_game', {
+        roomCode: currentRoom,
+        preset: 'none',
+        category: category,
+        difficulty: 'all',
+        count: count
+      });
+      document.getElementById('status-msg').textContent = 'Signal sent: Game Started!';
+    }
+
+    function sendStopGame() {
+      if (confirm("Are you sure you want to stop the game on the main screen?")) {
+        socket.emit('host:stop_game', currentRoom);
+        document.getElementById('status-msg').textContent = 'Signal sent: Game Stopped.';
+      }
+    }
+  </script>
+</body>
+</html>
