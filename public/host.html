@@ -9,6 +9,85 @@
   <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.2/dist/confetti.browser.min.js"></script>
   <style>
+    /* PASSWORD LOGIN OVERLAY STYLES */
+    #login-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: #0f172a;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      z-index: 99999;
+    }
+    .login-box {
+      background: #1e293b;
+      border: 2px solid #38bdf8;
+      padding: 2.5rem;
+      border-radius: 16px;
+      box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.5);
+      text-align: center;
+      max-width: 400px;
+      width: 90%;
+    }
+    .login-box h2 {
+      color: #38bdf8;
+      margin-top: 0;
+      margin-bottom: 0.5rem;
+      font-size: 1.5rem;
+    }
+    .login-box p {
+      color: #94a3b8;
+      font-size: 0.9rem;
+      margin-bottom: 1.5rem;
+    }
+    .login-box input {
+      width: 100%;
+      background-color: #0f172a;
+      color: #38bdf8;
+      border: 1px solid #475569;
+      padding: 0.75rem 1rem;
+      border-radius: 8px;
+      font-size: 1rem;
+      font-weight: 600;
+      margin-bottom: 1rem;
+      box-sizing: border-box;
+      outline: none;
+    }
+    .login-box input:focus {
+      border-color: #38bdf8;
+      box-shadow: 0 0 8px rgba(56, 189, 248, 0.3);
+    }
+    .login-box button {
+      width: 100%;
+      background-color: #10b981;
+      color: #ffffff;
+      border: none;
+      padding: 0.75rem;
+      border-radius: 8px;
+      font-weight: 800;
+      font-size: 1rem;
+      cursor: pointer;
+      transition: background-color 0.2s;
+    }
+    .login-box button:hover {
+      background-color: #059669;
+    }
+    #login-error {
+      color: #ef4444;
+      font-size: 0.85rem;
+      font-weight: 700;
+      margin-top: 0.75rem;
+      min-height: 1.2rem;
+    }
+
+    /* MAIN CONTAINER CONTROL */
+    #host-main-wrapper {
+      display: none;
+    }
+
     .container { max-width: 880px; position: relative; }
     .top-bar-controls {
       display: flex;
@@ -408,243 +487,290 @@
   </style>
 </head>
 <body>
-  <div class="container">
-    <div class="top-bar-controls">
-      <div class="room-badge" id="host-room-badge">ROOM: Fremont Main</div>
-      <div class="top-toggles">
-        <button id="btn-toggle-sound" class="toggle-pill">🔊 Sound: ON</button>
-        <button id="btn-toggle-autopilot" class="toggle-pill">⚡ Auto-Pilot: ON</button>
+
+  <!-- PASSWORD LOGIN OVERLAY -->
+  <div id="login-overlay">
+    <div class="login-box">
+      <h2>Host Authentication</h2>
+      <p>Enter host password to access controls:</p>
+      <input type="password" id="passcode-input" placeholder="Password..." autocomplete="current-password" autofocus />
+      <button onclick="checkPasscode()">Unlock Dashboard</button>
+      <div id="login-error"></div>
+    </div>
+  </div>
+
+  <!-- FULL WRAPPER FOR HOST DASHBOARD -->
+  <div id="host-main-wrapper">
+    <div class="container">
+      <div class="top-bar-controls">
+        <div class="room-badge" id="host-room-badge">ROOM: Fremont Main</div>
+        <div class="top-toggles">
+          <button id="btn-toggle-sound" class="toggle-pill">🔊 Sound: ON</button>
+          <button id="btn-toggle-autopilot" class="toggle-pill">⚡ Auto-Pilot: ON</button>
+        </div>
       </div>
-    </div>
 
-    <h1>Host Screen</h1>
+      <h1>Host Screen</h1>
 
-    <div class="tab-bar">
-      <button id="tab-btn-lobby" class="tab-btn active">Live Game Lobby</button>
-      <button id="tab-btn-hall" class="tab-btn">All-Time Hall of Fame</button>
-    </div>
+      <div class="tab-bar">
+        <button id="tab-btn-lobby" class="tab-btn active">Live Game Lobby</button>
+        <button id="tab-btn-hall" class="tab-btn">All-Time Hall of Fame</button>
+      </div>
 
-    <div id="host-lobby-view">
-      <div id="host-lobby">
-        <div class="lobby-header-card">
-          <div class="qr-card">
-            <h2>Scan to Join: <span id="qr-room-label" style="color:#38bdf8;">Fremont Main</span></h2>
-            <p>Pick avatar & battle for top rank</p>
-            <div id="qrcode"></div>
+      <div id="host-lobby-view">
+        <div id="host-lobby">
+          <div class="lobby-header-card">
+            <div class="qr-card">
+              <h2>Scan to Join: <span id="qr-room-label" style="color:#38bdf8;">Fremont Main</span></h2>
+              <p>Pick avatar & battle for top rank</p>
+              <div id="qrcode"></div>
+            </div>
           </div>
+
+          <div style="color: #94a3b8; margin-bottom: 0.75rem;">Players in this room: <strong id="player-count" style="color: #38bdf8;">0</strong></div>
+          
+          <div class="settings-panel">
+            <div class="setting-row">
+              <label for="host-room-select" style="color: #f59e0b;">Select Game Room</label>
+              <select id="host-room-select">
+                <option value="ROOM1" selected>Fremont Main</option>
+                <option value="ROOM2">Fremont HS</option>
+                <option value="ROOM3">Fremont MS</option>
+                <option value="ROOM4">Tiffin</option>
+                <option value="ROOM5">Sandusky</option>
+                <option value="ROOM6">Northwood</option>
+              </select>
+            </div>
+
+            <div class="setting-row" style="background-color: rgba(56, 189, 248, 0.08); padding: 0.6rem; border-radius: 8px; border: 1px dashed #38bdf8;">
+              <label for="preset-select" style="color: #38bdf8;">Preset Game Pack (Optional)</label>
+              <select id="preset-select">
+                <option value="none" selected>-- None (Use Category & Difficulty Below) --</option>
+              </select>
+            </div>
+
+            <div class="setting-row" id="standard-cat-row">
+              <label for="category-select">Select Category</label>
+              <select id="category-select">
+                <option value="all" selected>Mixed (All Categories)</option>
+                <option value="music">Pop Culture & Music Only</option>
+                <option value="bible">Bible Trivia Only</option>
+                <option value="movie">Movie Quotes Only</option>
+              </select>
+            </div>
+
+            <div class="setting-row" id="standard-diff-row">
+              <label for="difficulty-select">Select Difficulty</label>
+              <select id="difficulty-select">
+                <option value="all" selected>Mixed (All Difficulties)</option>
+                <option value="easy">Easy Only</option>
+                <option value="medium">Medium Only</option>
+                <option value="hard">Hard Only</option>
+                <option value="easy_medium">Easy & Medium</option>
+                <option value="medium_hard">Medium & Hard</option>
+              </select>
+            </div>
+
+            <div class="setting-row">
+              <label for="question-count">Number of Questions</label>
+              <select id="question-count">
+                <option value="5">5 Questions</option>
+                <option value="10" selected>10 Questions</option>
+                <option value="15">15 Questions</option>
+                <option value="20">20 Questions</option>
+                <option value="25">25 Questions</option>
+                <option value="50">50 Questions</option>
+                <option value="100">All Available Questions</option>
+              </select>
+            </div>
+          </div>
+
+          <div style="display: flex; flex-direction: column; align-items: center; gap: 0.75rem;">
+            <button id="btn-start" style="background-color: #10b981; min-width: 220px;">Start Game</button>
+            <div class="host-links">
+              <a href="/add.html" class="host-link-btn">+ Add Questions</a>
+              <a href="/manage.html" class="host-link-btn">⚙ Question Editor & Generator</a>
+            </div>
+          </div>
+
+          <h2 style="margin-top: 1.5rem; font-size: 1.15rem;">Connected in this Room</h2>
+          <ul id="host-lobby-players" class="leaderboard"></ul>
         </div>
 
-        <div style="color: #94a3b8; margin-bottom: 0.75rem;">Players in this room: <strong id="player-count" style="color: #38bdf8;">0</strong></div>
-        
-        <div class="settings-panel">
-          <div class="setting-row">
-            <label for="host-room-select" style="color: #f59e0b;">Select Game Room</label>
-            <select id="host-room-select">
-              <option value="ROOM1" selected>Fremont Main</option>
+        <!-- Live Game Screen -->
+        <div id="host-game" class="hidden">
+          <div id="host-category" class="badge">Category</div>
+          
+          <div class="timer-meter-wrapper">
+            <div id="timer-bar" class="timer-meter-bar"></div>
+          </div>
+          <div id="host-timer" class="timer">15</div>
+
+          <div id="host-image-container" class="trivia-image-box hidden">
+            <img id="host-question-image" class="trivia-image" src="" alt="Trivia Visual">
+          </div>
+
+          <p id="host-question" class="question-text">Question</p>
+          <div id="host-options" class="options-grid"></div>
+
+          <div class="submission-tray">
+            <div class="submission-tray-header">
+              <span>Room Submissions</span>
+              <span id="submission-counter-label" style="color: #38bdf8;">0 / 0 Answered</span>
+            </div>
+            <div id="submission-chips-container" class="submission-chips"></div>
+          </div>
+
+          <button class="btn-danger stop-game-btn">Stop / End Game</button>
+        </div>
+
+        <!-- Milestone Intermission Screen -->
+        <div id="host-milestone" class="hidden">
+          <h1 style="color: #38bdf8;">Checkpoint Standings!</h1>
+          <p id="host-milestone-text" class="question-text" style="color: #f59e0b; font-weight: 700;">After 10 Questions</p>
+          <h2>Current Match Leaderboard</h2>
+          <ul id="host-milestone-leaderboard" class="leaderboard"></ul>
+          <p style="color: #94a3b8; font-size: 0.95rem; margin-top: 1rem;">Resuming in 10 seconds...</p>
+          <button class="btn-danger stop-game-btn">Stop / End Game</button>
+        </div>
+
+        <!-- Round End Screen -->
+        <div id="host-round-end" class="hidden">
+          <h1>Round Results</h1>
+
+          <div class="answer-reveal-box">
+            <div class="answer-reveal-label">Correct Answer</div>
+            <div id="host-correct-answer" class="answer-reveal-text">---</div>
+          </div>
+
+          <div class="spotlights-container" id="spotlights-box">
+            <div class="spotlight-card speed" id="card-speed-demon">
+              <div class="spotlight-icon">⚡</div>
+              <div>
+                <div class="spotlight-title">Speed Demon (Fastest)</div>
+                <div class="spotlight-name" id="speed-name">--</div>
+                <div class="spotlight-stat" id="speed-time">Locked in fast!</div>
+              </div>
+            </div>
+            <div class="spotlight-card snail" id="card-snail-award">
+              <div class="spotlight-icon">🐢</div>
+              <div>
+                <div class="spotlight-title">Snail Award (Slowest)</div>
+                <div class="spotlight-name" id="snail-name">--</div>
+                <div class="spotlight-stat" id="snail-time">Taking their time!</div>
+              </div>
+            </div>
+          </div>
+
+          <div class="chart-container">
+            <div class="chart-header">
+              <span>Crowd Answer Breakdown</span>
+              <span id="chart-total-label" style="font-size: 0.8rem; color: #38bdf8;">0 Responses</span>
+            </div>
+            <div id="chart-bars-wrapper" class="chart-bars"></div>
+          </div>
+
+          <p style="color: #f59e0b; font-weight: 600;">Next question loading shortly...</p>
+          <h2>Current Standings</h2>
+          <ul id="host-leaderboard" class="leaderboard"></ul>
+          <button class="btn-danger stop-game-btn">Stop / End Game</button>
+        </div>
+
+        <!-- Game Over Screen -->
+        <div id="host-game-over" class="hidden">
+          <h1 style="color: #facc15; font-size: 2.2rem; margin-bottom: 0.25rem;">Champion Crowned!</h1>
+          <p class="question-text">Final Podium Standings</p>
+
+          <div id="podium-area" class="podium-container"></div>
+
+          <div style="display:flex; justify-content:center; gap:0.75rem; margin: 1.25rem 0;">
+            <button id="btn-export-recap" style="background-color: #10b981; color:#fff; font-weight:700; border:none; padding:0.6rem 1.25rem; border-radius:8px; cursor:pointer;">📥 Export Match Recap (CSV)</button>
+            <button id="btn-restart" style="background-color: #3b82f6; color:#fff; font-weight:700; border:none; padding:0.6rem 1.25rem; border-radius:8px; cursor:pointer;">Back to Lobby</button>
+          </div>
+
+          <h2 style="font-size: 1.1rem; color: #94a3b8; margin-top: 1rem;">Complete Rankings</h2>
+          <ul id="host-final-leaderboard" class="leaderboard"></ul>
+        </div>
+      </div>
+
+      <!-- Floating Corner QR Badge (Visible during active gameplay questions so late joiners can scan) -->
+      <div id="floating-qr-container" class="floating-qr-badge hidden">
+        <div class="floating-qr-label">Scan to Join Mid-Game</div>
+        <div id="corner-qrcode"></div>
+      </div>
+
+      <!-- Hall of Fame Tab -->
+      <div id="host-hall-view" class="hidden">
+        <div class="hall-filter-row">
+          <div style="display: flex; align-items: center; gap: 0.5rem; flex-wrap: wrap;">
+            <label for="hall-room-select" style="font-size: 0.85rem; color: #f59e0b; font-weight: 800; text-transform: uppercase;">Leaderboard Scope:</label>
+            <select id="hall-room-select" style="padding: 0.4rem 0.8rem; font-size: 0.9rem; border-color: #f59e0b;">
+              <option value="all" selected>All Rooms (Global)</option>
+              <option value="ROOM1">Fremont Main</option>
               <option value="ROOM2">Fremont HS</option>
               <option value="ROOM3">Fremont MS</option>
               <option value="ROOM4">Tiffin</option>
               <option value="ROOM5">Sandusky</option>
               <option value="ROOM6">Northwood</option>
             </select>
-          </div>
 
-          <div class="setting-row" style="background-color: rgba(56, 189, 248, 0.08); padding: 0.6rem; border-radius: 8px; border: 1px dashed #38bdf8;">
-            <label for="preset-select" style="color: #38bdf8;">Preset Game Pack (Optional)</label>
-            <select id="preset-select">
-              <option value="none" selected>-- None (Use Category & Difficulty Below) --</option>
+            <label for="hall-category-select" style="font-size: 0.85rem; color: #94a3b8; font-weight: 700; text-transform: uppercase; margin-left:0.5rem;">Category:</label>
+            <select id="hall-category-select" style="padding: 0.4rem 0.8rem; font-size: 0.9rem;">
+              <option value="all" selected>All Categories (Overall)</option>
+              <option value="bible">Bible Trivia</option>
+              <option value="movie">Movie Quotes</option>
+              <option value="music">Pop Culture & Music</option>
             </select>
           </div>
 
-          <div class="setting-row" id="standard-cat-row">
-            <label for="category-select">Select Category</label>
-            <select id="category-select">
-              <option value="all" selected>Mixed (All Categories)</option>
-              <option value="music">Pop Culture & Music Only</option>
-              <option value="bible">Bible Trivia Only</option>
-              <option value="movie">Movie Quotes Only</option>
-            </select>
-          </div>
-
-          <div class="setting-row" id="standard-diff-row">
-            <label for="difficulty-select">Select Difficulty</label>
-            <select id="difficulty-select">
-              <option value="all" selected>Mixed (All Difficulties)</option>
-              <option value="easy">Easy Only</option>
-              <option value="medium">Medium Only</option>
-              <option value="hard">Hard Only</option>
-              <option value="easy_medium">Easy & Medium</option>
-              <option value="medium_hard">Medium & Hard</option>
-            </select>
-          </div>
-
-          <div class="setting-row">
-            <label for="question-count">Number of Questions</label>
-            <select id="question-count">
-              <option value="5">5 Questions</option>
-              <option value="10" selected>10 Questions</option>
-              <option value="15">15 Questions</option>
-              <option value="20">20 Questions</option>
-              <option value="25">25 Questions</option>
-              <option value="50">50 Questions</option>
-              <option value="100">All Available Questions</option>
-            </select>
+          <div class="tab-bar" style="margin: 0;">
+            <button id="btn-show-highscore" class="tab-btn active">Top Single-Game</button>
+            <button id="btn-show-career" class="tab-btn">Career Total XP</button>
           </div>
         </div>
 
-        <div style="display: flex; flex-direction: column; align-items: center; gap: 0.75rem;">
-          <button id="btn-start" style="background-color: #10b981; min-width: 220px;">Start Game</button>
-          <div class="host-links">
-            <a href="/add.html" class="host-link-btn">+ Add Questions</a>
-            <a href="/manage.html" class="host-link-btn">⚙ Question Editor & Generator</a>
-          </div>
+        <div class="hall-of-fame-panel">
+          <ul id="hall-of-fame-list" class="leaderboard">
+            <li>Loading Hall of Fame records...</li>
+          </ul>
         </div>
-
-        <h2 style="margin-top: 1.5rem; font-size: 1.15rem;">Connected in this Room</h2>
-        <ul id="host-lobby-players" class="leaderboard"></ul>
-      </div>
-
-      <!-- Live Game Screen -->
-      <div id="host-game" class="hidden">
-        <div id="host-category" class="badge">Category</div>
-        
-        <div class="timer-meter-wrapper">
-          <div id="timer-bar" class="timer-meter-bar"></div>
-        </div>
-        <div id="host-timer" class="timer">15</div>
-
-        <div id="host-image-container" class="trivia-image-box hidden">
-          <img id="host-question-image" class="trivia-image" src="" alt="Trivia Visual">
-        </div>
-
-        <p id="host-question" class="question-text">Question</p>
-        <div id="host-options" class="options-grid"></div>
-
-        <div class="submission-tray">
-          <div class="submission-tray-header">
-            <span>Room Submissions</span>
-            <span id="submission-counter-label" style="color: #38bdf8;">0 / 0 Answered</span>
-          </div>
-          <div id="submission-chips-container" class="submission-chips"></div>
-        </div>
-
-        <button class="btn-danger stop-game-btn">Stop / End Game</button>
-      </div>
-
-      <!-- Milestone Intermission Screen -->
-      <div id="host-milestone" class="hidden">
-        <h1 style="color: #38bdf8;">Checkpoint Standings!</h1>
-        <p id="host-milestone-text" class="question-text" style="color: #f59e0b; font-weight: 700;">After 10 Questions</p>
-        <h2>Current Match Leaderboard</h2>
-        <ul id="host-milestone-leaderboard" class="leaderboard"></ul>
-        <p style="color: #94a3b8; font-size: 0.95rem; margin-top: 1rem;">Resuming in 10 seconds...</p>
-        <button class="btn-danger stop-game-btn">Stop / End Game</button>
-      </div>
-
-      <!-- Round End Screen -->
-      <div id="host-round-end" class="hidden">
-        <h1>Round Results</h1>
-
-        <div class="answer-reveal-box">
-          <div class="answer-reveal-label">Correct Answer</div>
-          <div id="host-correct-answer" class="answer-reveal-text">---</div>
-        </div>
-
-        <div class="spotlights-container" id="spotlights-box">
-          <div class="spotlight-card speed" id="card-speed-demon">
-            <div class="spotlight-icon">⚡</div>
-            <div>
-              <div class="spotlight-title">Speed Demon (Fastest)</div>
-              <div class="spotlight-name" id="speed-name">--</div>
-              <div class="spotlight-stat" id="speed-time">Locked in fast!</div>
-            </div>
-          </div>
-          <div class="spotlight-card snail" id="card-snail-award">
-            <div class="spotlight-icon">🐢</div>
-            <div>
-              <div class="spotlight-title">Snail Award (Slowest)</div>
-              <div class="spotlight-name" id="snail-name">--</div>
-              <div class="spotlight-stat" id="snail-time">Taking their time!</div>
-            </div>
-          </div>
-        </div>
-
-        <div class="chart-container">
-          <div class="chart-header">
-            <span>Crowd Answer Breakdown</span>
-            <span id="chart-total-label" style="font-size: 0.8rem; color: #38bdf8;">0 Responses</span>
-          </div>
-          <div id="chart-bars-wrapper" class="chart-bars"></div>
-        </div>
-
-        <p style="color: #f59e0b; font-weight: 600;">Next question loading shortly...</p>
-        <h2>Current Standings</h2>
-        <ul id="host-leaderboard" class="leaderboard"></ul>
-        <button class="btn-danger stop-game-btn">Stop / End Game</button>
-      </div>
-
-      <!-- Game Over Screen -->
-      <div id="host-game-over" class="hidden">
-        <h1 style="color: #facc15; font-size: 2.2rem; margin-bottom: 0.25rem;">Champion Crowned!</h1>
-        <p class="question-text">Final Podium Standings</p>
-
-        <div id="podium-area" class="podium-container"></div>
-
-        <div style="display:flex; justify-content:center; gap:0.75rem; margin: 1.25rem 0;">
-          <button id="btn-export-recap" style="background-color: #10b981; color:#fff; font-weight:700; border:none; padding:0.6rem 1.25rem; border-radius:8px; cursor:pointer;">📥 Export Match Recap (CSV)</button>
-          <button id="btn-restart" style="background-color: #3b82f6; color:#fff; font-weight:700; border:none; padding:0.6rem 1.25rem; border-radius:8px; cursor:pointer;">Back to Lobby</button>
-        </div>
-
-        <h2 style="font-size: 1.1rem; color: #94a3b8; margin-top: 1rem;">Complete Rankings</h2>
-        <ul id="host-final-leaderboard" class="leaderboard"></ul>
-      </div>
-    </div>
-
-    <!-- Floating Corner QR Badge (Visible during active gameplay questions so late joiners can scan) -->
-    <div id="floating-qr-container" class="floating-qr-badge hidden">
-      <div class="floating-qr-label">Scan to Join Mid-Game</div>
-      <div id="corner-qrcode"></div>
-    </div>
-
-    <!-- Hall of Fame Tab -->
-    <div id="host-hall-view" class="hidden">
-      <div class="hall-filter-row">
-        <div style="display: flex; align-items: center; gap: 0.5rem; flex-wrap: wrap;">
-          <label for="hall-room-select" style="font-size: 0.85rem; color: #f59e0b; font-weight: 800; text-transform: uppercase;">Leaderboard Scope:</label>
-          <select id="hall-room-select" style="padding: 0.4rem 0.8rem; font-size: 0.9rem; border-color: #f59e0b;">
-            <option value="all" selected>All Rooms (Global)</option>
-            <option value="ROOM1">Fremont Main</option>
-            <option value="ROOM2">Fremont HS</option>
-            <option value="ROOM3">Fremont MS</option>
-            <option value="ROOM4">Tiffin</option>
-            <option value="ROOM5">Sandusky</option>
-            <option value="ROOM6">Northwood</option>
-          </select>
-
-          <label for="hall-category-select" style="font-size: 0.85rem; color: #94a3b8; font-weight: 700; text-transform: uppercase; margin-left:0.5rem;">Category:</label>
-          <select id="hall-category-select" style="padding: 0.4rem 0.8rem; font-size: 0.9rem;">
-            <option value="all" selected>All Categories (Overall)</option>
-            <option value="bible">Bible Trivia</option>
-            <option value="movie">Movie Quotes</option>
-            <option value="music">Pop Culture & Music</option>
-          </select>
-        </div>
-
-        <div class="tab-bar" style="margin: 0;">
-          <button id="btn-show-highscore" class="tab-btn active">Top Single-Game</button>
-          <button id="btn-show-career" class="tab-btn">Career Total XP</button>
-        </div>
-      </div>
-
-      <div class="hall-of-fame-panel">
-        <ul id="hall-of-fame-list" class="leaderboard">
-          <li>Loading Hall of Fame records...</li>
-        </ul>
       </div>
     </div>
   </div>
 
   <script>
+    // HOST PASSWORD GATE LOGIC
+    const HOST_PASSCODE = "admin"; // Change this to your preferred password
+
+    function checkPasscode() {
+      const inputVal = document.getElementById('passcode-input').value;
+      const errorDiv = document.getElementById('login-error');
+
+      if (inputVal === HOST_PASSCODE) {
+        document.getElementById('login-overlay').style.display = 'none';
+        document.getElementById('host-main-wrapper').style.display = 'block';
+        sessionStorage.setItem('hostAuth', 'true');
+      } else {
+        errorDiv.textContent = 'Incorrect password. Try again.';
+        document.getElementById('passcode-input').value = '';
+        document.getElementById('passcode-input').focus();
+      }
+    }
+
+    // Auto-unlock if already authenticated in this browser tab session
+    window.addEventListener('DOMContentLoaded', () => {
+      if (sessionStorage.getItem('hostAuth') === 'true') {
+        document.getElementById('login-overlay').style.display = 'none';
+        document.getElementById('host-main-wrapper').style.display = 'block';
+      }
+      
+      // Allow pressing Enter key to log in
+      document.getElementById('passcode-input').addEventListener('keypress', (e) => {
+        if (e.key === 'Enter') checkPasscode();
+      });
+    });
+
+    // ORIGINAL TRIVIA SCRIPT LOGIC
     const ROOM_NAMES = {
       'ROOM1': 'Fremont Main',
       'ROOM2': 'Fremont HS',
@@ -762,7 +888,6 @@
     const timerBar = document.getElementById('timer-bar');
 
     function renderQRCode(roomCode) {
-      // Render main lobby QR
       qrcodeContainer.innerHTML = '';
       const joinUrl = `${window.location.origin}/?room=${roomCode}`;
       new QRCode(qrcodeContainer, {
@@ -774,7 +899,6 @@
         correctLevel: QRCode.CorrectLevel.M
       });
 
-      // Render bottom corner floating QR
       cornerQrcodeContainer.innerHTML = '';
       new QRCode(cornerQrcodeContainer, {
         text: joinUrl,
@@ -1005,7 +1129,6 @@
       hostGameOver.classList.add('hidden');
       hostGame.classList.remove('hidden');
       
-      // Show the floating corner QR code badge during active gameplay questions!
       floatingQrContainer.classList.remove('hidden');
 
       hostCategory.textContent = `${data.category} (${data.questionNumber}/${data.totalQuestions})`;
@@ -1079,7 +1202,6 @@
       hostMilestone.classList.add('hidden');
       hostRoundEnd.classList.remove('hidden');
       
-      // Hide floating QR during intermission/results view to keep it clean
       floatingQrContainer.classList.add('hidden');
 
       playRevealSound();
