@@ -371,7 +371,7 @@
 <body>
   <div class="container">
     <div class="top-bar-controls">
-      <div class="room-badge" id="host-room-badge">ROOM: Room 1</div>
+      <div class="room-badge" id="host-room-badge">ROOM: Fremont Main</div>
       <div class="top-toggles">
         <button id="btn-toggle-sound" class="toggle-pill">🔊 Sound: ON</button>
         <button id="btn-toggle-autopilot" class="toggle-pill">⚡ Auto-Pilot: ON</button>
@@ -386,22 +386,23 @@
     </div>
 
     <div id="host-lobby-view">
-      <div id="host-lobby">
-        <div class="lobby-header-card">
-          <div class="qr-card">
-            <h2>Scan to Join: <span id="qr-room-label" style="color:#38bdf8;">Room 1</span></h2>
-            <p>Pick avatar & battle for top rank</p>
-            <div id="qrcode"></div>
-          </div>
+      <!-- Persistent QR Code Card stays visible or accessible on screen -->
+      <div class="lobby-header-card">
+        <div class="qr-card">
+          <h2>Scan to Join: <span id="qr-room-label" style="color:#38bdf8;">Fremont Main</span></h2>
+          <p>Scan anytime during game to join mid-match!</p>
+          <div id="qrcode"></div>
         </div>
+      </div>
 
-        <div style="color: #94a3b8;">Players in this room: <strong id="player-count" style="color: #38bdf8;">0</strong></div>
+      <div id="host-lobby">
+        <div style="color: #94a3b8; margin-bottom: 0.75rem;">Players in this room: <strong id="player-count" style="color: #38bdf8;">0</strong></div>
         
         <div class="settings-panel">
           <div class="setting-row">
-            <label for="host-room-select" style="color: #f59e0b;">Select Game Room (1 of 6)</label>
+            <label for="host-room-select" style="color: #f59e0b;">Select Game Room</label>
             <select id="host-room-select">
-              <option value="ROOM1" selected>Fremont Main (Default)</option>
+              <option value="ROOM1" selected>Fremont Main</option>
               <option value="ROOM2">Fremont HS</option>
               <option value="ROOM3">Fremont MS</option>
               <option value="ROOM4">Tiffin</option>
@@ -511,7 +512,6 @@
           <div id="host-correct-answer" class="answer-reveal-text">---</div>
         </div>
 
-        <!-- Spotlights -->
         <div class="spotlights-container" id="spotlights-box">
           <div class="spotlight-card speed" id="card-speed-demon">
             <div class="spotlight-icon">⚡</div>
@@ -562,11 +562,10 @@
       </div>
     </div>
 
-    <!-- Hall of Fame Tab with Room Scope Selector -->
+    <!-- Hall of Fame Tab -->
     <div id="host-hall-view" class="hidden">
       <div class="hall-filter-row">
         <div style="display: flex; align-items: center; gap: 0.5rem; flex-wrap: wrap;">
-          <!-- Room Scope Filter -->
           <label for="hall-room-select" style="font-size: 0.85rem; color: #f59e0b; font-weight: 800; text-transform: uppercase;">Leaderboard Scope:</label>
           <select id="hall-room-select" style="padding: 0.4rem 0.8rem; font-size: 0.9rem; border-color: #f59e0b;">
             <option value="all" selected>All Rooms (Global)</option>
@@ -578,7 +577,6 @@
             <option value="ROOM6">Northwood</option>
           </select>
 
-          <!-- Category Filter (enabled when viewing All Rooms) -->
           <label for="hall-category-select" style="font-size: 0.85rem; color: #94a3b8; font-weight: 700; text-transform: uppercase; margin-left:0.5rem;">Category:</label>
           <select id="hall-category-select" style="padding: 0.4rem 0.8rem; font-size: 0.9rem;">
             <option value="all" selected>All Categories (Overall)</option>
@@ -706,9 +704,6 @@
       });
     }
 
-    /* =========================================================
-       ROOM & SOCKET MANAGEMENT
-    ========================================================= */
     const socket = io();
 
     const urlParams = new URLSearchParams(window.location.search);
@@ -944,7 +939,7 @@
     };
 
     socket.on('game:new_question', (data) => {
-      hostLobby.classList.add('hidden');
+      // NOTE: hostLobby is NOT hidden here, keeping the QR code visible for late joiners!
       hostMilestone.classList.add('hidden');
       hostRoundEnd.classList.add('hidden');
       hostGameOver.classList.add('hidden');
