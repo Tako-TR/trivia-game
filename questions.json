@@ -200,7 +200,7 @@
   { "category": "Bible: Easy", "question": "In Revelation 3:20, what intimate picture does Jesus give of His relationship with human hearts?", "options": ["See! I stand at the door and knock. If anyone hears my voice and opens the door, I will come in to him and eat with him, and he with me.", "I rule over you with an iron rod from a distance.", "I wait for you to find your own way to my dwelling.", "I judge your actions from a hidden throne."], "answer": 0 },
   { "category": "Bible: Easy", "question": "What glorious description of the removal of pain and sorrow is given in Revelation 21:4?", "options": ["He will wipe away every tear from their eyes. Death will no longer exist; grief, crying, and pain will exist no longer, because the previous things have passed away.", "All earthly memories will be completely erased.", "Physical bodies will no longer feel emotion.", "Time will cease to exist entirely."], "answer": 0 },
   { "category": "Bible: Easy", "question": "How does the entire canon of Scripture conclude in Revelation 22:20–21?", "options": ["With a warning never to open the scroll again", "He who testifies about these things says, 'Yes, I am coming soon.' Amen. Come, Lord Jesus! The grace of the Lord Jesus be with everyone. Amen.", "With a final catalog of laws and regulations", "With a statement that prophecy has permanently ceased"], "answer": 1 },
-
+ 
   { "category": "Music & Pop Culture: Easy", "question": "Which artist released the global hit song 'Shake It Off' in 2014?", "options": ["Taylor Swift", "Katy Perry", "Ariana Grande", "Selena Gomez"], "answer": 0 },
   { "category": "Music & Pop Culture: Easy", "question": "What instrument has 88 keys, including 52 white keys and 36 black keys?", "options": ["Guitar", "Violin", "Piano", "Flute"], "answer": 2 },
   { "category": "Music & Pop Culture: Easy", "question": "Which band performed the famous rock anthem 'Bohemian Rhapsody'?", "options": ["The Beatles", "Queen", "The Rolling Stones", "Led Zeppelin"], "answer": 1 },
@@ -351,7 +351,7 @@
   { "category": "Music & Pop Culture: Hard", "question": "What artist created the iconic Campbell's Soup Cans silk screens in pop art history?", "options": ["Andy Warhol", "Roy Lichtenstein", "Keith Haring", "Robert Rauschenberg"], "answer": 0 },
   { "category": "Music & Pop Culture: Hard", "question": "In Greek mythology, what is the name of the winged horse tamed by Bellerophon?", "options": ["Pegasus", "Griffin", "Hippogriff", "Chimera"], "answer": 0 },
   { "category": "Music & Pop Culture: Hard", "question": "What science fiction author wrote the famous Three Laws of Robotics?", "options": ["Isaac Asimov", "Arthur C. Clarke", "Ray Bradbury", "Philip K. Dick"], "answer": 0 },
-
+ 
   { "category": "Movie Quotes: Easy", "question": "Which classic film features the famous line, 'May the Force be with you'?", "options": ["Star Trek", "Star Wars", "Guardians of the Galaxy", "Independence Day"], "answer": 1 },
   { "category": "Movie Quotes: Easy", "question": "What animated fish movie features the unforgettable advice, 'Just keep swimming'?", "options": ["Shark Tale", "Finding Nemo", "The Little Mermaid", "Moana"], "answer": 1 },
   { "category": "Movie Quotes: Easy", "question": "Which movie features the famous line, 'There's no place like home'?", "options": ["The Wizard of Oz", "Alice in Wonderland", "Peter Pan", "Cinderella"], "answer": 0 },
