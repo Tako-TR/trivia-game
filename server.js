@@ -71,7 +71,11 @@ const presetsFilePath = path.join(__dirname, 'presets.json');
 
 let masterQuestions = [];
 try {
-  masterQuestions = JSON.parse(fs.readFileSync(questionsFilePath, 'utf8'));
+  const rawQuestions = JSON.parse(fs.readFileSync(questionsFilePath, 'utf8'));
+  masterQuestions = rawQuestions.filter(q => {
+    const cat = (q.category || '').toLowerCase();
+    return !cat.includes('logo');
+  });
 } catch (err) {
   console.error('Error loading questions.json:', err);
 }
@@ -88,7 +92,7 @@ try {
 function saveQuestionsToFile(res, successPayload) {
   fs.writeFile(questionsFilePath, JSON.stringify(masterQuestions, null, 2), 'utf8', (err) => {
     if (err) return res.status(500).json({ success: false, message: 'Failed to write questions.json' });
-    return res.json(successPayload);
+    return res.json({ ...successPayload, questions: masterQuestions });
   });
 }
 
@@ -159,7 +163,7 @@ function isPlayerCurrentlyOnline(username) {
 }
 
 /* =========================================================
-   ADMIN API: QUESTIONS, CSV PARSER, PRESETS & PLAYERS
+   ADMIN API: QUESTIONS, BULK DELETE, PRESETS & PLAYERS
 ========================================================= */
 
 app.post('/api/questions/list', (req, res) => {
@@ -248,6 +252,26 @@ app.post('/api/questions/delete', (req, res) => {
 
   masterQuestions.splice(qIndex, 1);
   saveQuestionsToFile(res, { success: true, totalQuestions: masterQuestions.length });
+});
+
+app.post('/api/questions/bulk-delete', (req, res) => {
+  const { password, indices } = req.body;
+  if (password !== ADMIN_PASSWORD) return res.status(401).json({ success: false, message: 'Invalid admin passcode.' });
+  if (!Array.isArray(indices) || indices.length === 0) {
+    return res.status(400).json({ success: false, message: 'No indices provided.' });
+  }
+
+  const sortedIndices = [...indices].map(i => parseInt(i, 10)).filter(i => !isNaN(i)).sort((a, b) => b - a);
+
+  let deletedCount = 0;
+  for (const idx of sortedIndices) {
+    if (idx >= 0 && idx < masterQuestions.length) {
+      masterQuestions.splice(idx, 1);
+      deletedCount++;
+    }
+  }
+
+  saveQuestionsToFile(res, { success: true, deletedCount, totalQuestions: masterQuestions.length });
 });
 
 app.get('/api/presets/list', (req, res) => {
@@ -562,6 +586,27 @@ io.on('connection', (socket) => {
       });
 
       io.to(room.code).emit('game:player_list', getLobbyPlayers(room));
+
+      if (room.roundActive && room.currentQuestionIndex >= 0 && room.activeQuestions[room.currentQuestionIndex]) {
+        const currentQ = room.activeQuestions[room.currentQuestionIndex];
+        const connectedList = Object.values(room.activeSockets).map(p => ({
+          name: p.username,
+          avatar: p.avatar,
+          answered: p.currentAnswer !== null
+        }));
+
+        socket.emit('game:new_question', {
+          category: currentQ.category,
+          question: currentQ.question,
+          image: currentQ.image || null,
+          options: currentQ.options,
+          questionNumber: room.currentQuestionIndex + 1,
+          totalQuestions: room.activeQuestions.length,
+          timeLeft: room.timeLeft,
+          duration: QUESTION_DURATION,
+          connectedPlayers: connectedList
+        });
+      }
     } catch (err) {
       console.error('Login error detail:', err);
       socket.emit('player:auth_error', 'Server error logging in.');
