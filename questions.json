@@ -437,7 +437,7 @@
   { "category": "Movie Quotes: Hard", "question": "Which movie features the quote, 'Open the pod bay doors, HAL'?", "options": ["2001: A Space Odyssey", "Blade Runner", "Solaris", "Interstellar"], "answer": 0 },
   { "category": "Movie Quotes: Hard", "question": "What film features the quote, 'Striker, you can't be serious.' 'I am serious, and don't call me Shirley.'?", "options": ["Airplane!", "The Naked Gun", "Hot Shots!", "Police Academy"], "answer": 0 },
   { "category": "Movie Quotes: Hard", "question": "Which movie features the quote, 'Badges? We don't need no stinking badges!'?", "options": ["The Treasure of the Sierra Madre", "Blazing Saddles", "The Wild Bunch", "A Fistful of Dollars"], "answer": 0 },
-  {="category": "Movie Quotes: Hard", "question": "What film features the quote, 'Mrs. Robinson, you're trying to seduce me. Aren't you?'?", "options": ["The Graduate", "The Apartment", "Carnal Knowledge", "Bob & Carol & Ted & Alice"], "answer": 0 },
+  {"category": "Movie Quotes: Hard", "question": "What film features the quote, 'Mrs. Robinson, you're trying to seduce me. Aren't you?'?", "options": ["The Graduate", "The Apartment", "Carnal Knowledge", "Bob & Carol & Ted & Alice"], "answer": 0 },
   { "category": "Movie Quotes: Hard", "question": "Which movie features the quote, 'A census taker once tried to test me. I ate his liver with some fava beans and a nice Chianti.'?", "options": ["The Silence of the Lambs", "Se7en", "Hannibal", "Red Dragon"], "answer": 0 },
   { "category": "Movie Quotes: Hard", "question": "What film features the quote, 'Louis, I think this is the beginning of a beautiful friendship'?", "options": ["Casablanca", "Citizen Kane", "The Maltese Falcon", "Notorious"], "answer": 0 }
 ]
