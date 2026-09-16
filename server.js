@@ -159,7 +159,7 @@ function isPlayerCurrentlyOnline(username) {
 }
 
 /* =========================================================
-   ADMIN API: QUESTIONS, CSV PARSER, GEMINI AI, PRESETS & PLAYERS
+   ADMIN API: QUESTIONS, CSV PARSER, PRESETS & PLAYERS
 ========================================================= */
 
 app.post('/api/questions/list', (req, res) => {
@@ -248,75 +248,6 @@ app.post('/api/questions/delete', (req, res) => {
 
   masterQuestions.splice(qIndex, 1);
   saveQuestionsToFile(res, { success: true, totalQuestions: masterQuestions.length });
-});
-
-// AI-Powered Question Generator using Gemini API
-app.post('/api/questions/generate', async (req, res) => {
-  const { password, category, difficulty, count } = req.body;
-  if (password !== ADMIN_PASSWORD) return res.status(401).json({ success: false, message: 'Invalid admin passcode.' });
-
-  const num = Math.min(Math.max(parseInt(count, 10) || 3, 1), 10);
-  const targetCategory = (category || 'Bible Trivia').trim();
-  const targetDifficulty = (difficulty || 'Easy').trim();
-
-  const apiKey = process.env.GEMINI_API_KEY;
-  if (!apiKey) {
-    return res.status(500).json({ success: false, message: 'GEMINI_API_KEY environment variable is not configured on the server.' });
-  }
-
-  const prompt = `Generate exactly ${num} trivia questions about "${targetCategory}" with a difficulty level of "${targetDifficulty}".
-You must return the result strictly as a JSON array of objects, with no markdown code blocks, no backticks, and no extra text.
-Each object must have these exact keys:
-- "question": string (the trivia prompt)
-- "options": array of 4 strings (potential answers)
-- "answer": integer (index 0 to 3 pointing to the correct option)
-
-Example format:
-[
-  {
-    "question": "What is the capital of France?",
-    "options": ["London", "Berlin", "Paris", "Madrid"],
-    "answer": 2
-  }
-]`;
-
-  try {
-    const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${apiKey}`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        contents: [{ parts: [{ text: prompt }] }],
-        generationConfig: { temperature: 0.9, responseMimeType: "application/json" }
-      })
-    });
-
-    const data = await response.json();
-    if (!response.ok) {
-      throw new Error(data.error?.message || 'Failed to communicate with Gemini API.');
-    }
-
-    const rawText = data.candidates?.[0]?.content?.parts?.[0]?.text;
-    if (!rawText) throw new Error('Empty response received from Gemini.');
-
-    const cleanedJson = rawText.replace(/```json/g, '').replace(/```/g, '').trim();
-    const parsedQuestions = JSON.parse(cleanedJson);
-
-    if (!Array.isArray(parsedQuestions) || parsedQuestions.length === 0) {
-      throw new Error('Gemini did not return a valid question array.');
-    }
-
-    const formattedQuestions = parsedQuestions.map(q => ({
-      category: `${targetCategory}: ${targetDifficulty}`,
-      question: String(q.question).trim(),
-      options: Array.isArray(q.options) ? q.options.map(opt => String(opt).trim()) : ['A', 'B', 'C', 'D'],
-      answer: Math.min(Math.max(parseInt(q.answer, 10) || 0, 0), 3)
-    }));
-
-    return res.json({ success: true, questions: formattedQuestions });
-  } catch (err) {
-    console.error('Gemini Generation Error:', err);
-    return res.status(500).json({ success: false, message: `AI Generation Error: ${err.message}` });
-  }
 });
 
 app.get('/api/presets/list', (req, res) => {
@@ -710,7 +641,6 @@ io.on('connection', (socket) => {
         if (room.currentGameCategory === 'all') matchCat = true;
         else if (room.currentGameCategory === 'bible') matchCat = cat.includes('bible');
         else if (room.currentGameCategory === 'movie') matchCat = cat.includes('movie');
-        else if (room.currentGameCategory === 'logos') matchCat = cat.includes('logo');
         else if (room.currentGameCategory === 'music') matchCat = cat.includes('music') || cat.includes('pop culture');
         if (!matchCat) return false;
 
