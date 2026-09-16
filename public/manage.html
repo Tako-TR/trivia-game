@@ -64,6 +64,19 @@
       flex: 1;
       min-width: 200px;
     }
+    .selection-toolbar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background-color: #1e293b;
+      border: 1px solid #334155;
+      padding: 0.6rem 1rem;
+      border-radius: 8px;
+      margin-bottom: 1rem;
+      font-size: 0.85rem;
+      flex-wrap: wrap;
+      gap: 0.5rem;
+    }
     .q-list {
       display: flex;
       flex-direction: column;
@@ -79,10 +92,21 @@
       padding: 1.25rem;
       text-align: left;
       display: flex;
-      gap: 1.25rem;
+      gap: 1rem;
       align-items: flex-start;
     }
     .q-card:hover { border-color: #475569; }
+    .q-select-box {
+      display: flex;
+      align-items: center;
+      padding-top: 2px;
+    }
+    .q-select-box input[type="checkbox"] {
+      width: 1.2rem;
+      height: 1.2rem;
+      accent-color: #38bdf8;
+      cursor: pointer;
+    }
     .q-info { flex: 1; }
     .q-badge {
       display: inline-block;
@@ -380,6 +404,19 @@
           </select>
         </div>
 
+        <div class="selection-toolbar">
+          <div style="display: flex; align-items: center; gap: 0.75rem;">
+            <label style="cursor: pointer; display: flex; align-items: center; gap: 0.35rem; color: #f8fafc; font-weight: 600;">
+              <input type="checkbox" id="select-all-visible" style="accent-color: #38bdf8; width: 1.1rem; height: 1.1rem; cursor: pointer;"> Select All Filtered
+            </label>
+            <span style="color: #94a3b8;">Selected: <strong id="selected-count" style="color: #38bdf8;">0</strong></span>
+          </div>
+          <div style="display: flex; gap: 0.5rem; flex-wrap: wrap;">
+            <button id="btn-delete-selected" class="btn-danger" style="padding: 0.35rem 0.75rem; font-size: 0.8rem;">Delete Selected</button>
+            <button id="btn-delete-filtered" class="btn-danger" style="padding: 0.35rem 0.75rem; font-size: 0.8rem; background-color: #b91c1c !important;">Delete All Filtered Results</button>
+          </div>
+        </div>
+
         <div id="question-list" class="q-list"></div>
       </div>
 
@@ -550,6 +587,11 @@
     const searchInput = document.getElementById('search-input');
     const categoryFilter = document.getElementById('category-filter');
 
+    const selectAllVisible = document.getElementById('select-all-visible');
+    const selectedCountLabel = document.getElementById('selected-count');
+    const btnDeleteSelected = document.getElementById('btn-delete-selected');
+    const btnDeleteFiltered = document.getElementById('btn-delete-filtered');
+
     const presetNameInput = document.getElementById('preset-name-input');
     const presetSearchInput = document.getElementById('preset-search-input');
     const presetSelectList = document.getElementById('preset-select-list');
@@ -597,8 +639,8 @@
     let allQuestions = [];
     let allPlayers = [];
     let allPresets = {};
-    let selectedForPreset = new Set();
-    let currentlyVisibleIndices = [];
+    let selectedQuestionIndices = new Set();
+    let currentlyVisibleFilteredIndices = [];
 
     navQuestions.addEventListener('click', () => {
       navQuestions.classList.add('active');
@@ -671,6 +713,7 @@
       const query = searchInput.value.toLowerCase().trim();
       const filter = categoryFilter.value.toLowerCase();
       questionList.innerHTML = '';
+      currentlyVisibleFilteredIndices = [];
 
       const filtered = allQuestions
         .map((q, originalIndex) => ({ ...q, originalIndex }))
@@ -683,10 +726,12 @@
 
       if (filtered.length === 0) {
         questionList.innerHTML = '<div style="color: #64748b; padding: 2rem; text-align: center;">No questions match filter.</div>';
+        selectAllVisible.checked = false;
         return;
       }
 
       filtered.forEach(q => {
+        currentlyVisibleFilteredIndices.push(q.originalIndex);
         const card = document.createElement('div');
         card.className = 'q-card';
         const imgHtml = q.image ? `<img src="${q.image}" class="q-img-thumb" alt="thumb">` : '';
@@ -695,7 +740,12 @@
           return `<div class="q-opt ${isCorrect ? 'correct' : ''}">${isCorrect ? '✓ ' : ''}${opt}</div>`;
         }).join('');
 
+        const isChecked = selectedQuestionIndices.has(q.originalIndex) ? 'checked' : '';
+
         card.innerHTML = `
+          <div class="q-select-box">
+            <input type="checkbox" class="q-row-checkbox" data-index="${q.originalIndex}" ${isChecked}>
+          </div>
           ${imgHtml}
           <div class="q-info">
             <span class="q-badge">${q.category}</span>
@@ -707,8 +757,64 @@
             <button class="btn-danger" onclick="deleteQuestion(${q.originalIndex})">Delete</button>
           </div>
         `;
+
+        const chk = card.querySelector('.q-row-checkbox');
+        chk.addEventListener('change', (e) => {
+          if (e.target.checked) selectedQuestionIndices.add(q.originalIndex);
+          else selectedQuestionIndices.delete(q.originalIndex);
+          selectedCountLabel.textContent = selectedQuestionIndices.size;
+        });
+
         questionList.appendChild(card);
       });
+
+      selectedCountLabel.textContent = selectedQuestionIndices.size;
+    }
+
+    selectAllVisible.addEventListener('change', (e) => {
+      const isChecked = e.target.checked;
+      currentlyVisibleFilteredIndices.forEach(idx => {
+        if (isChecked) selectedQuestionIndices.add(idx);
+        else selectedQuestionIndices.delete(idx);
+      });
+      renderQuestionList();
+    });
+
+    btnDeleteSelected.addEventListener('click', async () => {
+      if (selectedQuestionIndices.size === 0) return alert('No questions selected.');
+      if (!confirm(`Permanently delete ${selectedQuestionIndices.size} selected questions?`)) return;
+
+      await executeBulkDelete(Array.from(selectedQuestionIndices));
+    });
+
+    btnDeleteFiltered.addEventListener('click', async () => {
+      if (currentlyVisibleFilteredIndices.length === 0) return alert('No questions match the current filter.');
+      if (!confirm(`Permanently delete all ${currentlyVisibleFilteredIndices.length} filtered questions matching your search/category?`)) return;
+
+      await executeBulkDelete(currentlyVisibleFilteredIndices);
+    });
+
+    async function executeBulkDelete(indicesArray) {
+      const password = adminPassInput.value.trim();
+      try {
+        const res = await fetch('/api/questions/bulk-delete', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ password, indices: indicesArray })
+        });
+        const data = await res.json();
+        if (res.ok && data.success) {
+          alert(`Successfully deleted ${data.deletedCount} questions.`);
+          selectedQuestionIndices.clear();
+          selectAllVisible.checked = false;
+          allQuestions = data.questions || []; // fallback or reload list
+          loadQuestions();
+        } else {
+          alert(data.message || 'Deletion failed.');
+        }
+      } catch (err) {
+        alert('Server communication error.');
+      }
     }
 
     window.openEditModal = function(index) {
@@ -854,7 +960,7 @@
 
     function renderPresetBuilder() {
       presetSelectList.innerHTML = '';
-      currentlyVisibleIndices = [];
+      let currentlyVisibleIndices = [];
 
       const query = presetSearchInput.value.toLowerCase().trim();
       const isAllCat = chkCatAll.checked;
@@ -910,13 +1016,39 @@
       }
     }
 
+    let selectedForPreset = new Set();
     btnSelectVisible.addEventListener('click', () => {
-      currentlyVisibleIndices.forEach(idx => selectedForPreset.add(idx));
+      // Re-run matching to select visible
+      const query = presetSearchInput.value.toLowerCase().trim();
+      const isAllCat = chkCatAll.checked;
+      const activeCats = Array.from(chkCats).filter(c => c.checked).map(c => c.value);
+      const isAllDiff = chkDiffAll.checked;
+      const activeDiffs = Array.from(chkDiffs).filter(d => d.checked).map(d => d.value);
+
+      allQuestions.forEach((q, idx) => {
+        const cat = (q.category || '').toLowerCase();
+        let matchesCat = isAllCat || activeCats.some(c => cat.includes(c));
+        let matchesDiff = isAllDiff || activeDiffs.some(d => cat.includes(d));
+        let matchesQuery = !query || q.question.toLowerCase().includes(query) || q.options.some(opt => opt.toLowerCase().includes(query));
+        if (matchesCat && matchesDiff && matchesQuery) selectedForPreset.add(idx);
+      });
       renderPresetBuilder();
     });
 
     btnDeselectVisible.addEventListener('click', () => {
-      currentlyVisibleIndices.forEach(idx => selectedForPreset.delete(idx));
+      const query = presetSearchInput.value.toLowerCase().trim();
+      const isAllCat = chkCatAll.checked;
+      const activeCats = Array.from(chkCats).filter(c => c.checked).map(c => c.value);
+      const isAllDiff = chkDiffAll.checked;
+      const activeDiffs = Array.from(chkDiffs).filter(d => d.checked).map(d => d.value);
+
+      allQuestions.forEach((q, idx) => {
+        const cat = (q.category || '').toLowerCase();
+        let matchesCat = isAllCat || activeCats.some(c => cat.includes(c));
+        let matchesDiff = isAllDiff || activeDiffs.some(d => cat.includes(d));
+        let matchesQuery = !query || q.question.toLowerCase().includes(query) || q.options.some(opt => opt.toLowerCase().includes(query));
+        if (matchesCat && matchesDiff && matchesQuery) selectedForPreset.delete(idx);
+      });
       renderPresetBuilder();
     });
 
@@ -1130,7 +1262,7 @@
 
     window.resetPlayerScores = async function(username) {
       if (!confirm(`Reset ${username}'s High Score and Career XP to 0?`)) return;
-      const password = adminPassInput.value.trim();
+      const password = adminPassInput.value.term;
 
       const res = await fetch('/api/players/action', {
         method: 'POST',
