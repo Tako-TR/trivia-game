@@ -67,6 +67,45 @@
       to { filter: drop-shadow(0 0 12px #ef4444); }
     }
 
+    /* Floating Corner QR Badge during Active Game */
+    .floating-qr-badge {
+      position: fixed;
+      bottom: 20px;
+      right: 20px;
+      background: rgba(15, 23, 42, 0.95);
+      border: 2px solid #38bdf8;
+      border-radius: 14px;
+      padding: 10px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      box-shadow: 0 10px 25px rgba(0,0,0,0.5);
+      z-index: 999;
+      backdrop-filter: blur(6px);
+      transition: transform 0.2s ease-out;
+    }
+    .floating-qr-badge:hover { transform: scale(1.03); }
+    .floating-qr-label {
+      font-size: 0.7rem;
+      font-weight: 800;
+      color: #38bdf8;
+      text-transform: uppercase;
+      margin-bottom: 6px;
+      letter-spacing: 0.05em;
+    }
+    #corner-qrcode {
+      background: #0f172a;
+      padding: 6px;
+      border-radius: 8px;
+      display: inline-block;
+      border: 1px solid #334155;
+    }
+    #corner-qrcode img, #corner-qrcode canvas {
+      display: block;
+      width: 90px !important;
+      height: 90px !important;
+    }
+
     .spotlights-container {
       display: grid;
       grid-template-columns: 1fr 1fr;
@@ -386,16 +425,15 @@
     </div>
 
     <div id="host-lobby-view">
-      <!-- Persistent QR Code Card stays visible or accessible on screen -->
-      <div class="lobby-header-card">
-        <div class="qr-card">
-          <h2>Scan to Join: <span id="qr-room-label" style="color:#38bdf8;">Fremont Main</span></h2>
-          <p>Scan anytime during game to join mid-match!</p>
-          <div id="qrcode"></div>
-        </div>
-      </div>
-
       <div id="host-lobby">
+        <div class="lobby-header-card">
+          <div class="qr-card">
+            <h2>Scan to Join: <span id="qr-room-label" style="color:#38bdf8;">Fremont Main</span></h2>
+            <p>Pick avatar & battle for top rank</p>
+            <div id="qrcode"></div>
+          </div>
+        </div>
+
         <div style="color: #94a3b8; margin-bottom: 0.75rem;">Players in this room: <strong id="player-count" style="color: #38bdf8;">0</strong></div>
         
         <div class="settings-panel">
@@ -562,6 +600,12 @@
       </div>
     </div>
 
+    <!-- Floating Corner QR Badge (Visible during active gameplay questions so late joiners can scan) -->
+    <div id="floating-qr-container" class="floating-qr-badge hidden">
+      <div class="floating-qr-label">Scan to Join Mid-Game</div>
+      <div id="corner-qrcode"></div>
+    </div>
+
     <!-- Hall of Fame Tab -->
     <div id="host-hall-view" class="hidden">
       <div class="hall-filter-row">
@@ -713,9 +757,12 @@
     const hostRoomBadge = document.getElementById('host-room-badge');
     const qrRoomLabel = document.getElementById('qr-room-label');
     const qrcodeContainer = document.getElementById("qrcode");
+    const cornerQrcodeContainer = document.getElementById("corner-qrcode");
+    const floatingQrContainer = document.getElementById("floating-qr-container");
     const timerBar = document.getElementById('timer-bar');
 
     function renderQRCode(roomCode) {
+      // Render main lobby QR
       qrcodeContainer.innerHTML = '';
       const joinUrl = `${window.location.origin}/?room=${roomCode}`;
       new QRCode(qrcodeContainer, {
@@ -726,6 +773,18 @@
         colorLight: "#0f172a",
         correctLevel: QRCode.CorrectLevel.M
       });
+
+      // Render bottom corner floating QR
+      cornerQrcodeContainer.innerHTML = '';
+      new QRCode(cornerQrcodeContainer, {
+        text: joinUrl,
+        width: 90,
+        height: 90,
+        colorDark: "#38bdf8",
+        colorLight: "#0f172a",
+        correctLevel: QRCode.CorrectLevel.M
+      });
+
       const displayName = ROOM_NAMES[roomCode] || roomCode;
       qrRoomLabel.textContent = displayName;
       hostRoomBadge.textContent = `ROOM: ${displayName}`;
@@ -911,6 +970,7 @@
     btnRestart.addEventListener('click', () => {
       hostGameOver.classList.add('hidden');
       hostLobby.classList.remove('hidden');
+      floatingQrContainer.classList.add('hidden');
       fetchLobbyPresets();
     });
 
@@ -939,11 +999,14 @@
     };
 
     socket.on('game:new_question', (data) => {
-      // NOTE: hostLobby is NOT hidden here, keeping the QR code visible for late joiners!
+      hostLobby.classList.add('hidden');
       hostMilestone.classList.add('hidden');
       hostRoundEnd.classList.add('hidden');
       hostGameOver.classList.add('hidden');
       hostGame.classList.remove('hidden');
+      
+      // Show the floating corner QR code badge during active gameplay questions!
+      floatingQrContainer.classList.remove('hidden');
 
       hostCategory.textContent = `${data.category} (${data.questionNumber}/${data.totalQuestions})`;
       hostTimer.textContent = data.timeLeft;
@@ -1015,6 +1078,9 @@
       hostGame.classList.add('hidden');
       hostMilestone.classList.add('hidden');
       hostRoundEnd.classList.remove('hidden');
+      
+      // Hide floating QR during intermission/results view to keep it clean
+      floatingQrContainer.classList.add('hidden');
 
       playRevealSound();
       hostCorrectAnswer.textContent = data.correctAnswerText;
@@ -1090,6 +1156,7 @@
       hostRoundEnd.classList.add('hidden');
       hostGame.classList.add('hidden');
       hostMilestone.classList.remove('hidden');
+      floatingQrContainer.classList.add('hidden');
 
       hostMilestoneText.textContent = `Standings After ${data.questionNumber} Questions`;
       hostMilestoneLeaderboard.innerHTML = '';
@@ -1106,6 +1173,7 @@
       hostMilestone.classList.add('hidden');
       hostRoundEnd.classList.add('hidden');
       hostGameOver.classList.remove('hidden');
+      floatingQrContainer.classList.add('hidden');
 
       lastCompletedMatchData = data;
       playVictorySound();
