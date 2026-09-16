@@ -203,3 +203,2105 @@
   { "category": "Movie Quotes: Hard", "question": "\"It's a trap!\" was blurted out by Admiral Ackbar during the Battle of Endor in which film?", "options": ["A New Hope", "The Empire Strikes Back", "Return of the Jedi", "Rogue One"], "answer": 2 },
   { "category": "Movie Quotes: Hard", "question": "\"We'll always have Paris.\" is Rick Blaine reminiscing with Ilsa Lund in:", "options": ["The Maltese Falcon", "Casablanca", "Sabrina", "To Have and Have Not"], "answer": 1 }
 ]
+[
+  {
+    "category": "Bible: Easy",
+    "question": "In Genesis 1, what phrase is repeatedly used to describe God’s evaluation of His creation at the end of each day of forming it?",
+    "options": ["It is good", "It is perfect", "It is finished", "It is pleasing"],
+    "answer": 0
+  },
+  {
+    "category": "Bible: Easy",
+    "question": "What specific tree was placed in the middle of the garden of Eden alongside the tree of life?",
+    "options": ["The tree of wisdom", "The tree of the knowledge of good and evil", "The tree of hidden truth", "The tree of mortal sight"],
+    "answer": 1
+  },
+  {
+    "category": "Bible: Easy",
+    "question": "What sign did God establish with Noah as a covenant promise never to flood the entire earth again?",
+    "options": ["A pillar of fire", "A white dove", "A bow in the clouds (rainbow)", "An altar of uncut stones"],
+    "answer": 2
+  },
+  {
+    "category": "Bible: Easy",
+    "question": "At what location did God confuse the languages of the builders who were attempting to construct a tower reaching toward the heavens?",
+    "options": ["Ur", "Haran", "Babel", "Nineveh"],
+    "answer": 2
+  },
+  {
+    "category": "Bible: Easy",
+    "question": "When God called Abram out of Ur of the Chaldeans, what major geographical destination did He tell him to go to?",
+    "options": ["The land of Egypt", "The land that I will show you (Canaan)", "The plains of Moab", "The hill country of Gilead"],
+    "answer": 1
+  },
+  {
+    "category": "Bible: Medium",
+    "question": "Who was the mysterious king of Salem and priest of God Most High who blessed Abraham after the rescue of Lot?",
+    "options": ["Abimelech", "Melchizedek", "Jethro", "Balaam"],
+    "answer": 1
+  },
+  {
+    "category": "Bible: Medium",
+    "question": "What was the name of Abraham and Hagar's son, whom Muslims trace their lineage through?",
+    "options": ["Isaac", "Ishmael", "Midian", "Lot"],
+    "answer": 1
+  },
+  {
+    "category": "Bible: Easy",
+    "question": "Which of Abraham's sons was designated as the child of the covenant promise?",
+    "options": ["Ishmael", "Isaac", "Esau", "Zimran"],
+    "answer": 1
+  },
+  {
+    "category": "Bible: Easy",
+    "question": "What did Esau trade his birthright to his twin brother Jacob for?",
+    "options": ["A prized hunting bow", "A flock of sheep", "A bowl of red stew", "A signet ring"],
+    "answer": 2
+  },
+  {
+    "category": "Bible: Medium",
+    "question": "After wrestling with the Angel of the Lord until daybreak at Peniel, what new name was given to Jacob?",
+    "options": ["Israel", "Jerusalem", "Ephraim", "Goshen"],
+    "answer": 0
+  },
+  {
+    "category": "Bible: Easy",
+    "question": "Which of Jacob's sons was sold into slavery by his jealous brothers but later elevated to prime minister of Egypt?",
+    "options": ["Reuben", "Judah", "Joseph", "Benjamin"],
+    "answer": 2
+  },
+  {
+    "category": "Bible: Medium",
+    "question": "In which specific region of Egypt did the Israelite family settle during the years of famine?",
+    "options": ["The delta of Memphis", "The region of Goshen", "Upper Thebes", "The Nile Delta coast"],
+    "answer": 1
+  },
+  {
+    "category": "Bible: Easy",
+    "question": "How did God initially appear to Moses on Mount Horeb (Sinai) while he was tending Jethro's flock?",
+    "options": ["In a pillar of smoke", "In a burning bush that was not consumed", "As a brilliant angel", "Through a thunderstorm"],
+    "answer": 1
+  },
+  {
+    "category": "Bible: Easy",
+    "question": "What was the name of Moses's brother who served as his spokesman before Pharaoh?",
+    "options": ["Joshua", "Aaron", "Hur", "Caleb"],
+    "answer": 1
+  },
+  {
+    "category": "Bible: Easy",
+    "question": "What historical Jewish festival commemorates the night the Lord passed over the houses marked with blood in Egypt?",
+    "options": ["Feast of Booths", "Feast of Trumpets", "The Passover", "The Day of Atonement"],
+    "answer": 2
+  },
+  {
+    "category": "Bible: Easy",
+    "question": "What miraculous bread-like substance did the Lord provide for the Israelites each morning in the wilderness?",
+    "options": ["Manna", "Quail", "Hyssop", "Leaven"],
+    "answer": 0
+  },
+  {
+    "category": "Bible: Easy",
+    "question": "On which mountain did Moses receive the stone tablets containing the Ten Commandments?",
+    "options": ["Mount Nebo", "Mount Sinai (Horeb)", "Mount Moriah", "Mount Tabor"],
+    "answer": 1
+  },
+  {
+    "category": "Bible: Easy",
+    "question": "What golden object did the Israelites construct and worship while Moses was receiving the law on the mountain?",
+    "options": ["A golden calf", "A winged cherub", "A bronze serpent", "A sacred crown"],
+    "answer": 0
+  },
+  {
+    "category": "Bible: Medium",
+    "question": "Which tribe of Israel was set apart exclusively for priestly duties and tabernacle service?",
+    "options": ["The tribe of Judah", "The tribe of Ephraim", "The tribe of Levi", "The tribe of Benjamin"],
+    "answer": 2
+  },
+  {
+    "category": "Bible: Medium",
+    "question": "What was the name of the portable sanctuary constructed in the wilderness according to the pattern shown to Moses?",
+    "options": ["The Temple", "The Tabernacle", "The Synagogue", "The Citadel"],
+    "answer": 1
+  },
+  {
+    "category": "Bible: Medium",
+    "question": "Which two spies gave a faithful, positive report urging Israel to enter and trust God for the conquest of Canaan?",
+    "options": ["Moses and Aaron", "Caleb and Joshua", "Phinehas and Eleazar", "Korah and Dathan"],
+    "answer": 1
+  },
+  {
+    "category": "Bible: Easy",
+    "question": "How many total years did the Israelites wander in the wilderness because of their initial rebellion at Kadesh-barnea?",
+    "options": ["10 years", "40 years", "70 years", "100 years"],
+    "answer": 1
+  },
+  {
+    "category": "Bible: Medium",
+    "question": "Why was Moses barred from entering the physical land of Canaan?",
+    "options": ["Because he struck the rock at Meribah instead of speaking to it as God commanded", "Because he married a Cushite woman", "Because he fled from Pharaoh early in life", "Because he broke the first set of tablets"],
+    "answer": 0
+  },
+  {
+    "category": "Bible: Medium",
+    "question": "What false prophet was hired by Balak, king of Moab, to curse Israel, but was forced by God to bless them instead?",
+    "options": ["Melchizedek", "Balaam", "Jethro", "Agag"],
+    "answer": 1
+  },
+  {
+    "category": "Bible: Easy",
+    "question": "On which mountain did Moses die after viewing the Promised Land from a distance?",
+    "options": ["Mount Carmel", "Mount Nebo", "Mount Ebal", "Mount Gerizim"],
+    "answer": 1
+  },
+  {
+    "category": "Bible: Easy",
+    "question": "Who succeeded Moses as the leader of Israel and commanded them to cross the Jordan River?",
+    "options": ["Caleb", "Joshua", "Othniel", "Phinehas"],
+    "answer": 1
+  },
+  {
+    "category": "Bible: Easy",
+    "question": "What city's walls miraculously collapsed after the Israelites marched around them for seven days?",
+    "options": ["Ai", "Jericho", "Gibeon", "Hazor"],
+    "answer": 1
+  },
+  {
+    "category": "Bible: Easy",
+    "question": "Which Canaanite prostitute hid the Israelite spies in Jericho and was spared during its destruction because of her faith?",
+    "options": ["Ruth", "Rahab", "Jael", "Delilah"],
+    "answer": 1
+  },
+  {
+    "category": "Bible: Medium",
+    "question": "During the battle of Gibeon, what remarkable astronomical event did God perform in response to Joshua's prayer?",
+    "options": ["The sun and moon stood still", "A total solar eclipse occurred", "A shower of burning meteors fell", "The skies turned completely black"],
+    "answer": 0
+  },
+  {
+    "category": "Bible: Easy",
+    "question": "Who was the only female judge and prophetess of Israel who led the military victory alongside Barak against Sisera?",
+    "options": ["Deborah", "Hulda", "Abigail", "Miriam"],
+    "answer": 0
+  },
+  {
+    "category": "Bible: Medium",
+    "question": "Which judge of Israel tested God twice using a fleece of wool on the threshing floor?",
+    "options": ["Ehud", "Gideon", "Jephthah", "Samson"],
+    "answer": 1
+  },
+  {
+    "category": "Bible: Easy",
+    "question": "What physical trait was the secret source of Samson's supernatural strength under his Nazirite vow?",
+    "options": ["His unblemished diet", "His absolute silence in battle", "The hair of his head that was never cut", "His bronze armor"],
+    "answer": 2
+  },
+  {
+    "category": "Bible: Easy",
+    "question": "What Moabite woman famously declared to her mother-in-law Naomi, 'Where you go I will go... your people will be my people and your God my God'?",
+    "options": ["Orpah", "Ruth", "Tamara", "Rahab"],
+    "answer": 1
+  },
+  {
+    "category": "Bible: Easy",
+    "question": "Who was the wealthy landowner from Bethlehem who married Ruth and became the great-grandfather of King David?",
+    "options": ["Boaz", "Jesse", "Obed", "Elimelech"],
+    "answer": 0
+  },
+  {
+    "category": "Bible: Easy",
+    "question": "Who was the last judge of Israel and the prophet who anointed both Saul and David as kings?",
+    "options": ["Nathan", "Samuel", "Eli", "Ahijah"],
+    "answer": 1
+  },
+  {
+    "category": "Bible: Medium",
+    "question": "Why did the Israelites demand that Samuel give them an earthly king?",
+    "options": ["To fulfill a prophecy in Deuteronomy", "So they could be like all the surrounding nations", "Because Samuel was too wealthy", "To rebuild the city walls of Jerusalem"],
+    "answer": 1
+  },
+  {
+    "category": "Bible: Easy",
+    "question": "Who was anointed as the first king of Israel, hailing from the tribe of Benjamin?",
+    "options": ["David", "Saul", "Ish-bosheth", "Solomon"],
+    "answer": 1
+  },
+  {
+    "category": "Bible: Easy",
+    "question": "With what weapon did the young shepherd David defeat the Philistine champion Goliath?",
+    "options": ["A bronze javelin", "A composite hunting bow", "A sling and smooth stones", "A double-edged sword"],
+    "answer": 2
+  },
+  {
+    "category": "Bible: Easy",
+    "question": "Who was Saul's son and David's fiercely loyal covenant friend?",
+    "options": ["Abner", "Jonathan", "Mephibosheth", "Absalom"],
+    "answer": 1
+  },
+  {
+    "category": "Bible: Medium",
+    "question": "What prophet confronted King David regarding his grievous sin with Bathsheba and the murder of Uriah?",
+    "options": ["Gad", "Nathan", "Elijah", "Micaiah"],
+    "answer": 1
+  },
+  {
+    "category": "Bible: Medium",
+    "question": "Which of David's sons staged a massive rebellion and attempted to usurp the throne of Israel?",
+    "options": ["Solomon", "Amnon", "Absalom", "Adonijah"],
+    "answer": 2
+  },
+  {
+    "category": "Bible: Easy",
+    "question": "What did King Solomon famously ask God for when given the opportunity to request anything he desired?",
+    "options": ["Riches and long life", "Victory over all neighboring enemies", "An understanding mind (wisdom) to govern God's people", "Immortal fame"],
+    "answer": 2
+  },
+  {
+    "category": "Bible: Medium",
+    "question": "On which mountain in Jerusalem did Solomon construct the magnificent first temple of the Lord?",
+    "options": ["Mount Sinai", "Mount Moriah", "Mount Carmel", "Mount Olivet"],
+    "answer": 1
+  },
+  {
+    "category": "Bible: Easy",
+    "question": "Following the death of Solomon, into what two independent kingdoms did the nation of Israel split?",
+    "options": ["Samaria and Judah", "Israel (Northern) and Judah (Southern)", "Ephraim and Benjamin", "Galilee and Judea"],
+    "answer": 1
+  },
+  {
+    "category": "Bible: Medium",
+    "question": "Which bold prophet challenged the 450 prophets of Baal on Mount Carmel to a contest of fire from heaven?",
+    "options": ["Elisha", "Elijah", "Amos", "Hosea"],
+    "answer": 1
+  },
+  {
+    "category": "Bible: Medium",
+    "question": "Which prophet succeeded Elisha and requested a double portion of Elijah's spirit before he was taken up by a whirlwind?",
+    "options": ["Micaiah", "Elisha", "Jonah", "Amos"],
+    "answer": 1
+  },
+  {
+    "category": "Bible: Medium",
+    "question": "Which foreign empire conquered the Northern Kingdom of Israel and carried its people into exile in 722 BC?",
+    "options": ["Babylon", "Assyria", "Persia", "Rome"],
+    "answer": 1
+  },
+  {
+    "category": "Bible: Medium",
+    "question": "Which foreign empire conquered the Southern Kingdom of Judah and destroyed Solomon's Temple in 586 BC?",
+    "options": ["Assyria", "Babylon", "Greece", "Egypt"],
+    "answer": 1
+  },
+  {
+    "category": "Bible: Easy",
+    "question": "Which brave young Jewish queen risked her life by appearing before King Ahasuerus (Xerxes) uninvited to save her people from Haman's plot?",
+    "options": ["Vashti", "Esther", "Abigail", "Bathsheba"],
+    "answer": 1
+  },
+  {
+    "category": "Bible: Easy",
+    "question": "What Jewish festival celebrates the deliverance of the Jews from Haman's plot as recorded in the book of Esther?",
+    "options": ["Purim", "Hanukkah", "Feast of Dedication", "Shavuot"],
+    "answer": 0
+  },
+  {
+    "category": "Bible: Medium",
+    "question": "What primary theme dominates the opening chapters of the book of Job?",
+    "options": ["The building of the second temple", "The testing of a righteous man through intense, unexplained suffering", "The history of the judges", "The laws of ritual purity"],
+    "answer": 1
+  },
+  {
+    "category": "Bible: Medium",
+    "question": "How many distinct cycles of speeches did Job have with his well-meaning but misguided friends (Eliphaz, Bildad, and Zophar)?",
+    "options": ["One", "Two", "Three", "Seven"],
+    "answer": 2
+  },
+  {
+    "category": "Bible: Medium",
+    "question": "From where did the Lord finally answer Job out of the whirlwind?",
+    "options": ["From the temple altar", "From a burning bush", "Out of the storm / whirlwind", "From the top of Sinai"],
+    "answer": 2
+  },
+  {
+    "category": "Bible: Easy",
+    "question": "Which biblical author is traditionally credited with writing the majority of the Psalms?",
+    "options": ["Asaph", "Moses", "King David", "Solomon"],
+    "answer": 2
+  },
+  {
+    "category": "Bible: Easy",
+    "question": "Which category of Psalms expresses deep grief, sorrow, or lament over personal or national distress?",
+    "options": ["Hallel Psalms", "Lament Psalms", "Royal Psalms", "Wisdom Psalms"],
+    "answer": 1
+  },
+  {
+    "category": "Bible: Easy",
+    "question": "What famous Psalm begins with the declaration, 'The Lord is my shepherd; I have what I need'?",
+    "options": ["Psalm 1", "Psalm 23", "Psalm 51", "Psalm 119"],
+    "answer": 1
+  },
+  {
+    "category": "Bible: Easy",
+    "question": "Which Psalm is King David's profound prayer of repentance and confession following his sin with Bathsheba?",
+    "options": ["Psalm 8", "Psalm 19", "Psalm 51", "Psalm 103"],
+    "answer": 2
+  },
+  {
+    "category": "Bible: Easy",
+    "question": "According to Proverbs 1:7, what is the foundational starting point of true knowledge and wisdom?",
+    "options": ["The fear of the Lord", "The study of nature", "The advice of elders", "The mastery of rhetoric"],
+    "answer": 0
+  },
+  {
+    "category": "Bible: Medium",
+    "question": "In Proverbs 31, what overarching subject is described through the portrait of an exemplary, noble wife?",
+    "options": ["Statecraft and governance", "The qualities of godly character and diligence", "Military strategy", "Temple architecture"],
+    "answer": 1
+  },
+  {
+    "category": "Bible: Medium",
+    "question": "What recurring phrase opens the philosophical reflections in the book of Ecclesiastes?",
+    "options": ["The beginning of wisdom is...", "Folly is joy to one who lacks sense...", "Absolute futility (Everything is futile), says the Teacher", "Rejoice, young man, in your youth..."],
+    "answer": 2
+  },
+  {
+    "category": "Bible: Medium",
+    "question": "What does the book of Ecclesiastes conclude is the ultimate duty of humanity?",
+    "options": ["To accumulate great wealth and wisdom", "To fear God and keep His commands", "To enjoy the pleasures of this life exclusively", "To build monuments that outlast time"],
+    "answer": 1
+  },
+  {
+    "category": "Bible: Medium",
+    "question": "What literary genre best describes the Song of Songs (Song of Solomon) within the biblical canon?",
+    "options": ["An apocalyptic prophecy", "A collection of legal codes", "A lyrical celebration of romantic love and marriage", "A historical chronicle of court life"],
+    "answer": 2
+  },
+  {
+    "category": "Bible: Medium",
+    "question": "Which prophet saw a breathtaking vision of the Lord seated on a high and exalted throne, with seraphim crying out, 'Holy, holy, holy'?",
+    "options": ["Jeremiah", "Isaiah", "Ezekiel", "Daniel"],
+    "answer": 1
+  },
+  {
+    "category": "Bible: Medium",
+    "question": "In Isaiah 7:14, what miraculous sign is prophesied regarding the birth of the Messiah?",
+    "options": ["He will be born in a palace in Jerusalem", "The virgin will conceive and give birth to a son, and will name him Immanuel", "He will conquer Rome with an iron scepter", "He will fast for forty days in the wilderness"],
+    "answer": 1
+  },
+  {
+    "category": "Bible: Medium",
+    "question": "Which prophet is known as the 'suffering prophet' and authored both the book of Jeremiah and Lamentations?",
+    "options": ["Ezekiel", "Jeremiah", "Daniel", "Hosea"],
+    "answer": 1
+  },
+  {
+    "category": "Bible: Medium",
+    "question": "Through which prophet did God promise to establish a 'new covenant' where His law would be written on human hearts?",
+    "options": ["Isaiah", "Jeremiah", "Ezekiel", "Amos"],
+    "answer": 1
+  },
+  {
+    "category": "Bible: Medium",
+    "question": "While exiled by the Chebar canal in Babylon, which prophet witnessed the astonishing vision of the glory of God moving with living creatures and wheels?",
+    "options": ["Daniel", "Ezekiel", "Zechariah", "Obadiah"],
+    "answer": 1
+  },
+  {
+    "category": "Bible: Medium",
+    "question": "In Ezekiel's famous vision of the valley of dry bones, what did the bones symbolize?",
+    "options": ["The fallen armies of Egypt", "The whole house of Israel in spiritual exile and despair", "The gentile nations awaiting judgment", "The generation of the flood"],
+    "answer": 1
+  },
+  {
+    "category": "Bible: Easy",
+    "question": "Who was thrown into a den of lions because he refused to stop praying exclusively to God contrary to King Darius's decree?",
+    "options": ["Shadrach", "Meshach", "Abednego", "Daniel"],
+    "answer": 3
+  },
+  {
+    "category": "Bible: Medium",
+    "question": "What happened to King Nebuchadnezzar when he became prideful about his majestic kingdom?",
+    "options": ["He was immediately struck dead", "He was driven away from human society to graze like an ox for seven periods of time", "His palace burned to the ground", "He was blinded instantly"],
+    "answer": 1
+  },
+  {
+    "category": "Bible: Medium",
+    "question": "Which prophet was commanded by God to marry an unfaithful woman named Gomer to vividly illustrate God's covenant loyalty to unfaithful Israel?",
+    "options": ["Amos", "Hosea", "Joel", "Micah"],
+    "answer": 1
+  },
+  {
+    "category": "Bible: Medium",
+    "question": "Which prophet utilized a massive locust plague as a warning of coming judgment and a picture of the future Day of the Lord?",
+    "options": ["Joel", "Obadiah", "Nahum", "Habakkuk"],
+    "answer": 0
+  },
+  {
+    "category": "Bible: Medium",
+    "question": "According to Joel 2:28–29, quoted by Peter on the Day of Pentecost, what would God pour out on 'all humanity'?",
+    "options": ["Great wealth", "His Spirit", "Cakes of manna", "Severe judgment"],
+    "answer": 1
+  },
+  {
+    "category": "Bible: Medium",
+    "question": "Which prophet, a shepherd from Tekoa, sharply rebuked Israel for social injustice and empty religious rituals, demanding that 'justice roll down like water'?",
+    "options": ["Amos", "Obadiah", "Jonah", "Zephaniah"],
+    "answer": 0
+  },
+  {
+    "category": "Bible: Easy",
+    "question": "What is the shortest book in the Old Testament, focusing entirely on God's judgment against the proud nation of Edom?",
+    "options": ["Haggai", "Obadiah", "Nahum", "Malachi"],
+    "answer": 1
+  },
+  {
+    "category": "Bible: Easy",
+    "question": "To what wicked Assyrian capital city was Jonah initially commanded to go and preach repentance?",
+    "options": ["Babylon", "Susa", "Nineveh", "Damascus"],
+    "answer": 2
+  },
+  {
+    "category": "Bible: Easy",
+    "question": "Where did Micah prophesy the birthplace of the long-awaited Messiah would be?",
+    "options": ["Nazareth", "Jerusalem", "Bethlehem Ephrathah", "Capernaum"],
+    "answer": 2
+  },
+  {
+    "category": "Bible: Medium",
+    "question": "According to Micah 6:8, what does the Lord truly require of His people?",
+    "options": ["To offer thousands of rams and rivers of oil", "To act justly, to love faithfulness, and to walk humbly with your God", "To rebuild the temple walls without rest", "To observe every new moon celebration"],
+    "answer": 1
+  },
+  {
+    "category": "Bible: Medium",
+    "question": "Which prophet asked God why the wicked prospered and declared that 'the righteous person will live by his faith'?",
+    "options": ["Habakkuk", "Zephaniah", "Haggai", "Malachi"],
+    "answer": 0
+  },
+  {
+    "category": "Bible: Medium",
+    "question": "Which post-exilic prophet vigorously encouraged the returned exiles to prioritize rebuilding the temple of the Lord instead of their own paneled houses?",
+    "options": ["Haggai", "Zechariah", "Malachi", "Obadiah"],
+    "answer": 0
+  },
+  {
+    "category": "Bible: Medium",
+    "question": "Which prophet envisioned a clean golden lampstand and two olive trees representing the anointed leaders who stand before the Lord of all the earth?",
+    "options": ["Zechariah", "Haggai", "Malachi", "Joel"],
+    "answer": 0
+  },
+  {
+    "category": "Bible: Medium",
+    "question": "What prophetic imagery in Zechariah 9:9 points directly to Jesus's triumphal entry into Jerusalem?",
+    "options": ["A king coming riding on a donkey, on a colt, the foal of a donkey", "A conqueror marching with crimson garments from Bozrah", "A messenger coming suddenly to his temple", "A shepherd struck down with thirty pieces of silver"],
+    "answer": 0
+  },
+  {
+    "category": "Bible: Medium",
+    "question": "Which final book of the Old Testament closes with a promise that the prophet Elijah will be sent before the great and terrible day of the Lord?",
+    "options": ["Zechariah", "Haggai", "Malachi", "Micah"],
+    "answer": 2
+  },
+  {
+    "category": "Bible: Easy",
+    "question": "Which Gospel begins with a sweeping theological genealogy tracing Jesus's legal lineage back through David and Abraham?",
+    "options": ["Mark", "Matthew", "Luke", "John"],
+    "answer": 1
+  },
+  {
+    "category": "Bible: Easy",
+    "question": "Which Gospel is characterized by rapid narrative pacing, frequently using the Greek word translated as 'immediately' or 'at once'?",
+    "options": ["Matthew", "Mark", "Luke", "John"],
+    "answer": 1
+  },
+  {
+    "category": "Bible: Easy",
+    "question": "Which Gospel was written by a beloved physician and meticulous historian, detailing historical context and Jesus's compassion for outcasts?",
+    "options": ["Matthew", "Mark", "Luke", "John"],
+    "answer": 2
+  },
+  {
+    "category": "Bible: Easy",
+    "question": "Which Gospel opens with the profound theological statement: 'In the beginning was the Word, and the Word was with God, and the Word was God'?",
+    "options": ["Matthew", "Mark", "Luke", "John"],
+    "answer": 3
+  },
+  {
+    "category": "Bible: Easy",
+    "question": "In what specific town was Jesus born, fulfilling the prophecy of Micah?",
+    "options": ["Nazareth", "Capernaum", "Bethlehem", "Jerusalem"],
+    "answer": 2
+  },
+  {
+    "category": "Bible: Easy",
+    "question": "Who baptized Jesus in the Jordan River, signaling the official beginning of His earthly public ministry?",
+    "options": ["Simeon", "John the Baptist", "Nicodemus", "Zacchaeus"],
+    "answer": 1
+  },
+  {
+    "category": "Bible: Easy",
+    "question": "How many days and nights did Jesus fast in the wilderness where He was tempted by Satan?",
+    "options": ["7 days", "12 days", "40 days", "70 days"],
+    "answer": 2
+  },
+  {
+    "category": "Bible: Easy",
+    "question": "What was the very first recorded public miracle performed by Jesus at the wedding in Cana of Galilee?",
+    "options": ["Healing a paralyzed man", "Turning water into wine", "Walking on the Sea of Galilee", "Multiplying loaves and fish"],
+    "answer": 1
+  },
+  {
+    "category": "Bible: Easy",
+    "question": "During His Sermon on the Mount, how did Jesus begin His famous sequence of beatitudes (blessings)?",
+    "options": ["Blessed are the rich...", "Blessed are the poor in spirit, for the kingdom of heaven is theirs", "Blessed are the mighty conquerors...", "Blessed are the teachers of the law..."],
+    "answer": 1
+  },
+  {
+    "category": "Bible: Easy",
+    "question": "When Jesus's disciples asked Him how they should pray, what foundational model prayer did He give them?",
+    "options": ["The Priestly Blessing", "The Lord's Prayer (Our Father)", "The Song of Hannah", "The Magnificat"],
+    "answer": 1
+  },
+  {
+    "category": "Bible: Medium",
+    "question": "Which Pharisee and member of the Jewish ruling council came to visit Jesus by night to inquire about being 'born again'?",
+    "options": ["Joseph of Arimathea", "Gamaliel", "Nicodemus", "Caiaphas"],
+    "answer": 2
+  },
+  {
+    "category": "Bible: Medium",
+    "question": "What profound truth did Jesus express to Nicodemus in John 3:16 regarding God's motive toward the world?",
+    "options": ["God sent His Son into the world to condemn all nations", "God loved the world in this way: He gave his one and only Son...", "God requires absolute perfection before offering grace", "God judges the world strictly by external religious rites"],
+    "answer": 1
+  },
+  {
+    "category": "Bible: Medium",
+    "question": "To what specific body part did Jesus metaphorically compare the church and Himself in His 'I am the true vine' discourse?",
+    "options": ["Branches", "Roots", "Leaves", "Fruit"],
+    "answer": 0
+  },
+  {
+    "category": "Bible: Medium",
+    "question": "On which mountain did Jesus undergo a glorious transfiguration before Peter, James, and John, appearing alongside Moses and Elijah?",
+    "options": ["Mount Sinai", "A high mountain (traditionally Tabor or Hermon)", "Mount Olive", "Mount Nebo"],
+    "answer": 1
+  },
+  {
+    "category": "Bible: Easy",
+    "question": "Which of Jesus's parables vividly illustrates the radical, forgiving grace of God toward a repentant rebel who squandered his inheritance?",
+    "options": ["The Good Samaritan", "The Prodigal (Lost) Son", "The Sower and the Soils", "The Ten Virgins"],
+    "answer": 1
+  },
+  {
+    "category": "Bible: Easy",
+    "question": "What event immediately preceded Jesus's triumphant entry into Jerusalem on a donkey?",
+    "options": ["The raising of Lazarus from the dead", "The feeding of the five thousand", "The cleansing of the temple", "The institution of the Lord's Supper"],
+    "answer": 0
+  },
+  {
+    "category": "Bible: Easy",
+    "question": "During the Last Supper, what tangible ordinances did Jesus institute to commemorate His sacrificial death?",
+    "options": ["Circumcision and Sabbath observance", "The bread and the cup (Lord's Supper)", "The burnt offering and grain offering", "Baptism by immersion"],
+    "answer": 1
+  },
+  {
+    "category": "Bible: Easy",
+    "question": "In which garden did Jesus experience agonizing prayer and sorrow before His betrayal and arrest?",
+    "options": ["The Garden of Eden", "The Garden of Gethsemane", "The King's Garden", "The Garden of Gestalt"],
+    "answer": 1
+  },
+  {
+    "category": "Bible: Easy",
+    "question": "Which disciple betrayed Jesus to the chief priests for thirty pieces of silver?",
+    "options": ["Simon Peter", "Judas Iscariot", "Thomas", "Andrew"],
+    "answer": 1
+  },
+  {
+    "category": "Bible: Easy",
+    "question": "Which Roman governor presided over Jesus's trial and ultimately handed Him over to be crucified under crowd pressure?",
+    "options": ["Herod Antipas", "Pontius Pilate", "Felix", "Festus"],
+    "answer": 1
+  },
+  {
+    "category": "Bible: Easy",
+    "question": "What was the name of the hillside outside Jerusalem where Jesus was crucified, meaning 'The Place of the Skull'?",
+    "options": ["Gethsemane", "Golgotha (Calvary)", "Gabbatha", "Gilead"],
+    "answer": 1
+  },
+  {
+    "category": "Bible: Easy",
+    "question": "What miraculous physical sign occurred inside the Jerusalem temple at the exact moment Jesus breathed His last on the cross?",
+    "options": ["The bronze altar melted", "The curtain of the sanctuary was torn in two from top to bottom", "The golden lampstand went out", "The foundation stones shattered"],
+    "answer": 1
+  },
+  {
+    "category": "Bible: Easy",
+    "question": "Who donated his own new tomb cut into rock for the burial of Jesus's body?",
+    "options": ["Nicodemus", "Joseph of Arimathea", "Simon of Cyrene", "Zacchaeus"],
+    "answer": 1
+  },
+  {
+    "category": "Bible: Easy",
+    "question": "Who was the first person to witness and report the empty tomb on the first day of the week?",
+    "options": ["Mary Magdalene", "Salome", "Joanna", "Mary the mother of James"],
+    "answer": 0
+  },
+  {
+    "category": "Bible: Medium",
+    "question": "Why is Jesus's bodily resurrection considered the cornerstone of the Christian faith according to orthodox theology?",
+    "options": ["It proved He was a brilliant moral teacher", "It validated His divine identity, secured our justification, and guaranteed our future resurrection", "It allowed the disciples to take over political rule in Rome", "It established a new calendar system"],
+    "answer": 1
+  },
+  {
+    "category": "Bible: Easy",
+    "question": "How many total days did the resurrected Jesus spend appearing to His disciples and teaching them about the kingdom of God before His ascension?",
+    "options": ["3 days", "7 days", "40 days", "50 days"],
+    "answer": 2
+  },
+  {
+    "category": "Bible: Easy",
+    "question": "On what major Jewish holiday did the Holy Spirit descend in power upon the believers gathered in Jerusalem, marking the birth of the church?",
+    "options": ["Passover", "Pentecost (Feast of Weeks)", "Feast of Booths", "Rosh Hashanah"],
+    "answer": 1
+  },
+  {
+    "category": "Bible: Easy",
+    "question": "Who preached the powerful sermon on the Day of Pentecost that resulted in about three thousand souls being added to the faith?",
+    "options": ["The apostle Paul", "Stephen", "Simon Peter", "Philip"],
+    "answer": 2
+  },
+  {
+    "category": "Bible: Easy",
+    "question": "Who was the first Christian martyr, stoned to death while looking up into heaven and forgiving his persecutors?",
+    "options": ["James", "Stephen", "Barnabas", "Mark"],
+    "answer": 1
+  },
+  {
+    "category": "Bible: Easy",
+    "question": "While traveling on the road to Damascus to persecute believers, which Pharisee experienced a blinding encounter with the risen Christ?",
+    "options": ["Gamaliel", "Ananias", "Saul (Paul)", "Apollos"],
+    "answer": 2
+  },
+  {
+    "category": "Bible: Medium",
+    "question": "Who was sent by the Lord in Damascus to lay hands on Saul so that he could regain his sight and be filled with the Holy Spirit?",
+    "options": ["Barnabas", "Ananias", "Agabus", "Silas"],
+    "answer": 1
+  },
+  {
+    "category": "Bible: Medium",
+    "question": "Which Roman centurion in Caesarea became the first prominent Gentile convert to the Christian faith after Peter's vision of the sheet lowered from heaven?",
+    "options": ["Julius", "Cornelius", "Sergius Paulus", "Gallio"],
+    "answer": 1
+  },
+  {
+    "category": "Bible: Medium",
+    "question": "At which major church council did the apostles and elders officially confirm that Gentiles are saved by grace through faith apart from the requirement of circumcision and keeping the Mosaic ceremonial law?",
+    "options": ["The Council of Antioch", "The Council of Jerusalem", "The Council of Ephesus", "The Council of Nicea"],
+    "answer": 1
+  },
+  {
+    "category": "Bible: Easy",
+    "question": "Who accompanied Paul on his first major missionary journey across Cyprus and Galatia?",
+    "options": ["Silas", "Timothy", "Barnabas", "Luke"],
+    "answer": 2
+  },
+  {
+    "category": "Bible: Medium",
+    "question": "In which city did Paul deliver his famous philosophical address to the Epicurean and Stoic philosophers at the Areopagus (Mars Hill)?",
+    "options": ["Corinth", "Athens", "Ephesus", "Thessalonica"],
+    "answer": 1
+  },
+  {
+    "category": "Bible: Easy",
+    "question": "What trade did Paul practice to support himself financially while planting churches so that he would not be a burden to new believers?",
+    "options": ["Tentmaking", "Carpentry", "Fishing", "Stone masonry"],
+    "answer": 0
+  },
+  {
+    "category": "Bible: Medium",
+    "question": "How did the book of Acts conclude its historical narrative?",
+    "options": ["With Paul martyred in the Colosseum", "With Paul under house arrest in Rome, proclaiming the kingdom of God openly and without hindrance", "With the destruction of Jerusalem", "With the writing of the book of Revelation"],
+    "answer": 1
+  },
+  {
+    "category": "Bible: Medium",
+    "question": "According to Romans 3:23, what is the universal spiritual condition of all humanity?",
+    "options": ["All are basically good at heart", "All have sinned and fall short of the glory of God", "Only a few are in need of grace", "All possess inherent divine worth"],
+    "answer": 1
+  },
+  {
+    "category": "Bible: Medium",
+    "question": "What does Romans 6:23 state is the ultimate penalty of sin, contrasted with God's free gift?",
+    "options": ["Temporary hardship", "The wages of sin is death, but the gift of God is eternal life in Christ Jesus our Lord", "Poverty of spirit", "Loss of physical health"],
+    "answer": 1
+  },
+  {
+    "category": "Bible: Medium",
+    "question": "According to Romans 5:1, how are justified believers declared righteous before God?",
+    "options": ["By strict obedience to the moral law", "By our own inner goodness", "Therefore, since we have been declared righteous by faith, we have peace with God...", "Through generational heritage"],
+    "answer": 2
+  },
+  {
+    "category": "Bible: Medium",
+    "question": "How does Romans 8:28 provide assurance to those who love God and are called according to His purpose?",
+    "options": ["They will never experience physical sickness", "All things work together for the good of those who love God", "They will become wealthy earthly rulers", "They will never face opposition from the world"],
+    "answer": 1
+  },
+  {
+    "category": "Bible: Medium",
+    "question": "What major theological topic does Paul address extensively in Romans chapters 9 through 11?",
+    "options": ["The order of worship services", "God's sovereign election and His ongoing plan and purpose for ethnic Israel", "The gifts of speaking in tongues", "The rules of church discipline"],
+    "answer": 1
+  },
+  {
+    "category": "Bible: Medium",
+    "question": "What practical command does Paul issue in Romans 12:1 regarding physical bodies?",
+    "options": ["To hide our physical flaws", "To offer your bodies as a living sacrifice, holy and pleasing to God", "To subject the body to extreme asceticism", "To abstain from physical labor"],
+    "answer": 1
+  },
+  {
+    "category": "Bible: Medium",
+    "question": "Why did Paul write his first letter to the Corinthians?",
+    "options": ["To collect money for Roman senators", "To address severe divisions, moral failure, and theological confusion within the local church", "To announce his upcoming retirement", "To establish a legal charter"],
+    "answer": 1
+  },
+  {
+    "category": "Bible: Medium",
+    "question": "According to 1 Corinthians 1:18, how do those who are perishing view the message of the cross?",
+    "options": ["As foolishness", "As a brilliant political strategy", "As an interesting myth", "As an impossible standard"],
+    "answer": 0
+  },
+  {
+    "category": "Bible: Medium",
+    "question": "In 1 Corinthians 13, what virtue does Paul describe as the greatest of all abiding spiritual qualities, surpassing even faith and hope?",
+    "options": ["Wisdom", "Patience", "Love (Agape)", "Generosity"],
+    "answer": 2
+  },
+  {
+    "category": "Bible: Medium",
+    "question": "What central doctrine does Paul rigorously defend and argue for in 1 Corinthians 15?",
+    "options": ["The physical resurrection of the dead, anchored in Christ's resurrection", "The necessity of keeping Jewish dietary laws", "The abolition of church leadership", "The sinlessness of humanity"],
+    "answer": 0
+  },
+  {
+    "category": "Bible: Medium",
+    "question": "In 2 Corinthians 5:17, what happens to anyone who is united in Christ?",
+    "options": ["They become immune to sorrow", "New creation has come; the old has gone, the new is here!", "They inherit earthly monarchies", "They instantly achieve absolute perfection"],
+    "answer": 1
+  },
+  {
+    "category": "Bible: Medium",
+    "question": "According to 2 Corinthians 5:21, what marvelous exchange took place on our behalf at the cross?",
+    "options": ["God made the one who did not know sin to be sin for us, so that in him we might become the righteousness of God", "Christ traded His earthly kingdom for our poverty", "The law was replaced by human conscience", "Our physical bodies were swapped for spiritual ones"],
+    "answer": 0
+  },
+  {
+    "category": "Bible: Medium",
+    "question": "What are listed as the nine fruit of the Spirit in Galatians 5:22–23?",
+    "options": ["Wealth, health, success, fame, power, peace, joy, love, and patience", "Love, joy, peace, patience, kindness, goodness, faithfulness, gentleness, and self-control", "Wisdom, knowledge, faith, healing, miracles, prophecy, discernment, tongues, and interpretation", "Truth, righteousness, readiness, faith, salvation, and the word of God"],
+    "answer": 1
+  },
+  {
+    "category": "Bible: Medium",
+    "question": "According to Galatians 2:20, how did Paul describe his spiritual identity in Christ?",
+    "options": ["I have been crucified with Christ... and the life I now live in the body, I live by faith in the Son of God", "I am a master builder of God's temple", "I am a righteous pharisee made perfect", "I am free from all moral responsibility"],
+    "answer": 0
+  },
+  {
+    "category": "Bible: Medium",
+    "question": "In Ephesians 1:3–4, when did God choose believers in Christ before the foundation of the world?",
+    "options": ["At the moment of our baptism", "When we first confessed our sins", "Before the creation of the world, that we should be holy and blameless before him", "After we proved our loyalty"],
+    "answer": 2
+  },
+  {
+    "category": "Bible: Medium",
+    "question": "According to Ephesians 2:8–9, how is salvation received by believers?",
+    "options": ["By our own rigorous moral works so that anyone can boast", "For you are saved by grace through faith, and this is not from yourselves; it is God's gift—not from works, so that no one can boast", "Through hereditary church membership", "By purchasing indulgences"],
+    "answer": 1
+  },
+  {
+    "category": "Bible: Medium",
+    "question": "What are believers commanded to put on in Ephesians 6:11 to stand against the tactics of the Devil?",
+    "options": ["The armor of God", "Fine linen and golden scepters", "A mantle of philosophical humility", "The robes of the Levitical priesthood"],
+    "answer": 0
+  },
+  {
+    "category": "Bible: Easy",
+    "question": "Which short prison epistle of Paul is frequently called the 'Epistle of Joy'?",
+    "options": ["Galatians", "Ephesians", "Philippians", "Colossians"],
+    "answer": 2
+  },
+  {
+    "category": "Bible: Medium",
+    "question": "According to Philippians 2:6–7, what profound attitude of humility did Christ demonstrate?",
+    "options": ["He remained quietly in heaven", "Although he existed in the form of God, [He] emptied himself by assuming the form of a servant", "He pretended to be a normal peasant", "He rejected all human authority"],
+    "answer": 1
+  },
+  {
+    "category": "Bible: Medium",
+    "question": "What is the central christological focus of Colossians chapter 1?",
+    "options": ["The supremacy and preeminence of Christ over all creation and the church", "The ranking of angelic hierarchies", "The precise date of the second coming", "The structure of church architecture"],
+    "answer": 0
+  },
+  {
+    "category": "Bible: Medium",
+    "question": "What reassuring instruction does Paul give the Thessalonians in 1 Thessalonians 4:16–17 regarding believers who have died?",
+    "options": ["They are lost forever", "The Lord himself will descend from heaven... and the dead in Christ will rise first", "They will be reincarnated into new lives", "They will remain asleep until the end of time without meeting Christ"],
+    "answer": 1
+  },
+  {
+    "category": "Bible: Medium",
+    "question": "Why are 1 and 2 Timothy and Titus collectively known as the 'Pastoral Epistles'?",
+    "options": ["Because they were written to shepherd-kings", "Because they are addressed to individual pastors providing instructions on church leadership, doctrine, and order", "Because they were composed while Paul worked as a shepherd in Midian", "Because they use agricultural metaphors exclusively"],
+    "answer": 1
+  },
+  {
+    "category": "Bible: Medium",
+    "question": "According to 2 Timothy 3:16–17, what is the divine origin and purpose of all Scripture?",
+    "options": ["All Scripture is inspired by God and is profitable for teaching, for rebuking, for correcting, for training in righteousness...", "Scripture is a collection of brilliant human insights", "Scripture is useful only for ancient historical study", "Scripture is a symbolic guide to inner peace"],
+    "answer": 0
+  },
+  {
+    "category": "Bible: Easy",
+    "question": "To whom did Paul write a deeply personal letter urging him to receive back a runaway slave named Onesimus as a beloved brother in Christ?",
+    "options": ["Timothy", "Titus", "Philemon", "Demas"],
+    "answer": 2
+  },
+  {
+    "category": "Bible: Medium",
+    "question": "How does the author of Hebrews define faith in Hebrews 11:1?",
+    "options": ["Faith is blind obedience without question", "Now faith is the reality of what is hoped for, the proof of what is not seen", "Faith is intellectual agreement with historical data", "Faith is the suspension of human reason"],
+    "answer": 1
+  },
+  {
+    "category": "Bible: Medium",
+    "question": "According to Hebrews 4:15, what comforting truth is revealed about Jesus as our high priest?",
+    "options": ["He cannot understand human temptation", "We do not have a high priest who is unable to sympathize with our weaknesses, but one who has been tempted in every way as we are, yet without sin", "He sits in heaven indifferent to our struggles", "He requires endless animal sacrifices on our behalf"],
+    "answer": 1
+  },
+  {
+    "category": "Bible: Medium",
+    "question": "What does James 2:17 teach regarding the relationship between authentic faith and works?",
+    "options": ["Faith without works is dead by itself", "Works replace the need for faith entirely", "Faith has no connection to external behavior", "Works earn our initial justification before God"],
+    "answer": 0
+  },
+  {
+    "category": "Bible: Easy",
+    "question": "What physical part of the human body does James compare to a small spark that can set a great forest ablaze?",
+    "options": ["The hand", "The tongue", "The eye", "The heart"],
+    "answer": 1
+  },
+  {
+    "category": "Bible: Medium",
+    "question": "According to 1 Peter 2:9, how does Peter describe the identity of the church in Christ?",
+    "options": ["A temporary social club", "A royal priesthood, a holy nation, a people for his own possession", "A political coalition", "An independent philosophical guild"],
+    "answer": 1
+  },
+  {
+    "category": "Bible: Medium",
+    "question": "What comforting assurance does 2 Peter 3:9 give regarding the apparent delay of the Lord's return?",
+    "options": ["He has forgotten His promise", "The Lord does not delay his promise... instead, he is patient with you, not wanting any to perish...", "He is waiting for human governments to collapse first", "He is bound by cosmic cycles"],
+    "answer": 1
+  },
+  {
+    "category": "Bible: Medium",
+    "question": "According to 1 John 1:9, what is the promise given to believers who confess their sins?",
+    "options": ["He is faithful and righteous to forgive us our sins and to cleanse us from all unrighteousness", "We will never experience earthly consequences", "We are granted immediate earthly perfection", "We must perform penance to earn cleansing"],
+    "answer": 0
+  },
+  {
+    "category": "Bible: Medium",
+    "question": "According to 1 John 4:8, what is the essential character of God?",
+    "options": ["God is absolute power", "God is love", "God is unapproachable light", "God is strict justice"],
+    "answer": 1
+  },
+  {
+    "category": "Bible: Medium",
+    "question": "What warning does the writer of 2 John give concerning false teachers who do not abide in the teaching of Christ?",
+    "options": ["Invite them into your home for long debates", "Do not receive them into your house or greet them", "Appoint them as regional overseers", "Ignore them completely without comment"],
+    "answer": 1
+  },
+  {
+    "category": "Bible: Medium",
+    "question": "What brief Old Testament character does Jude warn against imitating due to their rebellion, greed, and arrogance?",
+    "options": ["Cain, Balaam, and Korah", "Ahab, Jezebel, and Manasseh", "Saul, Agag, and Nabal", "Jeroboam, Nadab, and Baasha"],
+    "answer": 0
+  },
+  {
+    "category": "Bible: Easy",
+    "question": "On what island was the apostle John exiled when he received the apocalyptic visions recorded in the book of Revelation?",
+    "options": ["Patmos", "Malta", "Crete", "Cyprus"],
+    "answer": 0
+  },
+  {
+    "category": "Bible: Medium",
+    "question": "In Revelation chapters 2 and 3, to how many literal churches in the Roman province of Asia are individual letters addressed?",
+    "options": ["Three", "Seven", "Ten", "Twelve"],
+    "answer": 1
+  },
+  {
+    "category": "Bible: Medium",
+    "question": "What profound heavenly scene is depicted in Revelation chapter 5 around the throne of God?",
+    "options": ["Angels debating human history", "A Lamb looking as if it had been slaughtered, receiving eternal worship, power, and praise", "The saints resting in silence", "The book of life being rewritten"],
+    "answer": 1
+  },
+  {
+    "category": "Bible: Medium",
+    "question": "What cosmic event is symbolized by the opening of the seven seals, the sounding of the seven trumpets, and the pouring of the seven bowls in Revelation?",
+    "options": ["The cyclical changing of earthly seasons", "God's righteous judgments being poured out upon a rebellious world in history and at the end of the age", "The political rise of human empires", "A peaceful transition of cosmic power"],
+    "answer": 1
+  },
+  {
+    "category": "Bible: Medium",
+    "question": "Who is vividly described in Revelation 19 riding on a white horse, with the name written on His robe: 'King of Kings and Lord of Lords'?",
+    "options": ["Michael the archangel", "The rider representing pestilence", "Jesus Christ, the Word of God", "The faithful martyr Antipas"],
+    "answer": 2
+  },
+  {
+    "category": "Bible: Medium",
+    "question": "What ultimate destiny awaits Satan, death, and Hades at the final judgment in Revelation 20?",
+    "options": ["They are exiled to a distant star", "They are thrown into the lake of fire", "They are pardoned after a millennium", "They are bound in silence forever"],
+    "answer": 1
+  },
+  {
+    "category": "Bible: Medium",
+    "question": "How is the eternal state of God's people described in Revelation 21 and 22?",
+    "options": ["Floating on clouds in a distant dimension", "A new heaven and a new earth, where God's dwelling place is with humanity, wiping away every tear", "Rebuilding ancient earthly cities", "Wandering through endless wildernesses"],
+    "answer": 1
+  },
+  {
+    "category": "Bible: Medium",
+    "question": "According to Genesis 3:15, often called the Protevangelium (first gospel), what was promised regarding the offspring of the woman and the serpent?",
+    "options": ["The serpent would rule humanity forever", "The offspring of the woman would crush the serpent's head", "Humanity would destroy all animals", "The garden would remain permanently locked"],
+    "answer": 1
+  },
+  {
+    "category": "Bible: Medium",
+    "question": "What was the core sign of the covenant God made with Abraham in Genesis 17?",
+    "options": ["Baptism in running water", "Circumcision of every male in the household", "Wearing blue tassels on garments", "Offering grain sacrifices annually"],
+    "answer": 1
+  },
+  {
+    "category": "Bible: Medium",
+    "question": "In Exodus 3:14, what sacred name did God reveal to Moses from the burning bush?",
+    "options": ["El Shaddai", "Yahweh (I AM WHO I AM)", "Adonai Elohim", "Jehovah Jireh"],
+    "answer": 1
+  },
+  {
+    "category": "Bible: Medium",
+    "question": "According to Leviticus 17:11, why was blood strictly forbidden from being consumed by the Israelites?",
+    "options": ["Because it symbolized uncleanness", "Because the life of a creature is in the blood, and God gave it to make atonement for souls on the altar", "Because it spoiled rapidly in the desert heat", "Because it belonged exclusively to Egyptian gods"],
+    "answer": 1
+  },
+  {
+    "category": "Bible: Medium",
+    "question": "What great confession of faith is commanded upon Israel in Deuteronomy 6:4, known as the Shema?",
+    "options": ["The Lord our God, the Lord is one!", "Holy, holy, holy is the Lord of Armies!", "Give thanks to the Lord, for his faithful love endures forever!", "The Lord is my rock, my fortress, and my deliverer!"],
+    "answer": 0
+  },
+  {
+    "category": "Bible: Medium",
+    "question": "What covenant did God make with King David in 2 Samuel 7 through the prophet Nathan?",
+    "options": ["That David's temple would never be destroyed", "That David's house and kingdom would be established forever before the Lord", "That David's descendants would never face personal grief", "That David would conquer the entire Mediterranean world"],
+    "answer": 1
+  },
+  {
+    "category": "Bible: Easy",
+    "question": "According to Psalm 19:1, what do the heavens declare?",
+    "options": ["The infinite expanse of empty space", "The glory of God, and the expanse proclaims the work of his hands", "The mathematical perfection of the stars", "The coming of severe weather"],
+    "answer": 1
+  },
+  {
+    "category": "Bible: Medium",
+    "question": "What prophetic description of the Messiah's substitutionary atonement is found in Isaiah 53:5?",
+    "options": ["He was given a crown of gold and royal garments", "He was pierced because of our rebellion, crushed because of our iniquities... and by his wounds we are healed", "He established His earthly throne in Rome", "He conquered His foes with a sword of fire"],
+    "answer": 1
+  },
+  {
+    "category": "Bible: Medium",
+    "question": "According to Jeremiah 29:11, what comforting assurance did God give the exiles regarding His plans for them?",
+    "options": ["Plans for immediate political freedom and military dominance", "Plans for your well-being and not for disaster, to give you a future and a hope", "Plans for permanent wandering across distant empires", "Plans for total isolation from the nations"],
+    "answer": 1
+  },
+  {
+    "category": "Bible: Medium",
+    "question": "What magnificent promise of spiritual regeneration is recorded in Ezekiel 36:26?",
+    "options": ["I will give you a new heart and put a new spirit within you...", "I will grant you immense earthly wealth and gold", "I will remove all physical illness from your tents", "I will make your nation greater than all empires"],
+    "answer": 0
+  },
+  {
+    "category": "Bible: Medium",
+    "question": "According to Daniel 7:13–14, who is the 'one like a son of man' coming with the clouds of heaven?",
+    "options": ["An angelic prince guarding Persia", "An eternal ruler given dominion, glory, and a kingdom that will never be destroyed", "A human king who rebuilds Babylon", "A symbolic representation of the nation of Israel"],
+    "answer": 1
+  },
+  {
+    "category": "Bible: Medium",
+    "question": "What key theological point does the book of Jonah emphasize regarding God's mercy?",
+    "options": ["God's salvation is restricted strictly to ethnic Israelites", "God's compassion extends even to repentant pagan nations like Nineveh", "Prophets can successfully run away from God's presence", "Judgment can never be averted by repentance"],
+    "answer": 1
+  },
+  {
+    "category": "Bible: Medium",
+    "question": "According to Habakkuk 2:4, what is the contrasting principle between the proud person and the righteous person?",
+    "options": ["The proud person's desires are not upright, but the righteous person will live by his faith", "The proud person gains wealth, while the righteous person remains poor", "The proud person rules nations, while the righteous person serves", "The proud person knows the future, while the righteous person walks in darkness"],
+    "answer": 0
+  },
+  {
+    "category": "Bible: Easy",
+    "question": "What title does the angel Gabriel give to Mary in Luke 1:28 when announcing the virgin birth of Jesus?",
+    "options": ["Queen of Heaven", "Favored woman / favored one, the Lord is with you", "Mother of the Church", "Prophetess of Judah"],
+    "answer": 1
+  },
+  {
+    "category": "Bible: Easy",
+    "question": "How does John the Baptist identify Jesus when he sees Him coming toward him in John 1:29?",
+    "options": ["Behold, the Lamb of God, who takes away the sin of the world!", "Behold, the conquering Lion of Judah who will overthrow Rome today!", "Behold, the greatest teacher of the law in Israel!", "Behold, the high priest of the heavenly order!"],
+    "answer": 0
+  },
+  {
+    "category": "Bible: Easy",
+    "question": "What did Jesus declare about His identity and path in John 14:6?",
+    "options": ["I am the way, the truth, and the life; no one comes to the Father except through me", "I am the light of the world; whoever follows me will never walk in darkness", "I am the resurrection and the life; the one who believes in me will live", "I am the good shepherd; the good shepherd lays down his life for the sheep"],
+    "answer": 0
+  },
+  {
+    "category": "Bible: Medium",
+    "question": "According to Acts 4:12, what is unique about salvation in no other name under heaven?",
+    "options": ["Salvation can be earned through philosophical enlightenment", "There is salvation in no one else, for there is no other name under heaven given to people by which we must be saved", "Salvation is granted automatically to all religious practitioners", "Salvation requires adherence to secret mystical rites"],
+    "answer": 1
+  },
+  {
+    "category": "Bible: Medium",
+    "question": "According to Acts 1:8, what specific purpose did Jesus state the Holy Spirit would empower the disciples for upon His departure?",
+    "options": ["To perform magic signs in every royal court", "To be my witnesses in Jerusalem, in all Judea and Samaria, and to the ends of the earth", "To establish an earthly political government in Israel", "To write infallible personal journals"],
+    "answer": 1
+  },
+  {
+    "category": "Bible: Medium",
+    "question": "What profound legal and relational status does Romans 8:1 declare for those who are in Christ Jesus?",
+    "options": ["There is now no condemnation for those in Christ Jesus", "They are exempt from all earthly suffering and grief", "They possess absolute authority over earthly rulers", "They are no longer required to love their neighbors"],
+    "answer": 0
+  },
+  {
+    "category": "Bible: Medium",
+    "question": "According to Romans 8:38–39, what can separate believers from the love of God that is in Christ Jesus our Lord?",
+    "options": ["Sin and moral failure", "Death, life, angels, rulers, things present, things to come, powers, height, depth, or any other created thing", "Severe economic depression", "Spiritual doubt and weariness"],
+    "answer": 1
+  },
+  {
+    "category": "Bible: Medium",
+    "question": "How does 1 Corinthians 15:3–4 summarize the core 'first of all' message (the Gospel) received and proclaimed by Paul?",
+    "options": ["That Christ died for our sins according to the Scriptures, that he was buried, that he was raised on the third day according to the Scriptures", "That human beings can achieve divinity through disciplined meditation", "That God overlooks sin because of human sincerity", "That keeping the Sabbath saves the soul"],
+    "answer": 0
+  },
+  {
+    "category": "Bible: Medium",
+    "question": "According to 2 Corinthians 5:14–15, what compels believers to no longer live for themselves, but for Him who died for them?",
+    "options": ["The fear of future judgment", "The love of Christ compels us, since we have reached this conclusion: that one died for all, therefore all died", "The desire for eternal rewards", "The pressure of religious community standards"],
+    "answer": 1
+  },
+  {
+    "category": "Bible: Medium",
+    "question": "In Galatians 3:28, how does Paul describe the profound unity found among all believers in Christ Jesus?",
+    "options": ["There is no Jew or Gentile, slave or free, male and female; since you are all one in Christ Jesus", "All cultural and historical differences are permanently erased on earth", "Only those of Jewish heritage retain primary spiritual standing", "Social standing dictates spiritual authority in the church"],
+    "answer": 0
+  },
+  {
+    "category": "Bible: Medium",
+    "question": "What magnificent imagery does Ephesians 2:19–22 use to describe believers being built together in Christ?",
+    "options": ["A golden palace in the desert", "A holy temple in the Lord, built together for God's dwelling place in the Spirit", "A military fortress guarding borders", "A vast agricultural estate"],
+    "answer": 1
+  },
+  {
+    "category": "Bible: Easy",
+    "question": "According to Philippians 4:6–7, what antidote does Paul provide against anxiety?",
+    "options": ["Do not worry about anything, but in everything, through prayer and petition with thanksgiving, present your requests to God... and the peace of God will guard your hearts", "Isolate yourself from the pressures of society", "Rely solely on your own mental fortitude", "Ignore problems until they resolve themselves"],
+    "answer": 0
+  },
+  {
+    "category": "Bible: Easy",
+    "question": "What secret of contentment does Paul express in Philippians 4:12–13?",
+    "options": ["I have learned to be content whatever the circumstances... I am able to do all things through him who strengthens me", "Contentment comes from accumulating wealth and ease", "Contentment is impossible in a fallen world", "Contentment is achieved through monastic withdrawal"],
+    "answer": 0
+  },
+  {
+    "category": "Bible: Easy",
+    "question": "How does Colossians 3:1–3 instruct believers whose lives are hidden with Christ in God to direct their minds?",
+    "options": ["Set your minds on things above, not on earthly things", "Focus exclusively on political reform", "Withdraw from all secular employment", "Pursue earthly philosophy and wisdom"],
+    "answer": 0
+  },
+  {
+    "category": "Bible: Medium",
+    "question": "According to 1 Timothy 2:5–6, who is the sole mediator between God and humanity?",
+    "options": ["The earthly high priest", "The virgin Mary and the saints", "There is one God and one mediator between God and humanity, the man Christ Jesus, who gave himself as a ransom for all", "An angelic council"],
+    "answer": 2
+  },
+  {
+    "category": "Bible: Easy",
+    "question": "What glorious hope is described in Titus 2:13 regarding the Christian's daily expectation?",
+    "options": ["Waiting for the glorious appearing of our great God and Savior, Jesus Christ", "Waiting for the complete collapse of human civilization", "Waiting for an earthly millennium of political peace", "Waiting for personal bodily translation without death"],
+    "answer": 0
+  },
+  {
+    "category": "Bible: Medium",
+    "question": "According to Hebrews 9:27, what fixed appointment awaits every human being?",
+    "options": ["Reincarnation until perfection is attained", "Just as it is appointed for people to die once, and after this, judgment", "Purgatorial cleansing for all souls", "An automatic transition to eternal bliss"],
+    "answer": 1
+  },
+  {
+    "category": "Bible: Medium",
+    "question": "How does Hebrews 12:1–2 encourage believers running the endurance race of faith?",
+    "options": ["By looking to the approval of earthly judges", "Keeping our eyes on Jesus, the pioneer and perfecter of our faith, who for the joy that lay before him endured the cross", "By relying on our own moral strength", "By comparing our progress with others"],
+    "answer": 1
+  },
+  {
+    "category": "Bible: Easy",
+    "question": "According to James 1:22, what is required of believers regarding the word of God?",
+    "options": ["Be doers of the word and not hearers only, deceiving yourselves", "Debate its theological subtleties constantly", "Memorize its texts without applying them", "Translate it into new languages"],
+    "answer": 0
+  },
+  {
+    "category": "Bible: Easy",
+    "question": "What comforting pastoral instruction does 1 Peter 5:7 give believers who face anxiety and burdens?",
+    "options": ["Suppress your emotions and project strength", "Cast all your care on him, because he cares about you", "Seek refuge in earthly structures", "Wait for time to heal all wounds"],
+    "answer": 1
+  },
+  {
+    "category": "Bible: Medium",
+    "question": "According to 2 Peter 1:3, what has God’s divine power granted to believers for life and godliness?",
+    "options": ["Everything required for life and godliness through the knowledge of him who called us by his own glory and goodness", "A shield against all physical hardship", "Infallible human wisdom", "An exemption from moral struggle"],
+    "answer": 0
+  },
+  {
+    "category": "Bible: Easy",
+    "question": "What profound relational truth is revealed in 1 John 3:1 concerning God's affection toward believers?",
+    "options": ["See what great love the Father has given us, that we should be called God's children—and we are!", "God views us as distant servants deserving grace", "God loves us because of our moral achievements", "God adopts only those who prove their worth"],
+    "answer": 0
+  },
+  {
+    "category": "Bible: Medium",
+    "question": "According to Revelation 1:5–6, what status has the blood of Jesus Christ secured for believers in relation to God?",
+    "options": ["He has made us a kingdom, priests to his God and Father", "He has made us independent rulers of the cosmos", "He has exempted us from earthly service", "He has made us angels of judgment"],
+    "answer": 0
+  },
+  {
+    "category": "Bible: Easy",
+    "question": "In Revelation 3:20, what intimate picture does Jesus give of His relationship with human hearts?",
+    "options": ["See! I stand at the door and knock. If anyone hears my voice and opens the door, I will come in to him and eat with him, and he with me.", "I rule over you with an iron rod from a distance.", "I wait for you to find your own way to my dwelling.", "I judge your actions from a hidden throne."],
+    "answer": 0
+  },
+  {
+    "category": "Bible: Easy",
+    "question": "What glorious description of the removal of pain and sorrow is given in Revelation 21:4?",
+    "options": ["He will wipe away every tear from their eyes. Death will no longer exist; grief, crying, and pain will exist no longer, because the previous things have passed away.", "All earthly memories will be completely erased.", "Physical bodies will no longer feel emotion.", "Time will cease to exist entirely."],
+    "answer": 0
+  },
+  {
+    "category": "Bible: Easy",
+    "question": "How does the entire canon of Scripture conclude in Revelation 22:20–21?",
+    "options": ["With a warning never to open the scroll again", "He who testifies about these things says, 'Yes, I am coming soon.' Amen. Come, Lord Jesus! The grace of the Lord Jesus be with everyone. Amen.", "With a final catalog of laws and regulations", "With a statement that prophecy has permanently ceased"],
+    "answer": 1
+  },
+  {
+    "category": "Music & Pop Culture: Easy",
+    "question": "Which artist released the global hit song 'Shake It Off' in 2014?",
+    "options": ["Taylor Swift", "Katy Perry", "Ariana Grande", "Selena Gomez"],
+    "answer": 0
+  },
+  {
+    "category": "Music & Pop Culture: Easy",
+    "question": "What instrument has 88 keys, including 52 white keys and 36 black keys?",
+    "options": ["Guitar", "Violin", "Piano", "Flute"],
+    "answer": 2
+  },
+  {
+    "category": "Music & Pop Culture: Easy",
+    "question": "Which band performed the famous rock anthem 'Bohemian Rhapsody'?",
+    "options": ["The Beatles", "Queen", "The Rolling Stones", "Led Zeppelin"],
+    "answer": 1
+  },
+  {
+    "category": "Music & Pop Culture: Easy",
+    "question": "What pop superstar is known as the 'King of Pop'?",
+    "options": ["Elvis Presley", "Justin Timberlake", "Michael Jackson", "Prince"],
+    "answer": 2
+  },
+  {
+    "category": "Music & Pop Culture: Easy",
+    "question": "Which artist sings the hit song 'Watermelon Sugar'?",
+    "options": ["Shawn Mendes", "Harry Styles", "Ed Sheeran", "Justin Bieber"],
+    "answer": 1
+  },
+  {
+    "category": "Music & Pop Culture: Easy",
+    "question": "What family-friendly animated movie features the hit song 'Let It Go'?",
+    "options": ["Moana", "Tangled", "Frozen", "Cinderella"],
+    "answer": 2
+  },
+  {
+    "category": "Music & Pop Culture: Easy",
+    "question": "Which musical artist is known for wearing elaborate, unusual outfits like a dress made of raw meat in the past?",
+    "options": ["Lady Gaga", "Katy Perry", "Rihanna", "Adele"],
+    "answer": 0
+  },
+  {
+    "category": "Music & Pop Culture: Easy",
+    "question": "What band released the legendary hit song 'Yellow Submarine'?",
+    "options": ["The Beach Boys", "The Beatles", "The Monkees", "ABBA"],
+    "answer": 1
+  },
+  {
+    "category": "Music & Pop Culture: Easy",
+    "question": "Which artist performs the energetic dance song 'Uptown Funk'?",
+    "options": ["Bruno Mars", "Usher", "Justin Timberlake", "Pharrell Williams"],
+    "answer": 0
+  },
+  {
+    "category": "Music & Pop Culture: Easy",
+    "question": "What pop star released the record-breaking album titled '1989'?",
+    "options": ["Katy Perry", "Taylor Swift", "Billie Eilish", "Ariana Grande"],
+    "answer": 1
+  },
+  {
+    "category": "Music & Pop Culture: Medium",
+    "question": "In what decade did the popular music video network MTV launch on television?",
+    "options": ["1960s", "1970s", "1980s", "1990s"],
+    "answer": 2
+  },
+  {
+    "category": "Music & Pop Culture: Medium",
+    "question": "Which iconic rock band recorded the famous album 'The Wall'?",
+    "options": ["Pink Floyd", "Led Zeppelin", "AC/DC", "The Who"],
+    "answer": 0
+  },
+  {
+    "category": "Music & Pop Culture: Medium",
+    "question": "What legendary singer is nicknamed 'The Boss'?",
+    "options": ["Bruce Springsteen", "Billy Joel", "Elton John", "Bob Dylan"],
+    "answer": 0
+  },
+  {
+    "category": "Music & Pop Culture: Medium",
+    "question": "Which country music legend wrote and originally recorded the song 'I Will Always Love You'?",
+    "options": ["Dolly Parton", "Reba McEntire", "Shania Twain", "Carrie Underwood"],
+    "answer": 0
+  },
+  {
+    "category": "Music & Pop Culture: Medium",
+    "question": "What group sang the popular 1970s disco hit 'Dancing Queen'?",
+    "options": ["Bee Gees", "ABBA", "Earth Wind and Fire", "Boney M"],
+    "answer": 1
+  },
+  {
+    "category": "Music & Pop Culture: Medium",
+    "question": "Which pop star's fanbase is famously known as the 'BeyHive'?",
+    "options": ["Lady Gaga", "Taylor Swift", "Beyoncé", "Ariana Grande"],
+    "answer": 2
+  },
+  {
+    "category": "Music & Pop Culture: Medium",
+    "question": "What instrument does jazz legend Louis Armstrong famously play?",
+    "options": ["Saxophone", "Trumpet", "Clarinet", "Trombone"],
+    "answer": 1
+  },
+  {
+    "category": "Music & Pop Culture: Medium",
+    "question": "Which British singer-songwriter released multi-platinum albums named after math symbols like 'Divide' and 'Multiply'?",
+    "options": ["Ed Sheeran", "Sam Smith", "James Arthur", "Calum Scott"],
+    "answer": 0
+  },
+  {
+    "category": "Music & Pop Culture: Medium",
+    "question": "What song holds the record for the longest-running number-one hit on the Billboard Hot 100 ('Old Town Road')?",
+    "options": ["Despacito", "One Sweet Day", "Old Town Road", "Smooth"],
+    "answer": 2
+  },
+  {
+    "category": "Music & Pop Culture: Medium",
+    "question": "Which iconic rock band features members Mick Jagger and Keith Richards?",
+    "options": ["The Beatles", "The Rolling Stones", "Fleetwood Mac", "U2"],
+    "answer": 1
+  },
+  {
+    "category": "Music & Pop Culture: Hard",
+    "question": "In what year was the very first Grammy Awards ceremony held?",
+    "options": ["1950", "1959", "1965", "1972"],
+    "answer": 1
+  },
+  {
+    "category": "Music & Pop Culture: Hard",
+    "question": "What classical composer continued to write incredible music even after going completely deaf?",
+    "options": ["Ludwig van Beethoven", "Wolfgang Amadeus Mozart", "Johann Sebastian Bach", "Frédéric Chopin"],
+    "answer": 0
+  },
+  {
+    "category": "Music & Pop Culture: Hard",
+    "question": "Which artist won the Grammy Award for Album of the Year in 2024 for 'Midnights'?",
+    "options": ["Taylor Swift", "Olivia Rodrigo", "SZA", "Billie Eilish"],
+    "answer": 0
+  },
+  {
+    "category": "Music & Pop Culture: Hard",
+    "question": "What legendary music festival took place over a dairy farm in upstate New York in August 1969?",
+    "options": ["Woodstock", "Coachella", "Lollapalooza", "Monterey Pop"],
+    "answer": 0
+  },
+  {
+    "category": "Music & Pop Culture: Hard",
+    "question": "Which iconic rock band released the famous album 'Abbey Road' with a cover photo of them crossing a street?",
+    "options": ["The Rolling Stones", "The Beatles", "The Who", "The Kinks"],
+    "answer": 1
+  },
+  {
+    "category": "Music & Pop Culture: Hard",
+    "question": "What is the real first name of legendary pop icon Prince?",
+    "options": ["Prince", "Roger", "Arthur", "Nelson"],
+    "answer": 3
+  },
+  {
+    "category": "Music & Pop Culture: Hard",
+    "question": "Which artist holds the record for winning the most Grammy Awards in music history?",
+    "options": ["Michael Jackson", "Quincy Jones", "Beyoncé", "Stevie Wonder"],
+    "answer": 2
+  },
+  {
+    "category": "Music & Pop Culture: Hard",
+    "question": "What legendary folk-rock artist won the Nobel Prize in Literature in 2016?",
+    "options": ["Bob Dylan", "Paul McCartney", "Neil Young", "Leonard Cohen"],
+    "answer": 0
+  },
+  {
+    "category": "Music & Pop Culture: Hard",
+    "question": "Which rock band recorded the multi-platinum selling 1977 album 'Rumours'?",
+    "options": ["Eagles", "Fleetwood Mac", "Journey", "Boston"],
+    "answer": 1
+  },
+  {
+    "category": "Music & Pop Culture: Hard",
+    "question": "What singer is known as the 'Godmother of Soul' and sang 'Respect'?",
+    "options": ["Aretha Franklin", "Tina Turner", "Diana Ross", "Gladys Knight"],
+    "answer": 0
+  },
+  {
+    "category": "Music & Pop Culture: Easy",
+    "question": "Which artist sings the hit song 'Bad Guy'?",
+    "options": ["Ariana Grande", "Billie Eilish", "Dua Lipa", "Olivia Rodrigo"],
+    "answer": 1
+  },
+  {
+    "category": "Music & Pop Culture: Easy",
+    "question": "What musical instrument has six standard strings and is played with a pick or fingers?",
+    "options": ["Guitar", "Violin", "Cello", "Flute"],
+    "answer": 0
+  },
+  {
+    "category": "Music & Pop Culture: Easy",
+    "question": "Which pop star released the popular album 'Future Nostalgia'?",
+    "options": ["Dua Lipa", "Katy Perry", "Taylor Swift", "Miley Cyrus"],
+    "answer": 0
+  },
+  {
+    "category": "Music & Pop Culture: Easy",
+    "question": "What boy band formed on The X Factor became one of the best-selling boy groups of all time with hits like 'What Makes You Beautiful'?",
+    "options": ["Backstreet Boys", "NSYNC", "One Direction", "BTS"],
+    "answer": 2
+  },
+  {
+    "category": "Music & Pop Culture: Easy",
+    "question": "Which singer performs the emotional ballad 'Drivers License'?",
+    "options": ["Sabrina Carpenter", "Olivia Rodrigo", "Billie Eilish", "Taylor Swift"],
+    "answer": 1
+  },
+  {
+    "category": "Music & Pop Culture: Easy",
+    "question": "What country music star released the record-breaking song 'Fast Car' cover in recent years?",
+    "options": ["Luke Combs", "Morgan Wallen", "Chris Stapleton", "Blake Shelton"],
+    "answer": 0
+  },
+  {
+    "category": "Music & Pop Culture: Easy",
+    "question": "Which iconic pop singer released hits like 'Toxic' and 'Baby One More Time'?",
+    "options": ["Christina Aguilera", "Britney Spears", "Madonna", "Mariah Carey"],
+    "answer": 1
+  },
+  {
+    "category": "Music & Pop Culture: Easy",
+    "question": "What artist sings the global smash hit 'As It Was'?",
+    "options": ["Shawn Mendes", "Harry Styles", "Niall Horan", "Louis Tomlinson"],
+    "answer": 1
+  },
+  {
+    "category": "Music & Pop Culture: Easy",
+    "question": "Which pop sensation released the chart-topping album 'Positions' and starred in Victorious?",
+    "options": ["Selena Gomez", "Ariana Grande", "Demi Lovato", "Miley Cyrus"],
+    "answer": 1
+  },
+  {
+    "category": "Music & Pop Culture: Easy",
+    "question": "What legendary rock band recorded songs like 'Hotel California'?",
+    "options": ["Eagles", "Fleetwood Mac", "The Rolling Stones", "Led Zeppelin"],
+    "answer": 0
+  },
+  {
+    "category": "Music & Pop Culture: Medium",
+    "question": "Which group is widely credited with starting the global K-pop phenomenon with hits like 'Dynamite'?",
+    "options": ["EXO", "Blackpink", "BTS", "Stray Kids"],
+    "answer": 2
+  },
+  {
+    "category": "Music & Pop Culture: Medium",
+    "question": "What pop star performed at the Super Bowl LVIII Halftime Show in 2024?",
+    "options": ["Rihanna", "Usher", "The Weeknd", "Lady Gaga"],
+    "answer": 1
+  },
+  {
+    "category": "Music & Pop Culture: Medium",
+    "question": "Which legendary singer-songwriter wrote and performed 'Piano Man'?",
+    "options": ["Elton John", "Billy Joel", "Paul McCartney", "James Taylor"],
+    "answer": 1
+  },
+  {
+    "category": "Music & Pop Culture: Medium",
+    "question": "What female artist became the first billionaire primarily from music and touring milestones in 2024?",
+    "options": ["Beyoncé", "Taylor Swift", "Rihanna", "Madonna"],
+    "answer": 1
+  },
+  {
+    "category": "Music & Pop Culture: Medium",
+    "question": "Which iconic hip-hop artist released the critically acclaimed album 'To Pimp a Butterfly'?",
+    "options": ["Kendrick Lamar", "Drake", "J. Cole", "Kanye West"],
+    "answer": 0
+  },
+  {
+    "category": "Music & Pop Culture: Medium",
+    "question": "What country music icon is known for classics like 'Jolene' and theme park Dollywood?",
+    "options": ["Reba McEntire", "Dolly Parton", "Tammy Wynette", "Loretta Lynn"],
+    "answer": 1
+  },
+  {
+    "category": "Music & Pop Culture: Medium",
+    "question": "Which artist sings the smash hit song 'Blinding Lights'?",
+    "options": ["The Weeknd", "Bruno Mars", "Post Malone", "Shawn Mendes"],
+    "answer": 0
+  },
+  {
+    "category": "Music & Pop Culture: Medium",
+    "question": "What musical group released the iconic 1970 song 'Let It Be'?",
+    "options": ["The Rolling Stones", "The Beatles", "The Beach Boys", "The Kinks"],
+    "answer": 1
+  },
+  {
+    "category": "Music & Pop Culture: Medium",
+    "question": "Which legendary jazz trumpet player released the iconic album 'Kind of Blue'?",
+    "options": ["Miles Davis", "Louis Armstrong", "Chet Baker", "Dizzy Gillespie"],
+    "answer": 0
+  },
+  {
+    "category": "Music & Pop Culture: Medium",
+    "question": "What rock band is known for pyrotechnics and face paint with hits like 'Rock and Roll All Nite'?",
+    "options": ["Kiss", "AC/DC", "Metallica", "Van Halen"],
+    "answer": 0
+  },
+  {
+    "category": "Music & Pop Culture: Hard",
+    "question": "In what city was jazz music originally born and developed in the late 19th and early 20th centuries?",
+    "options": ["New Orleans", "Chicago", "New York City", "Kansas City"],
+    "answer": 0
+  },
+  {
+    "category": "Music & Pop Culture: Hard",
+    "question": "What album by Michael Jackson remains the best-selling album worldwide of all time?",
+    "options": ["Bad", "Dangerous", "Thriller", "Off the Wall"],
+    "answer": 2
+  },
+  {
+    "category": "Music & Pop Culture: Hard",
+    "question": "Which composer wrote the famous classical piece collection 'The Four Seasons'?",
+    "options": ["Johann Sebastian Bach", "Antonio Vivaldi", "Wolfgang Amadeus Mozart", "Ludwig van Beethoven"],
+    "answer": 1
+  },
+  {
+    "category": "Music & Pop Culture: Hard",
+    "question": "What rock band recorded the famous album 'Dark Side of the Moon'?",
+    "options": ["Led Zeppelin", "Pink Floyd", "The Who", "Genesis"],
+    "answer": 1
+  },
+  {
+    "category": "Music & Pop Culture: Hard",
+    "question": "Which artist won the very first American Idol competition in 2002?",
+    "options": ["Kelly Clarkson", "Carrie Underwood", "Ruben Studdard", "Fantasia Barrino"],
+    "answer": 0
+  },
+  {
+    "category": "Music & Pop Culture: Hard",
+    "question": "What iconic hip-hop group released the landmark 1993 album 'Enter the Wu-Tang (36 Chambers)'?",
+    "options": ["A Tribe Called Quest", "Wu-Tang Clan", "Outkast", "N.W.A"],
+    "answer": 1
+  },
+  {
+    "category": "Music & Pop Culture: Hard",
+    "question": "Which legendary punk rock band released the 1976 protopunk anthem 'Blitzkrieg Bop'?",
+    "options": ["The Clash", "The Ramones", "Sex Pistols", "Blondie"],
+    "answer": 1
+  },
+  {
+    "category": "Music & Pop Culture: Hard",
+    "question": "What iconic guitarist pioneered heavy metal guitar solos with songs like 'Eruption'?",
+    "options": ["Jimi Hendrix", "Eddie Van Halen", "Jimmy Page", "Eric Clapton"],
+    "answer": 1
+  },
+  {
+    "category": "Music & Pop Culture: Hard",
+    "question": "What music festival held in 1969 is considered a pivotal moment in counterculture history?",
+    "options": ["Woodstock", "Altamont", "Monterey Pop", "Isle of Wight"],
+    "answer": 0
+  },
+  {
+    "category": "Music & Pop Culture: Hard",
+    "question": "What electronic music duo wore robotic helmets during performances and hits like 'Get Lucky'?",
+    "options": ["The Chemical Brothers", "Daft Punk", "Kraftwerk", "Disclosure"],
+    "answer": 1
+  },
+  {
+    "category": "Music & Pop Culture: Easy",
+    "question": "Which artist performs the upbeat pop song 'Levitating'?",
+    "options": ["Dua Lipa", "Ariana Grande", "Katy Perry", "Taylor Swift"],
+    "answer": 0
+  },
+  {
+    "category": "Music & Pop Culture: Easy",
+    "question": "What singer is famous for hits like 'Roar' and 'Firework'?",
+    "options": ["Katy Perry", "Lady Gaga", "Rihanna", "Pink"],
+    "answer": 0
+  },
+  {
+    "category": "Music & Pop Culture: Easy",
+    "question": "Which pop star sings the song 'Peaches' featuring Daniel Caesar and Giveon?",
+    "options": ["Justin Bieber", "Shawn Mendes", "The Weeknd", "Bruno Mars"],
+    "answer": 0
+  },
+  {
+    "category": "Music & Pop Culture: Easy",
+    "question": "What musical instrument has keys, pedals, and produces sound by blowing air through pipes?",
+    "options": ["Organ", "Piano", "Accordion", "Harpsichord"],
+    "answer": 0
+  },
+  {
+    "category": "Music & Pop Culture: Easy",
+    "question": "Which artist sings the empowering pop anthem 'Firework'?",
+    "options": ["Katy Perry", "Taylor Swift", "Kelly Clarkson", "Demi Lovato"],
+    "answer": 0
+  },
+  {
+    "category": "Music & Pop Culture: Easy",
+    "question": "What legendary rock band released the album 'Back in Black' in 1980?",
+    "options": ["AC/DC", "Metallica", "Guns N' Roses", "Queen"],
+    "answer": 0
+  },
+  {
+    "category": "Music & Pop Culture: Easy",
+    "question": "Which singer performs the popular song 'Flowers', which won a Grammy Award?",
+    "options": ["Miley Cyrus", "Selena Gomez", "Ariana Grande", "Taylor Swift"],
+    "answer": 0
+  },
+  {
+    "category": "Music & Pop Culture: Easy",
+    "question": "What group performed the global dance craze hit song 'Gangnam Style'?",
+    "options": ["BTS", "PSY", "EXO", "Super Junior"],
+    "answer": 1
+  },
+  {
+    "category": "Music & Pop Culture: Easy",
+    "question": "Which artist is known for the hit song 'Counting Stars' with OneRepublic?",
+    "options": ["Ryan Tedder", "Adam Levine", "Charlie Puth", "Shawn Mendes"],
+    "answer": 0
+  },
+  {
+    "category": "Music & Pop Culture: Easy",
+    "question": "What pop star sings 'Good 4 U' and 'Drivers License'?",
+    "options": ["Olivia Rodrigo", "Billie Eilish", "Sabrina Carpenter", "Gracie Abrams"],
+    "answer": 0
+  },
+  {
+    "category": "Music & Pop Culture: Medium",
+    "question": "Which iconic music video features Michael Jackson dancing with a group of zombies?",
+    "options": ["Bad", "Thriller", "Beat It", "Black or White"],
+    "answer": 1
+  },
+  {
+    "category": "Music & Pop Culture: Medium",
+    "question": "What country artist sings 'Tennessee Whiskey'?",
+    "options": ["Chris Stapleton", "Luke Bryan", "Blake Shelton", "Jason Aldean"],
+    "answer": 0
+  },
+  {
+    "category": "Music & Pop Culture: Medium",
+    "question": "Which rapper released the massive hit album 'Views' and 'God's Plan'?",
+    "options": ["Drake", "Kendrick Lamar", "J. Cole", "Lil Wayne"],
+    "answer": 0
+  },
+  {
+    "category": "Music & Pop Culture: Medium",
+    "question": "What legendary rock band recorded 'Sweet Child O' Mine'?",
+    "options": ["Guns N' Roses", "Aerosmith", "Bon Jovi", "Def Leppard"],
+    "answer": 0
+  },
+  {
+    "category": "Music & Pop Culture: Medium",
+    "question": "Which female vocalist leads the band Paramore?",
+    "options": ["Hayley Williams", "Taylor Momsen", "Amy Lee", "Lzzy Hale"],
+    "answer": 0
+  },
+  {
+    "category": "Music & Pop Culture: Medium",
+    "question": "What rock band is famous for the epic song 'Hotel California'?",
+    "options": ["Eagles", "Fleetwood Mac", "Lynyrd Skynyrd", "The Doobie Brothers"],
+    "answer": 0
+  },
+  {
+    "category": "Music & Pop Culture: Medium",
+    "question": "Which artist released the iconic 1984 album 'Purple Rain'?",
+    "options": ["Prince", "Michael Jackson", "David Bowie", "Stevie Wonder"],
+    "answer": 0
+  },
+  {
+    "category": "Music & Pop Culture: Medium",
+    "question": "What famous music awards show is known for handing out golden gramophone trophies?",
+    "options": ["The Grammys", "The Billboard Awards", "The American Music Awards", "The MTV VMAs"],
+    "answer": 0
+  },
+  {
+    "category": "Music & Pop Culture: Medium",
+    "question": "Which country music group released hits like 'Gaslighter' and 'Not Ready to Make Nice'?",
+    "options": ["The Chicks", "Little Big Town", "Lady A", "Maren Morris"],
+    "answer": 0
+  },
+  {
+    "category": "Music & Pop Culture: Medium",
+    "question": "What band released the alternative rock anthem 'Smells Like Teen Spirit' in 1991?",
+    "options": ["Nirvana", "Pearl Jam", "Soundgarden", "Alice in Chains"],
+    "answer": 0
+  },
+  {
+    "category": "Music & Pop Culture: Hard",
+    "question": "What is the name of Wolfgang Amadeus Mozart's final, unfinished choral composition?",
+    "options": ["Requiem", "The Magic Flute", "Don Giovanni", "The Marriage of Figaro"],
+    "answer": 0
+  },
+  {
+    "category": "Music & Pop Culture: Hard",
+    "question": "Which artist holds the record for the most Billboard Hot 100 number-one hits among solo artists?",
+    "options": ["Elvis Presley", "Mariah Carey", "The Beatles", "Michael Jackson"],
+    "answer": 1
+  },
+  {
+    "category": "Music & Pop Culture: Hard",
+    "question": "What genre of music originated in Kingston, Jamaica, in the late 1960s and heavily influenced reggae?",
+    "options": ["Ska", "Calypso", "Rocksteady", "Mento"],
+    "answer": 2
+  },
+  {
+    "category": "Music & Pop Culture: Hard",
+    "question": "Which influential band released the legendary 1966 album 'Pet Sounds'?",
+    "options": ["The Beach Boys", "The Beatles", "The Byrds", "The Kinks"],
+    "answer": 0
+  },
+  {
+    "category": "Music & Pop Culture: Hard",
+    "question": "What term describes a piece of music performed by a single soloist without accompaniment?",
+    "options": ["Solo", "A Cappella", "Concerto", "Symphony"],
+    "answer": 1
+  },
+  {
+    "category": "Music & Pop Culture: Hard",
+    "question": "Which classical composer wrote the monumental '9th Symphony' while completely deaf?",
+    "options": ["Ludwig van Beethoven", "Johann Sebastian Bach", "Johannes Brahms", "Franz Schubert"],
+    "answer": 0
+  },
+  {
+    "category": "Music & Pop Culture: Hard",
+    "question": "What year did the famous Live Aid benefit concerts take place in London and Philadelphia?",
+    "options": ["1980", "1985", "1990", "1995"],
+    "answer": 1
+  },
+  {
+    "category": "Music & Pop Culture: Hard",
+    "question": "Which legendary blues guitarist famously claimed he named his beloved guitars 'Lucille'?",
+    "options": ["B.B. King", "Muddy Waters", "Buddy Guy", "Stevie Ray Vaughan"],
+    "answer": 0
+  },
+  {
+    "category": "Music & Pop Culture: Hard",
+    "question": "What composer wrote the famous ballet scores for 'Swan Lake', 'The Nutcracker', and 'Sleeping Beauty'?",
+    "options": ["Pyotr Ilyich Tchaikovsky", "Igor Stravinsky", "Sergei Prokofiev", "Claude Debussy"],
+    "answer": 0
+  },
+  {
+    "category": "Music & Pop Culture: Hard",
+    "question": "Which jazz artist recorded the timeless classic 'Take Five' with the Dave Brubeck Quartet?",
+    "options": ["Paul Desmond", "Miles Davis", "John Coltrane", "Thelonious Monk"],
+    "answer": 0
+  },
+  {
+    "category": "Music & Pop Culture: Easy",
+    "question": "What yellow sponge character lives in a pineapple under the sea?",
+    "options": ["SpongeBob SquarePants", "Patrick Star", "Squidward Tentacles", "Mr. Krabs"],
+    "answer": 0
+  },
+  {
+    "category": "Music & Pop Culture: Easy",
+    "question": "Which superhero team features characters like Iron Man, Captain America, and Thor?",
+    "options": ["DC League", "Justice League", "Avengers", "X-Men"],
+    "answer": 2
+  },
+  {
+    "category": "Music & Pop Culture: Easy",
+    "question": "What wizarding school does Harry Potter attend?",
+    "options": ["Beauxbatons", "Durmstrang", "Hogwarts", "Ilvermorny"],
+    "answer": 2
+  },
+  {
+    "category": "Music & Pop Culture: Easy",
+    "question": "What is the name of the cowboy doll in the Disney Pixar movie Toy Story?",
+    "options": ["Buzz Lightyear", "Woody", "Rex", "Slinky Dog"],
+    "answer": 1
+  },
+  {
+    "category": "Music & Pop Culture: Easy",
+    "question": "What red and white video game franchise asks players to 'catch 'em all'?",
+    "options": ["Super Mario", "Pokémon", "Sonic the Hedgehog", "The Legend of Zelda"],
+    "answer": 1
+  },
+  {
+    "category": "Music & Pop Culture: Easy",
+    "question": "Which animated ogre features in a popular Dreamworks movie series alongside Donkey?",
+    "options": ["Shrek", "Puss in Boots", "Lord Farquaad", "Prince Charming"],
+    "answer": 0
+  },
+  {
+    "category": "Music & Pop Culture: Easy",
+    "question": "What color is the iconic racing video game character Sonic?",
+    "options": ["Red", "Green", "Blue", "Yellow"],
+    "answer": 2
+  },
+  {
+    "category": "Music & Pop Culture: Easy",
+    "question": "Which iconic toy brand features interlocking colorful plastic bricks?",
+    "options": ["Playmobil", "LEGO", "K'NEX", "Lincoln Logs"],
+    "answer": 1
+  },
+  {
+    "category": "Music & Pop Culture: Easy",
+    "question": "What fictional land is guarded by Aslan the lion in C.S. Lewis's famous series?",
+    "options": ["Middle-earth", "Narnia", "Wonderland", "Neverland"],
+    "answer": 1
+  },
+  {
+    "category": "Music & Pop Culture: Easy",
+    "question": "What is the name of Mickey Mouse's loyal pet dog?",
+    "options": ["Pluto", "Goofy", "Bolt", "Snoopy"],
+    "answer": 0
+  },
+  {
+    "category": "Music & Pop Culture: Medium",
+    "question": "What arcade classic video game involves eating dots while running away from colored ghosts named Blinky, Pinky, Inky, and Clyde?",
+    "options": ["Pac-Man", "Donkey Kong", "Galaga", "Space Invaders"],
+    "answer": 0
+  },
+  {
+    "category": "Music & Pop Culture: Medium",
+    "question": "In what fictional city does Batman protect citizens from villains?",
+    "options": ["Metropolis", "Gotham City", "Central City", "Star City"],
+    "answer": 1
+  },
+  {
+    "category": "Music & Pop Culture: Medium",
+    "question": "What is the name of the coffee shop where the main characters hang out in the sitcom Friends?",
+    "options": ["Central Perk", "Luke's Diner", "Monk's Cafe", "The Bean"],
+    "answer": 0
+  },
+  {
+    "category": "Music & Pop Culture: Medium",
+    "question": "Which animated movie features a young girl named Riley whose emotions are Joy, Sadness, Anger, Fear, and Disgust?",
+    "options": ["Up", "Inside Out", "Soul", "WALL-E"],
+    "answer": 1
+  },
+  {
+    "category": "Music & Pop Culture: Medium",
+    "question": "What is the name of the kingdom where Anna and Elsa live in Disney's Frozen?",
+    "options": ["Atlantica", "Arendelle", "Corona", "Genovia"],
+    "answer": 1
+  },
+  {
+    "category": "Music & Pop Culture: Medium",
+    "question": "Which popular block-building video game was officially released in 2011 by Mojang Studios?",
+    "options": ["Terraria", "Roblox", "Minecraft", "Fortnite"],
+    "answer": 2
+  },
+  {
+    "category": "Music & Pop Culture: Medium",
+    "question": "What is the name of the hobbit who inherits the One Ring from Bilbo Baggins?",
+    "options": ["Samwise Gamgee", "Frodo Baggins", "Meriadoc Brandybuck", "Peregrin Took"],
+    "answer": 1
+  },
+  {
+    "category": "Music & Pop Culture: Medium",
+    "question": "Which animated superhero family can stretch, turn invisible, and possess super strength?",
+    "options": ["The Incredibles", "Fantastic Four", "Big Hero 6", "Teen Titans"],
+    "answer": 0
+  },
+  {
+    "category": "Music & Pop Culture: Medium",
+    "question": "What instrument does Homer Simpson's daughter Lisa play in The Simpsons?",
+    "options": ["Flute", "Saxophone", "Violin", "Piano"],
+    "answer": 1
+  },
+  {
+    "category": "Music & Pop Culture: Medium",
+    "question": "What is the name of the fictional sport played on flying broomsticks in the Harry Potter series?",
+    "options": ["Quidditch", "Broomball", "Wizard-Polo", "Sky-Soccer"],
+    "answer": 0
+  },
+  {
+    "category": "Music & Pop Culture: Hard",
+    "question": "Who directed the groundbreaking 1993 dinosaur adventure film Jurassic Park?",
+    "options": ["James Cameron", "George Lucas", "Steven Spielberg", "Ridley Scott"],
+    "answer": 2
+  },
+  {
+    "category": "Music & Pop Culture: Hard",
+    "question": "What was the title of the very first full-length computer-animated feature film released by Pixar in 1995?",
+    "options": ["A Bug's Life", "Toy Story", "Monsters Inc.", "Finding Nemo"],
+    "answer": 1
+  },
+  {
+    "category": "Music & Pop Culture: Hard",
+    "question": "In what year was the very first commercial iPhone released by Apple?",
+    "options": ["2005", "2007", "2010", "2012"],
+    "answer": 1
+  },
+  {
+    "category": "Music & Pop Culture: Hard",
+    "question": "What is the name of the fictional continent where most of the events take place in Game of Thrones?",
+    "options": ["Westeros", "Essos", "Sothoryos", "Ulthos"],
+    "answer": 0
+  },
+  {
+    "category": "Music & Pop Culture: Hard",
+    "question": "Who created the beloved comic strip 'Peanuts' featuring characters like Charlie Brown and Snoopy?",
+    "options": ["Bill Watterson", "Jim Davis", "Charles M. Schulz", "Stan Lee"],
+    "answer": 2
+  },
+  {
+    "category": "Music & Pop Culture: Hard",
+    "question": "What was the name of the first video game console released by Nintendo in North America?",
+    "options": ["Nintendo 64", "Super Nintendo", "Nintendo Entertainment System (NES)", "GameCube"],
+    "answer": 2
+  },
+  {
+    "category": "Music & Pop Culture: Hard",
+    "question": "Which artist painted the famous modern pop-art soup can paintings in the 1960s?",
+    "options": ["Jackson Pollock", "Andy Warhol", "Pablo Picasso", "Salvador Dalí"],
+    "answer": 1
+  },
+  {
+    "category": "Music & Pop Culture: Hard",
+    "question": "What fictional planet is Superman originally sent away from as an infant before it explodes?",
+    "options": ["Krypton", "Vulcan", "Cybertron", "Gallifrey"],
+    "answer": 0
+  },
+  {
+    "category": "Music & Pop Culture: Hard",
+    "question": "In the Star Wars universe, what color is Mace Windu's unique lightsaber?",
+    "options": ["Blue", "Red", "Green", "Purple"],
+    "answer": 3
+  },
+  {
+    "category": "Music & Pop Culture: Hard",
+    "question": "What is the name of the main fictional island where Jurassic Park is set?",
+    "options": ["Isla Nublar", "Isla Sorna", "Isla Muerta", "San Marie"],
+    "answer": 0
+  },
+  {
+    "category": "Music & Pop Culture: Easy",
+    "question": "What cartoon character lives in a hollow log and is known as Yogi Bear's faithful companion?",
+    "options": ["Boo Boo Bear", "Ranger Smith", "Snagglepuss", "Huckleberry Hound"],
+    "answer": 0
+  },
+  {
+    "category": "Music & Pop Culture: Easy",
+    "question": "What superhero is known as the 'Man of Steel'?",
+    "options": ["Batman", "Iron Man", "Superman", "The Flash"],
+    "answer": 2
+  },
+  {
+    "category": "Music & Pop Culture: Easy",
+    "question": "What is the name of the princess who rules the Mushroom Kingdom in Super Mario Bros.?",
+    "options": ["Princess Daisy", "Princess Peach", "Rosalina", "Pauline"],
+    "answer": 1
+  },
+  {
+    "category": "Music & Pop Culture: Easy",
+    "question": "What yellow Pokemon is the official mascot of the franchise?",
+    "options": ["Charmander", "Squirtle", "Pikachu", "Bulbasaur"],
+    "answer": 2
+  },
+  {
+    "category": "Music & Pop Culture: Easy",
+    "question": "What friendly ghost is known as the 'Friendly Ghost' in classic cartoons?",
+    "options": ["Casper", "Slimer", "Beetlejuice", "Phantom"],
+    "answer": 0
+  },
+  {
+    "category": "Music & Pop Culture: Easy",
+    "question": "What is the name of Andy's favorite cowboy toy in Pixar's Toy Story?",
+    "options": ["Buzz Lightyear", "Woody", "Rex", "Hamm"],
+    "answer": 1
+  },
+  {
+    "category": "Music & Pop Culture: Easy",
+    "question": "What animated cartoon cat is constantly trying to catch a clever mouse named Jerry?",
+    "options": ["Tom", "Sylvester", "Garfield", "Felix"],
+    "answer": 0
+  },
+  {
+    "category": "Music & Pop Culture: Easy",
+    "question": "What is the name of the magical nanny who flies in with an umbrella in a classic Disney musical?",
+    "options": ["Mary Poppins", "Nanny McPhee", "Fairy Godmother", "Cinderella"],
+    "answer": 0
+  },
+  {
+    "category": "Music & Pop Culture: Easy",
+    "question": "What type of animal is Kung Fu Panda's main character Po?",
+    "options": ["Tiger", "Panda", "Monkey", "Crane"],
+    "answer": 1
+  },
+  {
+    "category": "Music & Pop Culture: Easy",
+    "question": "What colorful cartoon ponies star in the popular animated series Friendship is Magic?",
+    "options": ["My Little Pony", "Care Bears", "Rainbow Brite", "Strawberry Shortcake"],
+    "answer": 0
+  },
+  {
+    "category": "Music & Pop Culture: Medium",
+    "question": "What is the name of Tony Stark's advanced artificial intelligence assistant in Iron Man?",
+    "options": ["JARVIS", "SIRI", "ALEXA", "CORTANA"],
+    "answer": 0
+  },
+  {
+    "category": "Music & Pop Culture: Medium",
+    "question": "What fictional wizarding bank is run by goblins in the Harry Potter series?",
+    "options": ["Gringotts", "Gringos", "Goblin-Bank", "Wizbank"],
+    "answer": 0
+  },
+  {
+    "category": "Music & Pop Culture: Medium",
+    "question": "In the Super Mario universe, what is the name of Mario's dinosaur companion who is green?",
+    "options": ["Yoshi", "Toad", "Bowser", "Wario"],
+    "answer": 0
+  },
+  {
+    "category": "Music & Pop Culture: Medium",
+    "question": "What futuristic city is the setting of Disney's animated movie Big Hero 6?",
+    "options": ["San Fransokyo", "Neo-Tokyo", "Metropolis", "Gotham"],
+    "answer": 0
+  },
+  {
+    "category": "Music & Pop Culture: Medium",
+    "question": "What is the name of the fictional academy where the X-Men learn to control their powers?",
+    "options": ["Charles Xavier's School for Gifted Youngsters", "Avengers Academy", "Superhero High", "Hogwarts"],
+    "answer": 0
+  },
+  {
+    "category": "Music & Pop Culture: Medium",
+    "question": "What colorful cartoon sponges and sea creatures live in Bikini Bottom?",
+    "options": ["SpongeBob SquarePants", "Finding Nemo", "Shark Tale", "The Little Mermaid"],
+    "answer": 0
+  },
+  {
+    "category": "Music & Pop Culture: Medium",
+    "question": "What is the name of the brave young lioness who is Simba's childhood friend and future queen in The Lion King?",
+    "options": ["Nala", "Kiara", "Sarabi", "Sarafina"],
+    "answer": 0
+  },
+  {
+    "category": "Music & Pop Culture: Medium",
+    "question": "What planet is home to Chewbacca and the Wookiees in Star Wars?",
+    "options": ["Kashyyyk", "Tatooine", "Endor", "Naboo"],
+    "answer": 0
+  },
+  {
+    "category": "Music & Pop Culture: Medium",
+    "question": "What is the name of the video game franchise featuring Master Chief fighting the Covenant?",
+    "options": ["Halo", "Destiny", "Metroid", "Mass Effect"],
+    "answer": 0
+  },
+  {
+    "category": "Music & Pop Culture: Medium",
+    "question": "What famous animated movie features a rat named Remy who loves cooking?",
+    "options": ["Ratatouille", "Cars", "Up", "Brave"],
+    "answer": 0
+  },
+  {
+    "category": "Music & Pop Culture: Hard",
+    "question": "What year was the very first Star Wars film (Episode IV: A New Hope) released in theaters?",
+    "options": ["1975", "1977", "1980", "1983"],
+    "answer": 1
+  },
+  {
+    "category": "Music & Pop Culture: Hard",
+    "question": "Who composed the legendary musical scores for Star Wars, Jurassic Park, and Indiana Jones?",
+    "options": ["John Williams", "Hans Zimmer", "Ennio Morricone", "Danny Elfman"],
+    "answer": 0
+  },
+  {
+    "category": "Music & Pop Culture: Hard",
+    "question": "What was the code name of the secret military project that created Captain America in Marvel Comics?",
+    "options": ["Project Rebirth", "Weapon X", "Project Cadmus", "Super Soldier Program"],
+    "answer": 0
+  },
+  {
+    "category": "Music & Pop Culture: Hard",
+    "question": "What is the name of the fictional language spoken by the Elves created by J.R.R. Tolkien?",
+    "options": ["Quenya", "Klingon", "Dothraki", "Valyrian"],
+    "answer": 0
+  },
+  {
+    "category": "Music & Pop Culture: Hard",
+    "question": "What director is famous for creating the groundbreaking sci-fi action film The Matrix?",
+    "options": ["The Wachowskis", "Christopher Nolan", "James Cameron", "Quentin Tarantino"],
+    "answer": 0
+  },
+  {
+    "category": "Music & Pop Culture: Hard",
+    "question": "What video game company created the iconic character Pac-Man in 1980?",
+    "options": ["Namco", "Nintendo", "Sega", "Atari"],
+    "answer": 0
+  },
+  {
+    "category": "Music & Pop Culture: Hard",
+    "question": "What was the name of the first artificial satellite launched into Earth orbit by the Soviet Union in 1957?",
+    "options": ["Sputnik 1", "Explorer 1", "Vostok 1", "Luna 1"],
+    "answer": 0
+  },
+  {
+    "category": "Music & Pop Culture: Hard",
+    "question": "What artist created the iconic Campbell's Soup Cans silk screens in pop art history?",
+    "options": ["Andy Warhol", "Roy Lichtenstein", "Keith Haring", "Robert Rauschenberg"],
+    "answer": 0
+  },
+  {
+    "category": "Music & Pop Culture: Hard",
+    "question": "In Greek mythology, what is the name of the winged horse tamed by Bellerophon?",
+    "options": ["Pegasus", "Griffin", "Hippogriff", "Chimera"],
+    "answer": 0
+  },
+  {
+    "category": "Music & Pop Culture: Hard",
+    "question": "What science fiction author wrote the famous Three Laws of Robotics?",
+    "options": ["Isaac Asimov", "Arthur C. Clarke", "Ray Bradbury", "Philip K. Dick"],
+    "answer": 0
+  }
+]
