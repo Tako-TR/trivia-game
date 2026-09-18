@@ -139,8 +139,10 @@ function getOrCreateRoom(rawRoomCode) {
       timeLeft: QUESTION_DURATION,
       questionStartTime: 0,
       roundActive: false,
+      isPaused: false,
       currentGameCategory: 'all',
-      previousRankings: {}
+      previousRankings: {},
+      usedQuestionIds: new Set() // Tracks used questions to avoid repetition in loops
     };
   }
   return rooms[code];
@@ -626,20 +628,20 @@ io.on('connection', (socket) => {
       room.activeSockets[socket.id].reactionSeconds = parseFloat(elapsedSeconds.toFixed(2));
       socket.emit('player:answer_received', answerIndex);
 
+      const totalPlayers = Object.keys(room.activeSockets).length;
+      const answeredPlayers = Object.values(room.activeSockets).filter(p => p.currentAnswer !== null).length;
+
       io.to(room.code).emit('game:submission_update', {
         username: room.activeSockets[socket.id].username,
         avatar: room.activeSockets[socket.id].avatar,
         socketId: socket.id,
-        submittedCount: Object.values(room.activeSockets).filter(p => p.currentAnswer !== null).length,
-        totalCount: Object.keys(room.activeSockets).length
+        submittedCount: answeredPlayers,
+        totalCount: totalPlayers
       });
 
-      const totalPlayers = Object.keys(room.activeSockets).length;
-      const answeredPlayers = Object.values(room.activeSockets).filter(p => p.currentAnswer !== null).length;
-
-      if (totalPlayers > 0 && answeredPlayers >= totalPlayers) {
-        clearInterval(room.questionTimer);
-        endRound(room);
+      // All-In Instant Countdown: Shave clock down to 2s if everyone in room answered
+      if (totalPlayers > 0 && answeredPlayers >= totalPlayers && room.timeLeft > 2) {
+        room.timeLeft = 2;
       }
     }
   });
@@ -658,6 +660,7 @@ io.on('connection', (socket) => {
     clearTimeout(room.intermissionTimer);
 
     room.previousRankings = {};
+    room.isPaused = false;
 
     Object.keys(room.activeSockets).forEach((id) => {
       room.activeSockets[id].score = 0;
@@ -701,8 +704,20 @@ io.on('connection', (socket) => {
 
       if (eligible.length === 0) eligible = masterQuestions;
 
-      const shuffled = shuffle(eligible);
-      room.activeQuestions = shuffled.slice(0, Math.min(requestedCount, shuffled.length));
+      // Duplicate-Free Auto-Loop Filter
+      if (!room.usedQuestionIds) room.usedQuestionIds = new Set();
+      let freshPool = eligible.filter(q => !room.usedQuestionIds.has(q.id || q.question));
+
+      // Reset pool when exhausted
+      if (freshPool.length < requestedCount) {
+        room.usedQuestionIds.clear();
+        freshPool = eligible;
+      }
+
+      const shuffled = shuffle(freshPool);
+      const selected = shuffled.slice(0, Math.min(requestedCount, shuffled.length));
+      selected.forEach(q => room.usedQuestionIds.add(q.id || q.question));
+      room.activeQuestions = selected;
     }
 
     room.currentQuestionIndex = -1;
@@ -718,6 +733,33 @@ io.on('connection', (socket) => {
     clearTimeout(room.intermissionTimer);
     room.roundActive = false;
     finishGameAndSaveStats(room);
+  });
+
+  // Mobile Remote Pacing Handlers
+  socket.on('host:next_question', (roomCode) => {
+    const targetRoomCode = (roomCode || 'ROOM1').trim().toUpperCase();
+    const room = rooms[targetRoomCode];
+    if (room && room.roundActive) {
+      clearInterval(room.questionTimer);
+      endRound(room);
+    }
+  });
+
+  socket.on('host:skip_question', (roomCode) => {
+    const targetRoomCode = (roomCode || 'ROOM1').trim().toUpperCase();
+    const room = rooms[targetRoomCode];
+    if (room && room.roundActive) {
+      clearInterval(room.questionTimer);
+      startNextQuestion(room);
+    }
+  });
+
+  socket.on('host:toggle_pause', (roomCode) => {
+    const targetRoomCode = (roomCode || 'ROOM1').trim().toUpperCase();
+    const room = rooms[targetRoomCode];
+    if (room && room.roundActive) {
+      room.isPaused = !room.isPaused;
+    }
   });
 
   socket.on('disconnect', () => {
@@ -755,6 +797,7 @@ function startNextQuestion(room) {
 
   const currentQ = room.activeQuestions[room.currentQuestionIndex];
   room.roundActive = true;
+  room.isPaused = false;
   room.timeLeft = QUESTION_DURATION;
   room.questionStartTime = Date.now();
 
@@ -769,6 +812,7 @@ function startNextQuestion(room) {
     question: currentQ.question,
     image: currentQ.image || null,
     options: currentQ.options,
+    correctAnswer: currentQ.answer,
     questionNumber: room.currentQuestionIndex + 1,
     totalQuestions: room.activeQuestions.length,
     timeLeft: room.timeLeft,
@@ -778,6 +822,8 @@ function startNextQuestion(room) {
 
   clearInterval(room.questionTimer);
   room.questionTimer = setInterval(() => {
+    if (room.isPaused) return; // Freeze timer countdown if host paused
+
     room.timeLeft--;
     io.to(room.code).emit('game:timer_tick', {
       timeLeft: room.timeLeft,
@@ -956,12 +1002,12 @@ async function finishGameAndSaveStats(room) {
           if (room.currentGameCategory && !room.currentGameCategory.startsWith('Preset:') && room.currentGameCategory !== 'all') {
             await pool.query(
               `INSERT INTO category_scores (username, category, high_score, career_score, games_played)
-               VALUES ($1, $2, $3, $3, 1)
-               ON CONFLICT (username, category)
-               DO UPDATE SET
-                 high_score = GREATEST(category_scores.high_score, EXCLUDED.high_score),
-                 career_score = category_scores.career_score + EXCLUDED.career_score,
-                 games_played = category_scores.games_played + 1;`,
+                VALUES ($1, $2, $3, $3, 1)
+                ON CONFLICT (username, category)
+                DO UPDATE SET
+                  high_score = GREATEST(category_scores.high_score, EXCLUDED.high_score),
+                  career_score = category_scores.career_score + EXCLUDED.career_score,
+                  games_played = category_scores.games_played + 1;`,
               [p.username, room.currentGameCategory, p.score]
             );
           }
