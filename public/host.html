@@ -496,7 +496,7 @@
 
   <div id="host-main-wrapper">
     
-    <!-- LOBBY & SETUP VIEW (ALLOWED TO SCROLL AS NORMAL) -->
+    <!-- LOBBY & SETUP VIEW -->
     <div id="host-lobby-view" class="scrollable-lobby-container">
       <div class="top-bar-controls">
         <div class="room-badge" id="host-room-badge">ROOM: Fremont Main</div>
@@ -551,6 +551,11 @@
             <select id="category-select" style="width:100%; background:#1e293b; color:#38bdf8; padding:8px; border-radius:6px; border:1px solid #475569; font-weight:700; margin-top:4px;">
               <option value="all" selected>Mixed (All Categories)</option>
               <option value="bible">Bible Trivia Only</option>
+              <option value="food">Snacks & Fast Food</option>
+              <option value="superhero">Superheroes & Sci-Fi</option>
+              <option value="sports">Sports & Records</option>
+              <option value="factorcap">Fact or Cap? (Trivia Oddities)</option>
+              <option value="disney">Disney & Pixar Animation</option>
               <option value="movie">Movie Quotes Only</option>
               <option value="music">Pop Culture & Music Only</option>
             </select>
@@ -604,7 +609,7 @@
       <!-- HALL OF FAME SUB-PANEL -->
       <div id="host-hall-view" class="hidden" style="margin-top: 1rem;">
         <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:0.5rem; margin-bottom:1rem;">
-          <div style="display:flex; gap:0.5rem; align-items:center;">
+          <div style="display:flex; gap:0.5rem; align-items:center; flex-wrap:wrap;">
             <select id="hall-room-select" style="background:#1e293b; color:#f59e0b; border:1px solid #f59e0b; padding:6px 12px; border-radius:6px; font-weight:700;">
               <option value="all">All Rooms Combined</option>
               <option value="ROOM1">Fremont Main</option>
@@ -617,6 +622,11 @@
             <select id="hall-category-select" style="background:#1e293b; color:#38bdf8; border:1px solid #475569; padding:6px 12px; border-radius:6px; font-weight:700;">
               <option value="all" selected>All Categories</option>
               <option value="bible">Bible Trivia</option>
+              <option value="food">Snacks & Fast Food</option>
+              <option value="superhero">Superheroes & Sci-Fi</option>
+              <option value="sports">Sports & Records</option>
+              <option value="factorcap">Fact or Cap</option>
+              <option value="disney">Disney & Pixar</option>
               <option value="movie">Movie Quotes</option>
               <option value="music">Pop Culture & Music</option>
             </select>
@@ -632,7 +642,7 @@
       </div>
     </div>
 
-    <!-- 1. ZERO-SCROLL TV SCREEN: ACTIVE QUESTION VIEWPORT (NO CLUTTER) -->
+    <!-- 1. ZERO-SCROLL TV SCREEN: ACTIVE QUESTION VIEWPORT -->
     <div id="host-game" class="tv-broadcast-screen hidden">
       <div>
         <div style="display: flex; justify-content: space-between; align-items: center;">
@@ -934,7 +944,17 @@
       activeScrollIntervals.push(interval);
     }
 
-    const PLAYLIST_CATEGORIES = ['bible', 'movie', 'music'];
+    // EXPANDED CATEGORY ROTATION LIST
+    const PLAYLIST_CATEGORIES = [
+      'bible', 
+      'food', 
+      'superhero', 
+      'sports', 
+      'factorcap', 
+      'disney', 
+      'movie', 
+      'music'
+    ];
     let currentPlaylistIndex = 0;
     let autoStartTimeout = null;
     let autoStartInterval = null;
@@ -1157,7 +1177,19 @@
       }
       activeMatchCategory = nextCategory;
 
-      autoNextCatLabel.textContent = nextCategory.toUpperCase();
+      const catDisplayMap = {
+        'bible': 'BIBLE TRIVIA',
+        'food': 'SNACKS & FAST FOOD',
+        'superhero': 'SUPERHEROES & SCI-FI',
+        'sports': 'SPORTS & RECORDS',
+        'factorcap': 'FACT OR CAP?',
+        'disney': 'DISNEY & PIXAR',
+        'movie': 'MOVIE QUOTES',
+        'music': 'POP CULTURE',
+        'all': 'MIXED'
+      };
+
+      autoNextCatLabel.textContent = catDisplayMap[nextCategory] || nextCategory.toUpperCase();
       autoStartBanner.classList.remove('hidden');
 
       let seconds = 10;
@@ -1292,7 +1324,6 @@
 
       renderDistributionChart(data);
 
-      // Render & Start Auto-Scrolling Standings on TV
       hostLeaderboard.innerHTML = '';
       data.leaderboard.forEach((p, idx) => {
         const li = document.createElement('li');
