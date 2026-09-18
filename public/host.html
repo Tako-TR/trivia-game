@@ -9,6 +9,16 @@
   <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.2/dist/confetti.browser.min.js"></script>
   <style>
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      padding: 0;
+      background-color: #0b0f19;
+      color: #ffffff;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      overflow-x: hidden;
+    }
+
     /* PASSWORD LOGIN OVERLAY STYLES */
     #login-overlay {
       position: fixed;
@@ -32,17 +42,8 @@
       max-width: 400px;
       width: 90%;
     }
-    .login-box h2 {
-      color: #38bdf8;
-      margin-top: 0;
-      margin-bottom: 0.5rem;
-      font-size: 1.5rem;
-    }
-    .login-box p {
-      color: #94a3b8;
-      font-size: 0.9rem;
-      margin-bottom: 1.5rem;
-    }
+    .login-box h2 { color: #38bdf8; margin-top: 0; margin-bottom: 0.5rem; font-size: 1.5rem; }
+    .login-box p { color: #94a3b8; font-size: 0.9rem; margin-bottom: 1.5rem; }
     .login-box input {
       width: 100%;
       background-color: #0f172a;
@@ -53,13 +54,9 @@
       font-size: 1rem;
       font-weight: 600;
       margin-bottom: 1rem;
-      box-sizing: border-box;
       outline: none;
     }
-    .login-box input:focus {
-      border-color: #38bdf8;
-      box-shadow: 0 0 8px rgba(56, 189, 248, 0.3);
-    }
+    .login-box input:focus { border-color: #38bdf8; box-shadow: 0 0 8px rgba(56, 189, 248, 0.3); }
     .login-box button {
       width: 100%;
       background-color: #10b981;
@@ -72,23 +69,32 @@
       cursor: pointer;
       transition: background-color 0.2s;
     }
-    .login-box button:hover {
-      background-color: #059669;
-    }
-    #login-error {
-      color: #ef4444;
-      font-size: 0.85rem;
-      font-weight: 700;
-      margin-top: 0.75rem;
-      min-height: 1.2rem;
+    .login-box button:hover { background-color: #059669; }
+    #login-error { color: #ef4444; font-size: 0.85rem; font-weight: 700; margin-top: 0.75rem; min-height: 1.2rem; }
+
+    #host-main-wrapper { display: none; width: 100%; min-height: 100vh; }
+    
+    /* SCROLLABLE LOBBY & SETUP CONTAINER */
+    .scrollable-lobby-container {
+      max-width: 920px;
+      margin: 0 auto;
+      padding: 1.5rem 1rem 3.5rem;
+      position: relative;
     }
 
-    /* MAIN CONTAINER CONTROL */
-    #host-main-wrapper {
-      display: none;
+    /* ZERO-SCROLL TV BROADCAST VIEWPORTS (16:9 FIXED RATIO) */
+    .tv-broadcast-screen {
+      width: 100vw;
+      height: 100vh;
+      max-height: 100vh;
+      overflow: hidden !important;
+      padding: 1.2rem 2.5rem;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      position: relative;
     }
 
-    .container { max-width: 880px; position: relative; }
     .top-bar-controls {
       display: flex;
       justify-content: space-between;
@@ -119,14 +125,15 @@
       user-select: none;
     }
     .toggle-pill.off { color: #94a3b8; border-color: #334155; }
-    
+
+    /* TV TIMER BAR */
     .timer-meter-wrapper {
       width: 100%;
-      height: 12px;
+      height: 14px;
       background-color: #1e293b;
       border-radius: 9999px;
       overflow: hidden;
-      margin: 0.85rem 0 1.25rem 0;
+      margin: 0.4rem 0 0.8rem 0;
       border: 1px solid #334155;
     }
     .timer-meter-bar {
@@ -146,233 +153,178 @@
       to { filter: drop-shadow(0 0 12px #ef4444); }
     }
 
-    /* Floating Corner QR Badge during Active Game */
-    .floating-qr-badge {
-      position: fixed;
-      bottom: 20px;
-      right: 20px;
-      background: rgba(15, 23, 42, 0.95);
-      border: 2px solid #38bdf8;
-      border-radius: 14px;
-      padding: 10px;
+    /* TV QUESTION HEADER & OPTIONS */
+    .tv-question-box {
+      background: #111827;
+      border: 2px solid #1e293b;
+      border-radius: 16px;
+      padding: 1.25rem 2rem;
       display: flex;
       flex-direction: column;
       align-items: center;
-      box-shadow: 0 10px 25px rgba(0,0,0,0.5);
-      z-index: 999;
-      backdrop-filter: blur(6px);
-      transition: transform 0.2s ease-out;
+      justify-content: center;
+      min-height: 130px;
+      margin-bottom: 0.75rem;
+      box-shadow: 0 8px 25px rgba(0,0,0,0.4);
     }
-    .floating-qr-badge:hover { transform: scale(1.03); }
-    .floating-qr-label {
-      font-size: 0.7rem;
+    .tv-question-text {
+      font-size: 1.75rem;
       font-weight: 800;
-      color: #38bdf8;
-      text-transform: uppercase;
-      margin-bottom: 6px;
-      letter-spacing: 0.05em;
+      color: #f8fafc;
+      margin: 0;
+      line-height: 1.35;
+      text-align: center;
     }
-    #corner-qrcode {
-      background: #0f172a;
-      padding: 6px;
-      border-radius: 8px;
+    .trivia-image-box {
+      margin: 0.5rem auto;
+      background-color: #fff;
+      padding: 0.5rem;
+      border-radius: 10px;
       display: inline-block;
-      border: 1px solid #334155;
     }
-    #corner-qrcode img, #corner-qrcode canvas {
-      display: block;
-      width: 90px !important;
-      height: 90px !important;
+    .trivia-image { max-height: 130px; max-width: 100%; object-fit: contain; display: block; }
+
+    .tv-options-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1rem;
+      flex: 1;
+      max-height: 280px;
+      margin-bottom: 0.75rem;
     }
+    .tv-option-btn {
+      background: #1e293b;
+      border: 2px solid #334155;
+      color: #f1f5f9;
+      font-size: 1.25rem;
+      font-weight: 700;
+      border-radius: 12px;
+      padding: 1rem 1.5rem;
+      display: flex;
+      align-items: center;
+      justify-content: flex-start;
+      text-align: left;
+    }
+
+    /* TV 2-COLUMN RESULTS VIEW */
+    .tv-results-split {
+      display: grid;
+      grid-template-columns: 1.15fr 0.85fr;
+      gap: 2rem;
+      height: calc(100vh - 120px);
+      overflow: hidden;
+    }
+    .tv-results-left, .tv-results-right {
+      display: flex;
+      flex-direction: column;
+      height: 100%;
+      overflow: hidden;
+    }
+
+    .answer-reveal-box {
+      background-color: #064e3b;
+      border: 2px solid #10b981;
+      padding: 1rem 1.5rem;
+      border-radius: 12px;
+      margin-bottom: 0.75rem;
+    }
+    .answer-reveal-label { font-size: 0.75rem; text-transform: uppercase; color: #6ee7b7; font-weight: 800; }
+    .answer-reveal-text { font-size: 1.6rem; font-weight: 900; color: #fff; margin-top: 0.2rem; }
 
     .spotlights-container {
       display: grid;
       grid-template-columns: 1fr 1fr;
-      gap: 1rem;
-      margin: 1.25rem 0;
+      gap: 0.75rem;
+      margin-bottom: 0.75rem;
     }
     .spotlight-card {
       background-color: #0f172a;
-      border-radius: 12px;
-      padding: 0.85rem 1rem;
+      border-radius: 10px;
+      padding: 0.75rem 1rem;
       display: flex;
       align-items: center;
       gap: 0.75rem;
       text-align: left;
     }
-    .spotlight-card.speed {
-      border: 1px solid #10b981;
-      background: linear-gradient(135deg, rgba(16, 185, 129, 0.1), #0f172a);
-    }
-    .spotlight-card.snail {
-      border: 1px solid #f59e0b;
-      background: linear-gradient(135deg, rgba(245, 158, 11, 0.1), #0f172a);
-    }
-    .spotlight-icon { font-size: 2rem; }
-    .spotlight-title {
-      font-size: 0.75rem;
-      font-weight: 800;
-      text-transform: uppercase;
-      letter-spacing: 0.05em;
-      margin-bottom: 0.15rem;
-    }
+    .spotlight-card.speed { border: 1px solid #10b981; background: linear-gradient(135deg, rgba(16, 185, 129, 0.1), #0f172a); }
+    .spotlight-card.snail { border: 1px solid #f59e0b; background: linear-gradient(135deg, rgba(245, 158, 11, 0.1), #0f172a); }
+    .spotlight-icon { font-size: 1.6rem; }
+    .spotlight-title { font-size: 0.7rem; font-weight: 800; text-transform: uppercase; margin-bottom: 0.15rem; }
     .speed .spotlight-title { color: #10b981; }
     .snail .spotlight-title { color: #f59e0b; }
-    .spotlight-name { font-size: 1.05rem; font-weight: 800; color: #f8fafc; }
-    .spotlight-stat { font-size: 0.8rem; color: #94a3b8; }
+    .spotlight-name { font-size: 1rem; font-weight: 800; color: #f8fafc; }
+    .spotlight-stat { font-size: 0.75rem; color: #94a3b8; }
 
-    .tab-bar { display: flex; justify-content: center; gap: 0.5rem; margin: 1rem 0; }
-    .tab-btn {
-      background-color: #1e293b;
-      color: #94a3b8;
-      border: 1px solid #334155;
-      padding: 0.6rem 1.25rem;
-      border-radius: 8px;
-      font-weight: 700;
-      cursor: pointer;
-    }
-    .tab-btn.active {
-      background-color: #38bdf8;
-      color: #0f172a;
-      border-color: #38bdf8;
-    }
-    .hall-of-fame-panel {
+    .chart-container {
       background-color: #0f172a;
       border: 1px solid #334155;
-      padding: 1.25rem;
       border-radius: 12px;
-      margin: 1rem auto;
-      max-height: 480px;
-      overflow-y: auto;
+      padding: 1rem 1.25rem;
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
     }
-    .hall-filter-row {
+    .chart-header {
+      font-size: 0.85rem;
+      font-weight: 800;
+      color: #94a3b8;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      margin-bottom: 0.75rem;
       display: flex;
       justify-content: space-between;
-      align-items: center;
-      gap: 0.75rem;
-      margin-bottom: 1rem;
-      flex-wrap: wrap;
     }
-    .lobby-header-card {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      margin: 1.25rem 0;
-    }
-    .qr-card {
-      background: linear-gradient(145deg, #1e293b, #0f172a);
-      border: 2px solid #38bdf8;
-      border-radius: 16px;
-      padding: 1.25rem;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      box-shadow: 0 10px 25px -5px rgba(56, 189, 248, 0.25);
-    }
-    .qr-card h2 { font-size: 1.1rem; color: #38bdf8; margin: 0 0 0.25rem 0; }
-    .qr-card p { font-size: 0.85rem; color: #94a3b8; margin: 0 0 0.75rem 0; }
-    #qrcode { background: #0f172a; padding: 10px; border-radius: 12px; display: inline-block; border: 1px solid #334155; }
-    .settings-panel {
-      background-color: #0f172a;
-      border: 1px solid #334155;
-      padding: 1.25rem;
-      border-radius: 10px;
-      margin: 1rem auto;
-      max-width: 520px;
-      display: flex;
-      flex-direction: column;
-      gap: 0.85rem;
-      text-align: left;
-    }
-    .setting-row { display: flex; flex-direction: column; gap: 0.35rem; }
-    .setting-row label { font-size: 0.8rem; font-weight: 700; color: #94a3b8; text-transform: uppercase; }
-    select, input[type="text"] {
-      background-color: #1e293b;
-      color: #38bdf8;
-      border: 1px solid #475569;
-      padding: 0.65rem 1rem;
-      border-radius: 8px;
-      font-size: 0.95rem;
-      font-weight: 600;
-    }
-    .btn-danger { background-color: #dc2626 !important; color: #fff; margin-top: 1.25rem; }
-    .answer-reveal-box {
-      background-color: #064e3b;
-      border: 2px solid #10b981;
-      padding: 1.25rem;
-      border-radius: 10px;
-      margin: 1.25rem 0;
-    }
-    .answer-reveal-label { font-size: 0.8rem; text-transform: uppercase; color: #6ee7b7; margin-bottom: 0.25rem; }
-    .answer-reveal-text { font-size: 1.5rem; font-weight: 800; color: #fff; }
-    .trivia-image-box {
-      margin: 1rem auto;
-      background-color: #fff;
-      padding: 0.85rem;
-      border-radius: 12px;
-      display: inline-block;
-    }
-    .trivia-image { max-height: 180px; max-width: 100%; object-fit: contain; display: block; }
-    .host-links { display: flex; gap: 0.75rem; justify-content: center; flex-wrap: wrap; }
-    .host-link-btn {
-      color: #38bdf8;
-      font-size: 0.85rem;
-      text-decoration: none;
-      border: 1px dashed #38bdf8;
-      padding: 0.4rem 0.85rem;
+    .chart-bars { display: flex; flex-direction: column; gap: 0.6rem; }
+    .chart-row { display: flex; flex-direction: column; gap: 0.2rem; }
+    .chart-row-meta { display: flex; justify-content: space-between; font-size: 0.85rem; font-weight: 700; }
+    .chart-track { background-color: #1e293b; height: 18px; border-radius: 6px; overflow: hidden; display: flex; }
+    .chart-fill {
+      height: 100%;
       border-radius: 6px;
-      font-weight: 600;
+      transition: width 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+      display: flex;
+      align-items: center;
+      justify-content: flex-end;
+      padding-right: 6px;
+      font-size: 0.7rem;
+      font-weight: 800;
+      color: #ffffff;
+      min-width: 8px;
     }
-    .btn-kick {
-      background-color: #7f1d1d;
-      color: #fca5a5;
-      border: 1px solid #ef4444;
-      padding: 0.25rem 0.6rem;
-      border-radius: 6px;
-      cursor: pointer;
-      font-size: 0.75rem;
-      font-weight: 700;
-    }
-    .btn-kick:hover { background-color: #dc2626; color: #fff; }
+    .chart-fill.correct-bar { background: linear-gradient(90deg, #059669, #10b981); box-shadow: 0 0 10px rgba(16, 185, 129, 0.4); }
+    .chart-fill.incorrect-bar { background: linear-gradient(90deg, #475569, #64748b); }
 
-    .submission-tray {
-      background-color: #0f172a;
+    /* AUTO-SCROLLING LEADERBOARD CONTAINER */
+    .autoscroll-leaderboard-wrapper {
+      flex: 1;
+      height: 100%;
+      background: #0f172a;
       border: 1px solid #334155;
       border-radius: 12px;
-      padding: 0.85rem;
-      margin: 1rem 0;
+      overflow: hidden !important;
+      position: relative;
+      padding: 0.5rem 0;
+    }
+    .autoscroll-list {
+      list-style: none;
+      margin: 0;
+      padding: 0.5rem 1rem;
       display: flex;
       flex-direction: column;
       gap: 0.5rem;
-      text-align: left;
+      transition: transform 0.05s linear;
     }
-    .submission-tray-header {
+    .autoscroll-list li {
+      background: #1e293b;
+      padding: 0.65rem 1rem;
+      border-radius: 8px;
       display: flex;
       justify-content: space-between;
-      font-size: 0.8rem;
-      font-weight: 700;
-      color: #94a3b8;
-      text-transform: uppercase;
-    }
-    .submission-chips { display: flex; gap: 0.5rem; flex-wrap: wrap; }
-    .sub-chip {
-      background-color: #1e293b;
-      border: 1px solid #475569;
-      color: #94a3b8;
-      padding: 0.35rem 0.75rem;
-      border-radius: 9999px;
-      font-size: 0.85rem;
-      font-weight: 700;
-      display: inline-flex;
       align-items: center;
-      gap: 0.35rem;
-      transition: all 0.2s ease-out;
-    }
-    .sub-chip.answered {
-      background-color: #064e3b;
-      border-color: #10b981;
-      color: #6ee7b7;
-      transform: scale(1.05);
+      font-size: 1rem;
+      font-weight: 700;
+      border: 1px solid #334155;
     }
 
     .delta-badge {
@@ -388,102 +340,101 @@
     .delta-down { background-color: #7f1d1d; color: #fca5a5; }
     .delta-same { background-color: #1e293b; color: #64748b; }
 
-    .chart-container {
-      background-color: #0f172a;
-      border: 1px solid #334155;
+    /* FLOATING CORNER QR BADGE */
+    .floating-qr-badge {
+      position: fixed;
+      bottom: 16px;
+      right: 16px;
+      background: rgba(15, 23, 42, 0.95);
+      border: 2px solid #38bdf8;
       border-radius: 12px;
-      padding: 1.25rem;
-      margin: 1.25rem 0;
-      text-align: left;
-    }
-    .chart-header {
-      font-size: 0.95rem;
-      font-weight: 700;
-      color: #94a3b8;
-      text-transform: uppercase;
-      letter-spacing: 0.05em;
-      margin-bottom: 1rem;
+      padding: 8px;
       display: flex;
-      justify-content: space-between;
+      flex-direction: column;
       align-items: center;
+      box-shadow: 0 10px 25px rgba(0,0,0,0.6);
+      z-index: 999;
+      backdrop-filter: blur(6px);
     }
-    .chart-bars { display: flex; flex-direction: column; gap: 0.75rem; }
-    .chart-row { display: flex; flex-direction: column; gap: 0.25rem; }
-    .chart-row-meta {
-      display: flex;
-      justify-content: space-between;
-      font-size: 0.9rem;
-      font-weight: 600;
-      color: #f8fafc;
-    }
-    .chart-track {
-      background-color: #1e293b;
-      height: 22px;
-      border-radius: 6px;
-      overflow: hidden;
-      display: flex;
-    }
-    .chart-fill {
-      height: 100%;
-      border-radius: 6px;
-      transition: width 0.8s cubic-bezier(0.4, 0, 0.2, 1);
-      display: flex;
-      align-items: center;
-      justify-content: flex-end;
-      padding-right: 8px;
-      font-size: 0.75rem;
-      font-weight: 800;
-      color: #ffffff;
-      box-sizing: border-box;
-      min-width: 8px;
-    }
-    .chart-fill.correct-bar {
-      background: linear-gradient(90deg, #059669, #10b981);
-      box-shadow: 0 0 10px rgba(16, 185, 129, 0.4);
-    }
-    .chart-fill.incorrect-bar { background: linear-gradient(90deg, #475569, #64748b); }
+    .floating-qr-label { font-size: 0.65rem; font-weight: 800; color: #38bdf8; text-transform: uppercase; margin-bottom: 4px; }
+    #corner-qrcode img, #corner-qrcode canvas { display: block; width: 75px !important; height: 75px !important; }
 
+    /* PODIUM STYLING */
     .podium-container {
       display: flex;
       justify-content: center;
       align-items: flex-end;
-      gap: 1rem;
-      margin: 2rem auto 1.5rem;
-      height: 260px;
-      max-width: 550px;
-      padding: 0 1rem;
+      gap: 1.5rem;
+      height: 220px;
+      max-width: 650px;
+      margin: 0 auto;
     }
-    .podium-slot {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      flex: 1;
-      animation: popUp 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
-    }
+    .podium-slot { display: flex; flex-direction: column; align-items: center; flex: 1; }
     .podium-slot.first { order: 2; }
-    .podium-slot.second { order: 1; animation-delay: 0.15s; }
-    .podium-slot.third { order: 3; animation-delay: 0.3s; }
-    .podium-avatar { font-size: 2.2rem; margin-bottom: 0.35rem; }
-    .podium-name { font-size: 1rem; font-weight: 800; color: #f8fafc; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 110px; }
-    .podium-score { font-size: 0.85rem; color: #94a3b8; font-weight: 600; margin-bottom: 0.5rem; }
+    .podium-slot.second { order: 1; }
+    .podium-slot.third { order: 3; }
+    .podium-avatar { font-size: 2.2rem; margin-bottom: 0.25rem; }
+    .podium-name { font-size: 1.1rem; font-weight: 800; color: #f8fafc; }
+    .podium-score { font-size: 0.85rem; color: #94a3b8; font-weight: 600; margin-bottom: 0.4rem; }
     .podium-step {
       width: 100%;
       border-radius: 12px 12px 0 0;
       display: flex;
       justify-content: center;
       align-items: center;
-      font-size: 1.5rem;
+      font-size: 1.8rem;
       font-weight: 900;
       color: #0f172a;
-      box-shadow: 0 -4px 15px rgba(0,0,0,0.3);
     }
-    .first .podium-step { height: 140px; background: linear-gradient(180deg, #facc15, #ca8a04); border: 2px solid #fef08a; border-bottom: none; }
-    .second .podium-step { height: 100px; background: linear-gradient(180deg, #cbd5e1, #64748b); border: 2px solid #f1f5f9; border-bottom: none; }
-    .third .podium-step { height: 70px; background: linear-gradient(180deg, #fdba74, #c2410c); border: 2px solid #fed7aa; border-bottom: none; }
-    @keyframes popUp {
-      from { transform: translateY(50px); opacity: 0; }
-      to { transform: translateY(0); opacity: 1; }
+    .first .podium-step { height: 120px; background: linear-gradient(180deg, #facc15, #ca8a04); border: 2px solid #fef08a; border-bottom: none; }
+    .second .podium-step { height: 85px; background: linear-gradient(180deg, #cbd5e1, #64748b); border: 2px solid #f1f5f9; border-bottom: none; }
+    .third .podium-step { height: 60px; background: linear-gradient(180deg, #fdba74, #c2410c); border: 2px solid #fed7aa; border-bottom: none; }
+
+    /* SUBMISSION TRAY */
+    .submission-tray {
+      background-color: #0f172a;
+      border: 1px solid #334155;
+      border-radius: 10px;
+      padding: 0.6rem 1rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
     }
+    .submission-chips { display: flex; gap: 0.4rem; flex-wrap: wrap; }
+    .sub-chip {
+      background-color: #1e293b;
+      border: 1px solid #475569;
+      color: #94a3b8;
+      padding: 0.25rem 0.6rem;
+      border-radius: 9999px;
+      font-size: 0.75rem;
+      font-weight: 700;
+    }
+    .sub-chip.answered { background-color: #064e3b; border-color: #10b981; color: #6ee7b7; }
+
+    .btn-danger { background-color: #dc2626 !important; color: #fff; border: none; padding: 0.5rem 1rem; border-radius: 6px; cursor: pointer; font-weight: 700; }
+    .btn-kick {
+      background-color: #7f1d1d;
+      color: #fca5a5;
+      border: 1px solid #ef4444;
+      padding: 0.25rem 0.6rem;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 0.75rem;
+      font-weight: 700;
+    }
+    .btn-kick:hover { background-color: #dc2626; color: #fff; }
+    .host-links { display: flex; gap: 0.75rem; justify-content: center; flex-wrap: wrap; margin-top: 0.5rem; }
+    .host-link-btn {
+      color: #38bdf8;
+      font-size: 0.85rem;
+      text-decoration: none;
+      border: 1px dashed #38bdf8;
+      padding: 0.4rem 0.85rem;
+      border-radius: 6px;
+      font-weight: 600;
+    }
+    .hidden { display: none !important; }
   </style>
 </head>
 <body>
@@ -499,9 +450,10 @@
     </div>
   </div>
 
-  <!-- FULL WRAPPER FOR HOST DASHBOARD -->
   <div id="host-main-wrapper">
-    <div class="container">
+    
+    <!-- LOBBY & SETUP VIEW (ALLOWED TO SCROLL AS NORMAL) -->
+    <div id="host-lobby-view" class="scrollable-lobby-container">
       <div class="top-bar-controls">
         <div class="room-badge" id="host-room-badge">ROOM: Fremont Main</div>
         <div class="top-toggles">
@@ -510,235 +462,107 @@
         </div>
       </div>
 
-      <h1>Host Screen</h1>
+      <h1 style="text-align: center; margin: 0.5rem 0;">Host Control Panel</h1>
 
-      <div class="tab-bar">
-        <button id="tab-btn-lobby" class="tab-btn active">Live Game Lobby</button>
-        <button id="tab-btn-hall" class="tab-btn">All-Time Hall of Fame</button>
+      <div style="display: flex; justify-content: center; gap: 0.5rem; margin: 1rem 0;">
+        <button id="tab-btn-lobby" class="toggle-pill" style="padding: 0.6rem 1.25rem; font-size: 0.95rem;">Live Game Lobby</button>
+        <button id="tab-btn-hall" class="toggle-pill off" style="padding: 0.6rem 1.25rem; font-size: 0.95rem;">All-Time Hall of Fame</button>
       </div>
 
-      <div id="host-lobby-view">
-        <div id="host-lobby">
-          <div class="lobby-header-card">
-            <div class="qr-card">
-              <h2>Scan to Join: <span id="qr-room-label" style="color:#38bdf8;">Fremont Main</span></h2>
-              <p>Pick avatar & battle for top rank</p>
-              <div id="qrcode"></div>
-            </div>
+      <div id="host-lobby">
+        <div style="display: flex; justify-content: center; margin: 1rem 0;">
+          <div style="background: #1e293b; border: 2px solid #38bdf8; border-radius: 16px; padding: 1.25rem; text-align: center;">
+            <h2 style="font-size: 1.1rem; color: #38bdf8; margin: 0 0 0.25rem 0;">Scan to Join: <span id="qr-room-label">Fremont Main</span></h2>
+            <div id="qrcode" style="background:#0f172a; padding:10px; border-radius:12px; display:inline-block; margin: 0.5rem 0;"></div>
           </div>
-
-          <div style="color: #94a3b8; margin-bottom: 0.75rem;">Players in this room: <strong id="player-count" style="color: #38bdf8;">0</strong></div>
-          
-          <div class="settings-panel">
-            <div class="setting-row">
-              <label for="host-room-select" style="color: #f59e0b;">Select Game Room</label>
-              <select id="host-room-select">
-                <option value="ROOM1" selected>Fremont Main</option>
-                <option value="ROOM2">Fremont HS</option>
-                <option value="ROOM3">Fremont MS</option>
-                <option value="ROOM4">Tiffin</option>
-                <option value="ROOM5">Sandusky</option>
-                <option value="ROOM6">Northwood</option>
-              </select>
-            </div>
-
-            <div class="setting-row" style="background-color: rgba(56, 189, 248, 0.08); padding: 0.6rem; border-radius: 8px; border: 1px dashed #38bdf8;">
-              <label for="preset-select" style="color: #38bdf8;">Preset Game Pack (Optional)</label>
-              <select id="preset-select">
-                <option value="none" selected>-- None (Use Category & Difficulty Below) --</option>
-              </select>
-            </div>
-
-            <div class="setting-row" id="standard-cat-row">
-              <label for="category-select">Select Category</label>
-              <select id="category-select">
-                <option value="all" selected>Mixed (All Categories)</option>
-                <option value="music">Pop Culture & Music Only</option>
-                <option value="bible">Bible Trivia Only</option>
-                <option value="movie">Movie Quotes Only</option>
-              </select>
-            </div>
-
-            <div class="setting-row" id="standard-diff-row">
-              <label for="difficulty-select">Select Difficulty</label>
-              <select id="difficulty-select">
-                <option value="all" selected>Mixed (All Difficulties)</option>
-                <option value="easy">Easy Only</option>
-                <option value="medium">Medium Only</option>
-                <option value="hard">Hard Only</option>
-                <option value="easy_medium">Easy & Medium</option>
-                <option value="medium_hard">Medium & Hard</option>
-              </select>
-            </div>
-
-            <div class="setting-row">
-              <label for="question-count">Number of Questions</label>
-              <select id="question-count">
-                <option value="5">5 Questions</option>
-                <option value="10" selected>10 Questions</option>
-                <option value="15">15 Questions</option>
-                <option value="20">20 Questions</option>
-                <option value="25">25 Questions</option>
-                <option value="50">50 Questions</option>
-                <option value="100">All Available Questions</option>
-              </select>
-            </div>
-
-            <!-- AUTO-LOOP & SEQUENTIAL PLAYLIST SETTINGS -->
-            <div class="setting-row" style="border-top: 1px solid #334155; padding-top: 0.75rem; margin-top: 0.25rem;">
-              <label for="auto-next-mode" style="color: #38bdf8;">🔄 Auto-Start Next Match</label>
-              <select id="auto-next-mode">
-                <option value="off" selected>Off (Manual Restart)</option>
-                <option value="same">Auto-Loop: Same Category (Fresh Questions)</option>
-                <option value="playlist">Sequential Playlist: Cycle Pure Categories</option>
-              </select>
-            </div>
-
-            <div id="playlist-order-container" class="hidden" style="display: flex; flex-direction: column; gap: 0.35rem; background: #1e293b; padding: 0.6rem 0.8rem; border-radius: 8px; border: 1px dashed #38bdf8;">
-              <span style="font-size: 0.75rem; color: #38bdf8; font-weight: 800; text-transform: uppercase;">Playlist Cycle:</span>
-              <span style="font-size: 0.85rem; color: #f8fafc; font-weight: 700;">1. Bible ➔ 2. Movie Quotes ➔ 3. Pop Culture</span>
-            </div>
-          </div>
-
-          <div style="display: flex; flex-direction: column; align-items: center; gap: 0.75rem;">
-            <button id="btn-start" style="background-color: #10b981; min-width: 220px;">Start Game</button>
-            <div class="host-links">
-              <a href="/add.html" class="host-link-btn">+ Add Questions</a>
-              <a href="/manage.html" class="host-link-btn">⚙ Question Editor & Generator</a>
-            </div>
-          </div>
-
-          <h2 style="margin-top: 1.5rem; font-size: 1.15rem;">Connected in this Room</h2>
-          <ul id="host-lobby-players" class="leaderboard"></ul>
         </div>
 
-        <!-- Live Game Screen -->
-        <div id="host-game" class="hidden">
-          <div id="host-category" class="badge">Category</div>
-          
-          <div class="timer-meter-wrapper">
-            <div id="timer-bar" class="timer-meter-bar"></div>
-          </div>
-          <div id="host-timer" class="timer">15</div>
-
-          <div id="host-image-container" class="trivia-image-box hidden">
-            <img id="host-question-image" class="trivia-image" src="" alt="Trivia Visual">
-          </div>
-
-          <p id="host-question" class="question-text">Question</p>
-          <div id="host-options" class="options-grid"></div>
-
-          <div class="submission-tray">
-            <div class="submission-tray-header">
-              <span>Room Submissions</span>
-              <span id="submission-counter-label" style="color: #38bdf8;">0 / 0 Answered</span>
-            </div>
-            <div id="submission-chips-container" class="submission-chips"></div>
-          </div>
-
-          <button class="btn-danger stop-game-btn">Stop / End Game</button>
+        <div style="text-align: center; color: #94a3b8; margin-bottom: 1rem;">
+          Players in room: <strong id="player-count" style="color: #38bdf8; font-size: 1.2rem;">0</strong>
         </div>
 
-        <!-- Milestone Intermission Screen -->
-        <div id="host-milestone" class="hidden">
-          <h1 style="color: #38bdf8;">Checkpoint Standings!</h1>
-          <p id="host-milestone-text" class="question-text" style="color: #f59e0b; font-weight: 700;">After 10 Questions</p>
-          <h2>Current Match Leaderboard</h2>
-          <ul id="host-milestone-leaderboard" class="leaderboard"></ul>
-          <p style="color: #94a3b8; font-size: 0.95rem; margin-top: 1rem;">Resuming in 10 seconds...</p>
-          <button class="btn-danger stop-game-btn">Stop / End Game</button>
+        <div style="background-color: #0f172a; border: 1px solid #334155; padding: 1.25rem; border-radius: 12px; max-width: 520px; margin: 0 auto 1.5rem; display: flex; flex-direction: column; gap: 0.85rem;">
+          <div>
+            <label style="font-size:0.75rem; font-weight:800; color:#f59e0b; text-transform:uppercase;">Select Game Room</label>
+            <select id="host-room-select" style="width:100%; background:#1e293b; color:#38bdf8; padding:8px; border-radius:6px; border:1px solid #475569; font-weight:700; margin-top:4px;">
+              <option value="ROOM1" selected>Fremont Main</option>
+              <option value="ROOM2">Fremont HS</option>
+              <option value="ROOM3">Fremont MS</option>
+              <option value="ROOM4">Tiffin</option>
+              <option value="ROOM5">Sandusky</option>
+              <option value="ROOM6">Northwood</option>
+            </select>
+          </div>
+
+          <!-- PRESETS SELECTION -->
+          <div style="background-color: rgba(56, 189, 248, 0.08); padding: 0.6rem; border-radius: 8px; border: 1px dashed #38bdf8;">
+            <label for="preset-select" style="font-size:0.75rem; font-weight:800; color:#38bdf8; text-transform:uppercase;">Preset Game Pack (Optional)</label>
+            <select id="preset-select" style="width:100%; background:#1e293b; color:#38bdf8; padding:8px; border-radius:6px; border:1px solid #475569; font-weight:700; margin-top:4px;">
+              <option value="none" selected>-- None (Use Category & Difficulty Below) --</option>
+            </select>
+          </div>
+
+          <div id="standard-cat-row">
+            <label style="font-size:0.75rem; font-weight:800; color:#38bdf8; text-transform:uppercase;">Category</label>
+            <select id="category-select" style="width:100%; background:#1e293b; color:#38bdf8; padding:8px; border-radius:6px; border:1px solid #475569; font-weight:700; margin-top:4px;">
+              <option value="all" selected>Mixed (All Categories)</option>
+              <option value="bible">Bible Trivia Only</option>
+              <option value="movie">Movie Quotes Only</option>
+              <option value="music">Pop Culture & Music Only</option>
+            </select>
+          </div>
+
+          <div id="standard-diff-row">
+            <label style="font-size:0.75rem; font-weight:800; color:#94a3b8; text-transform:uppercase;">Difficulty</label>
+            <select id="difficulty-select" style="width:100%; background:#1e293b; color:#38bdf8; padding:8px; border-radius:6px; border:1px solid #475569; font-weight:700; margin-top:4px;">
+              <option value="all" selected>Mixed (All Difficulties)</option>
+              <option value="easy">Easy Only</option>
+              <option value="medium">Medium Only</option>
+              <option value="hard">Hard Only</option>
+              <option value="easy_medium">Easy & Medium</option>
+              <option value="medium_hard">Medium & Hard</option>
+            </select>
+          </div>
+
+          <div>
+            <label style="font-size:0.75rem; font-weight:800; color:#94a3b8; text-transform:uppercase;">Number of Questions</label>
+            <select id="question-count" style="width:100%; background:#1e293b; color:#38bdf8; padding:8px; border-radius:6px; border:1px solid #475569; font-weight:700; margin-top:4px;">
+              <option value="5">5 Questions</option>
+              <option value="10" selected>10 Questions</option>
+              <option value="15">15 Questions</option>
+              <option value="20">20 Questions</option>
+              <option value="25">25 Questions</option>
+            </select>
+          </div>
+
+          <div style="border-top: 1px solid #334155; padding-top: 0.75rem;">
+            <label style="font-size:0.75rem; font-weight:800; color:#38bdf8; text-transform:uppercase;">🔄 Auto-Start Next Match</label>
+            <select id="auto-next-mode" style="width:100%; background:#1e293b; color:#38bdf8; padding:8px; border-radius:6px; border:1px solid #475569; font-weight:700; margin-top:4px;">
+              <option value="off" selected>Off (Manual Restart)</option>
+              <option value="same">Auto-Loop: Same Category (Fresh Questions)</option>
+              <option value="playlist">Sequential Playlist: Cycle Pure Categories</option>
+            </select>
+          </div>
         </div>
 
-        <!-- Round End Screen -->
-        <div id="host-round-end" class="hidden">
-          <h1>Round Results</h1>
-
-          <div class="answer-reveal-box">
-            <div class="answer-reveal-label">Correct Answer</div>
-            <div id="host-correct-answer" class="answer-reveal-text">---</div>
+        <div style="text-align: center;">
+          <button id="btn-start" style="background-color: #10b981; color: #fff; font-size: 1.1rem; font-weight: 800; border: none; padding: 0.85rem 2.5rem; border-radius: 10px; cursor: pointer;">Start Game on TV</button>
+          <div class="host-links">
+            <a href="/add.html" class="host-link-btn">+ Add Questions</a>
+            <a href="/manage.html" class="host-link-btn">⚙ Question Editor & Generator</a>
           </div>
-
-          <div class="spotlights-container" id="spotlights-box">
-            <div class="spotlight-card speed" id="card-speed-demon">
-              <div class="spotlight-icon">⚡</div>
-              <div>
-                <div class="spotlight-title">Speed Demon (Fastest)</div>
-                <div class="spotlight-name" id="speed-name">--</div>
-                <div class="spotlight-stat" id="speed-time">Locked in fast!</div>
-              </div>
-            </div>
-            <div class="spotlight-card snail" id="card-snail-award">
-              <div class="spotlight-icon">🐢</div>
-              <div>
-                <div class="spotlight-title">Snail Award (Slowest)</div>
-                <div class="spotlight-name" id="snail-name">--</div>
-                <div class="spotlight-stat" id="snail-time">Taking their time!</div>
-              </div>
-            </div>
-          </div>
-
-          <div class="chart-container">
-            <div class="chart-header">
-              <span>Crowd Answer Breakdown</span>
-              <span id="chart-total-label" style="font-size: 0.8rem; color: #38bdf8;">0 Responses</span>
-            </div>
-            <div id="chart-bars-wrapper" class="chart-bars"></div>
-          </div>
-
-          <p style="color: #f59e0b; font-weight: 600;">Next question loading shortly...</p>
-          <h2>Current Standings</h2>
-          <ul id="host-leaderboard" class="leaderboard"></ul>
-          <button class="btn-danger stop-game-btn">Stop / End Game</button>
         </div>
 
-        <!-- Game Over Screen -->
-        <div id="host-game-over" class="hidden">
-          <h1 style="color: #facc15; font-size: 2.2rem; margin-bottom: 0.25rem;">Champion Crowned!</h1>
-          <p class="question-text">Final Podium Standings</p>
-
-          <div id="podium-area" class="podium-container"></div>
-
-          <!-- TOUGHEST QUESTION STAT CARD -->
-          <div id="toughest-question-card" class="hidden" style="background:#1e293b; border:1px solid #f59e0b; border-radius:12px; padding:1.25rem; margin:1.25rem auto; max-width:550px; text-align:left; box-shadow:0 4px 15px rgba(0,0,0,0.3);">
-            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:0.4rem;">
-              <span style="font-size:0.75rem; font-weight:800; color:#f59e0b; text-transform:uppercase; letter-spacing:0.05em;">🧠 Toughest Question of the Match</span>
-              <span id="toughest-accuracy" style="font-size:0.85rem; font-weight:800; color:#ef4444;">0% Correct</span>
-            </div>
-            <p id="toughest-text" style="font-size:0.95rem; font-weight:700; color:#f8fafc; margin:0 0 0.4rem 0; line-height:1.4;">Question prompt...</p>
-            <div style="font-size:0.85rem; color:#94a3b8;">
-              Correct Answer: <strong id="toughest-answer" style="color:#10b981;">---</strong>
-            </div>
-          </div>
-
-          <!-- AUTO-START COUNTDOWN BANNER -->
-          <div id="auto-start-banner" class="hidden" style="background: rgba(16, 185, 129, 0.15); border: 2px solid #10b981; color: #6ee7b7; padding: 0.85rem 1.25rem; border-radius: 12px; margin: 1.25rem auto; max-width: 500px; font-weight: 800; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 4px 15px rgba(16, 185, 129, 0.2);">
-            <span>⏳ Next Match (<span id="auto-next-cat-label" style="color:#fff;">BIBLE</span>) starting in <strong id="auto-start-timer" style="color:#facc15; font-size:1.2rem;">10</strong>s...</span>
-            <button onclick="cancelAutoStart()" style="background: #dc2626; color: white; border: none; padding: 6px 12px; border-radius: 6px; cursor: pointer; font-weight: 700; font-size: 0.85rem;">Cancel</button>
-          </div>
-
-          <div style="display:flex; justify-content:center; gap:0.75rem; margin: 1.25rem 0;">
-            <button id="btn-export-recap" style="background-color: #10b981; color:#fff; font-weight:700; border:none; padding:0.6rem 1.25rem; border-radius:8px; cursor:pointer;">📥 Export Match Recap (CSV)</button>
-            <button id="btn-restart" style="background-color: #3b82f6; color:#fff; font-weight:700; border:none; padding:0.6rem 1.25rem; border-radius:8px; cursor:pointer;">Back to Lobby</button>
-          </div>
-
-          <h2 style="font-size: 1.1rem; color: #94a3b8; margin-top: 1rem;">Complete Rankings</h2>
-          <ul id="host-final-leaderboard" class="leaderboard"></ul>
-        </div>
+        <h3 style="margin-top: 1.5rem; font-size: 1rem; color: #94a3b8;">Connected Roster</h3>
+        <ul id="host-lobby-players" style="list-style: none; padding: 0; display: grid; grid-template-columns: 1fr 1fr; gap: 0.5rem;"></ul>
       </div>
 
-      <!-- Floating Corner QR Badge (Visible during active gameplay questions so late joiners can scan) -->
-      <div id="floating-qr-container" class="floating-qr-badge hidden">
-        <div class="floating-qr-label">Scan to Join Mid-Game</div>
-        <div id="corner-qrcode"></div>
-      </div>
-
-      <!-- Hall of Fame Tab -->
-      <div id="host-hall-view" class="hidden">
-        <div class="hall-filter-row">
-          <div style="display: flex; align-items: center; gap: 0.5rem; flex-wrap: wrap;">
-            <label for="hall-room-select" style="font-size: 0.85rem; color: #f59e0b; font-weight: 800; text-transform: uppercase;">Leaderboard Scope:</label>
-            <select id="hall-room-select" style="padding: 0.4rem 0.8rem; font-size: 0.9rem; border-color: #f59e0b;">
-              <option value="all" selected>All Rooms (Global)</option>
+      <!-- HALL OF FAME SUB-PANEL -->
+      <div id="host-hall-view" class="hidden" style="margin-top: 1rem;">
+        <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:0.5rem; margin-bottom:1rem;">
+          <div style="display:flex; gap:0.5rem; align-items:center;">
+            <select id="hall-room-select" style="background:#1e293b; color:#f59e0b; border:1px solid #f59e0b; padding:6px 12px; border-radius:6px; font-weight:700;">
+              <option value="all">All Rooms Combined</option>
               <option value="ROOM1">Fremont Main</option>
               <option value="ROOM2">Fremont HS</option>
               <option value="ROOM3">Fremont MS</option>
@@ -746,47 +570,172 @@
               <option value="ROOM5">Sandusky</option>
               <option value="ROOM6">Northwood</option>
             </select>
-
-            <label for="hall-category-select" style="font-size: 0.85rem; color: #94a3b8; font-weight: 700; text-transform: uppercase; margin-left:0.5rem;">Category:</label>
-            <select id="hall-category-select" style="padding: 0.4rem 0.8rem; font-size: 0.9rem;">
-              <option value="all" selected>All Categories (Overall)</option>
+            <select id="hall-category-select" style="background:#1e293b; color:#38bdf8; border:1px solid #475569; padding:6px 12px; border-radius:6px; font-weight:700;">
+              <option value="all" selected>All Categories</option>
               <option value="bible">Bible Trivia</option>
               <option value="movie">Movie Quotes</option>
               <option value="music">Pop Culture & Music</option>
             </select>
           </div>
+          <div style="display:flex; gap:0.5rem;">
+            <button id="btn-show-highscore" class="toggle-pill" style="border-radius:6px;">High Scores</button>
+            <button id="btn-show-career" class="toggle-pill off" style="border-radius:6px;">Career XP</button>
+          </div>
+        </div>
+        <ul id="hall-of-fame-list" style="list-style:none; padding:0; display:flex; flex-direction:column; gap:0.5rem;">
+          <li style="background:#1e293b; padding:10px; border-radius:8px;">Select a filter to view records.</li>
+        </ul>
+      </div>
+    </div>
 
-          <div class="tab-bar" style="margin: 0;">
-            <button id="btn-show-highscore" class="tab-btn active">Top Single-Game</button>
-            <button id="btn-show-career" class="tab-btn">Career Total XP</button>
+    <!-- 1. ZERO-SCROLL TV SCREEN: ACTIVE QUESTION VIEWPORT -->
+    <div id="host-game" class="tv-broadcast-screen hidden">
+      <div>
+        <div style="display: flex; justify-content: space-between; align-items: center;">
+          <span id="host-category" style="background: #1e293b; border: 1px solid #38bdf8; color: #38bdf8; font-weight: 800; padding: 4px 12px; border-radius: 9999px; font-size: 0.85rem;">Category</span>
+          <span id="host-timer" style="font-size: 1.8rem; font-weight: 900; color: #facc15;">15</span>
+        </div>
+        <div class="timer-meter-wrapper">
+          <div id="timer-bar" class="timer-meter-bar"></div>
+        </div>
+      </div>
+
+      <div class="tv-question-box">
+        <div id="host-image-container" class="trivia-image-box hidden">
+          <img id="host-question-image" class="trivia-image" src="" alt="Trivia Visual">
+        </div>
+        <p id="host-question" class="tv-question-text">Question Prompt</p>
+      </div>
+
+      <div id="host-options" class="tv-options-grid"></div>
+
+      <div class="submission-tray">
+        <span id="submission-counter-label" style="font-size: 0.85rem; font-weight: 800; color: #38bdf8;">0 / 0 Answered</span>
+        <div id="submission-chips-container" class="submission-chips"></div>
+        <button class="btn-danger stop-game-btn" style="padding: 4px 10px; font-size: 0.75rem;">End</button>
+      </div>
+    </div>
+
+    <!-- 2. ZERO-SCROLL TV SCREEN: 2-COLUMN ROUND RESULTS & AUTO-SCROLLING LEADERBOARD -->
+    <div id="host-round-end" class="tv-broadcast-screen hidden">
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem;">
+        <h2 style="margin: 0; font-size: 1.25rem; color: #38bdf8;">Round Results</h2>
+        <span style="color: #f59e0b; font-weight: 700; font-size: 0.9rem;">Next Question Loading...</span>
+      </div>
+
+      <div class="tv-results-split">
+        <!-- LEFT COLUMN: CORRECT ANSWER, PODIUM SPOTLIGHTS & VOTE CHART -->
+        <div class="tv-results-left">
+          <div class="answer-reveal-box">
+            <div class="answer-reveal-label">Correct Answer</div>
+            <div id="host-correct-answer" class="answer-reveal-text">---</div>
+          </div>
+
+          <div class="spotlights-container">
+            <div class="spotlight-card speed">
+              <div class="spotlight-icon">⚡</div>
+              <div>
+                <div class="spotlight-title">Speed Demon</div>
+                <div class="spotlight-name" id="speed-name">--</div>
+                <div class="spotlight-stat" id="speed-time">Fastest correct</div>
+              </div>
+            </div>
+            <div class="spotlight-card snail">
+              <div class="spotlight-icon">🐢</div>
+              <div>
+                <div class="spotlight-title">Snail Award</div>
+                <div class="spotlight-name" id="snail-name">--</div>
+                <div class="spotlight-stat" id="snail-time">Taking their time</div>
+              </div>
+            </div>
+          </div>
+
+          <div class="chart-container">
+            <div class="chart-header">
+              <span>Room Response Distribution</span>
+              <span id="chart-total-label" style="color:#38bdf8;">0 Answered</span>
+            </div>
+            <div id="chart-bars-wrapper" class="chart-bars"></div>
           </div>
         </div>
 
-        <div class="hall-of-fame-panel">
-          <ul id="hall-of-fame-list" class="leaderboard">
-            <li>Loading Hall of Fame records...</li>
-          </ul>
+        <!-- RIGHT COLUMN: STANDINGS WITH AUTO-SCROLLING LEADERBOARD -->
+        <div class="tv-results-right">
+          <div style="font-size: 0.85rem; font-weight: 800; color: #94a3b8; text-transform: uppercase; margin-bottom: 0.5rem;">Live Standings</div>
+          <div class="autoscroll-leaderboard-wrapper" id="results-scroll-container">
+            <ul id="host-leaderboard" class="autoscroll-list"></ul>
+          </div>
         </div>
       </div>
+    </div>
+
+    <!-- 3. ZERO-SCROLL TV SCREEN: CHECKPOINT INTERMISSION -->
+    <div id="host-milestone" class="tv-broadcast-screen hidden">
+      <div style="text-align: center;">
+        <h1 style="color: #38bdf8; margin: 0; font-size: 2rem;">Checkpoint Standings</h1>
+        <p id="host-milestone-text" style="color: #f59e0b; font-weight: 800; font-size: 1.1rem; margin: 0.25rem 0;">Match Standings</p>
+      </div>
+
+      <div class="autoscroll-leaderboard-wrapper" id="milestone-scroll-container" style="max-width: 700px; margin: 0 auto; width: 100%;">
+        <ul id="host-milestone-leaderboard" class="autoscroll-list"></ul>
+      </div>
+
+      <div style="text-align: center; color: #94a3b8; font-weight: 700; font-size: 0.9rem;">
+        Resuming match automatically in 10 seconds...
+      </div>
+    </div>
+
+    <!-- 4. ZERO-SCROLL TV SCREEN: MATCH GAME OVER & PODIUM -->
+    <div id="host-game-over" class="tv-broadcast-screen hidden">
+      <div style="text-align: center;">
+        <h1 style="color: #facc15; font-size: 2rem; margin: 0;">👑 Champion Crowned!</h1>
+        <p style="color: #94a3b8; font-weight: 700; margin: 0.2rem 0;">Final Match Podium</p>
+      </div>
+
+      <div id="podium-area" class="podium-container"></div>
+
+      <!-- TOUGHEST QUESTION STAT CARD -->
+      <div id="toughest-question-card" class="hidden" style="background:#1e293b; border:1px solid #f59e0b; border-radius:10px; padding:0.75rem 1.25rem; max-width:650px; margin:0 auto; width:100%;">
+        <div style="display:flex; justify-content:space-between; align-items:center;">
+          <span style="font-size:0.75rem; font-weight:800; color:#f59e0b; text-transform:uppercase;">🧠 Toughest Question</span>
+          <span id="toughest-accuracy" style="font-size:0.8rem; font-weight:800; color:#ef4444;">0% Correct</span>
+        </div>
+        <p id="toughest-text" style="font-size:0.9rem; font-weight:700; margin:0.2rem 0; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">Question</p>
+        <div style="font-size:0.75rem; color:#94a3b8;">Correct: <strong id="toughest-answer" style="color:#10b981;">---</strong></div>
+      </div>
+
+      <!-- AUTO-PLAY NEXT MATCH COUNTDOWN -->
+      <div id="auto-start-banner" class="hidden" style="background: rgba(16, 185, 129, 0.15); border: 2px solid #10b981; color: #6ee7b7; padding: 0.6rem 1.25rem; border-radius: 10px; margin: 0 auto; max-width: 500px; font-weight: 800; display: flex; justify-content: space-between; align-items: center;">
+        <span>⏳ Next Match (<span id="auto-next-cat-label" style="color:#fff;">BIBLE</span>) starts in <strong id="auto-start-timer" style="color:#facc15;">10</strong>s...</span>
+        <button onclick="cancelAutoStart()" style="background:#dc2626; color:#fff; border:none; padding:4px 8px; border-radius:4px; cursor:pointer;">Cancel</button>
+      </div>
+
+      <div style="display: flex; justify-content: center; gap: 0.75rem; margin-top: 0.5rem;">
+        <button id="btn-export-recap" style="background-color: #10b981; color:#fff; font-weight:700; border:none; padding:0.6rem 1.25rem; border-radius:8px; cursor:pointer;">📥 Export Match Recap (CSV)</button>
+        <button id="btn-restart" style="background-color: #3b82f6; color:#fff; font-weight:800; border:none; padding:0.6rem 1.5rem; border-radius:8px; cursor:pointer;">Return to Lobby</button>
+      </div>
+    </div>
+
+    <!-- CORNER QR CODE FOR LATE ARRIVALS -->
+    <div id="floating-qr-container" class="floating-qr-badge hidden">
+      <div class="floating-qr-label">Scan to Join</div>
+      <div id="corner-qrcode"></div>
     </div>
   </div>
 
   <script>
-    // HOST PASSWORD GATE LOGIC
-    const HOST_PASSCODE = "admin"; // Change this to your preferred password
+    // HOST PASSCODE PROTECTION
+    const HOST_PASSCODE = "admin";
 
     function checkPasscode() {
       const inputVal = document.getElementById('passcode-input').value;
-      const errorDiv = document.getElementById('login-error');
-
       if (inputVal === HOST_PASSCODE) {
         document.getElementById('login-overlay').style.display = 'none';
         document.getElementById('host-main-wrapper').style.display = 'block';
         sessionStorage.setItem('hostAuth', 'true');
       } else {
-        errorDiv.textContent = 'Incorrect password. Try again.';
+        document.getElementById('login-error').textContent = 'Incorrect password.';
         document.getElementById('passcode-input').value = '';
-        document.getElementById('passcode-input').focus();
       }
     }
 
@@ -795,13 +744,11 @@
         document.getElementById('login-overlay').style.display = 'none';
         document.getElementById('host-main-wrapper').style.display = 'block';
       }
-      
       document.getElementById('passcode-input').addEventListener('keypress', (e) => {
         if (e.key === 'Enter') checkPasscode();
       });
     });
 
-    // ORIGINAL TRIVIA SCRIPT LOGIC
     const ROOM_NAMES = {
       'ROOM1': 'Fremont Main',
       'ROOM2': 'Fremont HS',
@@ -814,47 +761,14 @@
     let audioCtx = null;
     let isSoundMuted = false;
     let isAutoPilot = true;
-    let lastCompletedMatchData = null;
     let matchQuestionStats = [];
+    let lastCompletedMatchData = null;
 
-    // AUTO-PLAY / PLAYLIST STATE
-    const PLAYLIST_CATEGORIES = ['bible', 'movie', 'music'];
-    let currentPlaylistIndex = 0;
-    let autoStartTimeout = null;
-    let autoStartInterval = null;
-    let activeMatchCategory = 'all';
-
+    // SYNTHESIZED SOUND EFFECTS ENGINE
     function initAudio() {
-      if (!audioCtx) {
-        audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-      }
+      if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
       if (audioCtx.state === 'suspended') audioCtx.resume();
     }
-
-    const btnToggleSound = document.getElementById('btn-toggle-sound');
-    btnToggleSound.addEventListener('click', () => {
-      initAudio();
-      isSoundMuted = !isSoundMuted;
-      if (isSoundMuted) {
-        btnToggleSound.textContent = '🔇 Sound: OFF';
-        btnToggleSound.classList.add('off');
-      } else {
-        btnToggleSound.textContent = '🔊 Sound: ON';
-        btnToggleSound.classList.remove('off');
-      }
-    });
-
-    const btnToggleAutoPilot = document.getElementById('btn-toggle-autopilot');
-    btnToggleAutoPilot.addEventListener('click', () => {
-      isAutoPilot = !isAutoPilot;
-      if (isAutoPilot) {
-        btnToggleAutoPilot.textContent = '⚡ Auto-Pilot: ON';
-        btnToggleAutoPilot.classList.remove('off');
-      } else {
-        btnToggleAutoPilot.textContent = '⏸ Auto-Pilot: OFF';
-        btnToggleAutoPilot.classList.add('off');
-      }
-    });
 
     function playTickSound(isUrgent = false) {
       if (isSoundMuted || !audioCtx) return;
@@ -890,12 +804,8 @@
     function playVictorySound() {
       if (isSoundMuted || !audioCtx) return;
       const fanfare = [
-        { f: 523.25, d: 0.15 },
-        { f: 523.25, d: 0.15 },
-        { f: 523.25, d: 0.15 },
-        { f: 659.25, d: 0.4 },
-        { f: 523.25, d: 0.2 },
-        { f: 783.99, d: 0.7 }
+        { f: 523.25, d: 0.15 }, { f: 523.25, d: 0.15 }, { f: 523.25, d: 0.15 },
+        { f: 659.25, d: 0.4 }, { f: 523.25, d: 0.2 }, { f: 783.99, d: 0.7 }
       ];
       let t = audioCtx.currentTime;
       fanfare.forEach(note => {
@@ -913,8 +823,68 @@
       });
     }
 
-    const socket = io();
+    const btnToggleSound = document.getElementById('btn-toggle-sound');
+    btnToggleSound.addEventListener('click', () => {
+      initAudio();
+      isSoundMuted = !isSoundMuted;
+      btnToggleSound.textContent = isSoundMuted ? '🔇 Sound: OFF' : '🔊 Sound: ON';
+      btnToggleSound.classList.toggle('off', isSoundMuted);
+    });
 
+    const btnToggleAutoPilot = document.getElementById('btn-toggle-autopilot');
+    btnToggleAutoPilot.addEventListener('click', () => {
+      isAutoPilot = !isAutoPilot;
+      btnToggleAutoPilot.textContent = isAutoPilot ? '⚡ Auto-Pilot: ON' : '⏸ Auto-Pilot: OFF';
+      btnToggleAutoPilot.classList.toggle('off', !isAutoPilot);
+    });
+
+    // AUTO-SCROLLING ENGINE FOR LEADERBOARDS
+    let activeScrollIntervals = [];
+
+    function stopAllAutoScroll() {
+      activeScrollIntervals.forEach(clearInterval);
+      activeScrollIntervals = [];
+    }
+
+    function startAutoScroll(containerEl, listEl, speed = 1) {
+      stopAllAutoScroll();
+      if (!containerEl || !listEl) return;
+
+      listEl.style.transform = 'translateY(0px)';
+      let currentScrollY = 0;
+      let pauseCountdown = 60; // Initial pause so top ranks are clearly visible
+
+      const interval = setInterval(() => {
+        const containerHeight = containerEl.clientHeight;
+        const listHeight = listEl.scrollHeight;
+
+        if (listHeight <= containerHeight) return;
+
+        if (pauseCountdown > 0) {
+          pauseCountdown--;
+          return;
+        }
+
+        currentScrollY += speed;
+        listEl.style.transform = `translateY(-${currentScrollY}px)`;
+
+        if (currentScrollY >= (listHeight - containerHeight + 30)) {
+          pauseCountdown = 80;
+          currentScrollY = 0;
+          listEl.style.transform = 'translateY(0px)';
+        }
+      }, 35);
+
+      activeScrollIntervals.push(interval);
+    }
+
+    const PLAYLIST_CATEGORIES = ['bible', 'movie', 'music'];
+    let currentPlaylistIndex = 0;
+    let autoStartTimeout = null;
+    let autoStartInterval = null;
+    let activeMatchCategory = 'all';
+
+    const socket = io();
     const urlParams = new URLSearchParams(window.location.search);
     let currentRoomCode = (urlParams.get('room') || 'ROOM1').toUpperCase();
 
@@ -929,24 +899,10 @@
     function renderQRCode(roomCode) {
       qrcodeContainer.innerHTML = '';
       const joinUrl = `${window.location.origin}/?room=${roomCode}`;
-      new QRCode(qrcodeContainer, {
-        text: joinUrl,
-        width: 160,
-        height: 160,
-        colorDark: "#38bdf8",
-        colorLight: "#0f172a",
-        correctLevel: QRCode.CorrectLevel.M
-      });
+      new QRCode(qrcodeContainer, { text: joinUrl, width: 140, height: 140, colorDark: "#38bdf8", colorLight: "#0f172a" });
 
       cornerQrcodeContainer.innerHTML = '';
-      new QRCode(cornerQrcodeContainer, {
-        text: joinUrl,
-        width: 90,
-        height: 90,
-        colorDark: "#38bdf8",
-        colorLight: "#0f172a",
-        correctLevel: QRCode.CorrectLevel.M
-      });
+      new QRCode(cornerQrcodeContainer, { text: joinUrl, width: 75, height: 75, colorDark: "#38bdf8", colorLight: "#0f172a" });
 
       const displayName = ROOM_NAMES[roomCode] || roomCode;
       qrRoomLabel.textContent = displayName;
@@ -959,44 +915,13 @@
       renderQRCode(currentRoomCode);
       socket.emit('host:join_room', currentRoomCode);
     }
-
-    hostRoomSelect.addEventListener('change', (e) => {
-      switchRoom(e.target.value);
-    });
-
+    hostRoomSelect.addEventListener('change', (e) => switchRoom(e.target.value));
     switchRoom(currentRoomCode);
 
-    const hostLobbyView = document.getElementById('host-lobby-view');
-    const hostHallView = document.getElementById('host-hall-view');
-    const tabBtnLobby = document.getElementById('tab-btn-lobby');
-    const tabBtnHall = document.getElementById('tab-btn-hall');
-
-    const hallRoomSelect = document.getElementById('hall-room-select');
-    const hallCategorySelect = document.getElementById('hall-category-select');
-    const btnShowHighScore = document.getElementById('btn-show-highscore');
-    const btnShowCareer = document.getElementById('btn-show-career');
-    const hallOfFameList = document.getElementById('hall-of-fame-list');
-
+    // PRESETS LOADING
     const presetSelect = document.getElementById('preset-select');
     const standardCatRow = document.getElementById('standard-cat-row');
     const standardDiffRow = document.getElementById('standard-diff-row');
-
-    const autoNextMode = document.getElementById('auto-next-mode');
-    const playlistOrderContainer = document.getElementById('playlist-order-container');
-    const autoStartBanner = document.getElementById('auto-start-banner');
-    const autoStartTimer = document.getElementById('auto-start-timer');
-    const autoNextCatLabel = document.getElementById('auto-next-cat-label');
-
-    autoNextMode.addEventListener('change', () => {
-      if (autoNextMode.value === 'playlist') {
-        playlistOrderContainer.classList.remove('hidden');
-      } else {
-        playlistOrderContainer.classList.add('hidden');
-      }
-    });
-
-    let hallData = { highScores: [], careerScores: [] };
-    let currentHallTab = 'high';
 
     async function fetchLobbyPresets() {
       try {
@@ -1022,43 +947,34 @@
       standardDiffRow.style.opacity = isPreset ? '0.4' : '1';
     });
 
+    // HALL OF FAME NAVIGATION & LOADING
+    const hostLobbyView = document.getElementById('host-lobby-view');
+    const hostLobby = document.getElementById('host-lobby');
+    const hostHallView = document.getElementById('host-hall-view');
+    const tabBtnLobby = document.getElementById('tab-btn-lobby');
+    const tabBtnHall = document.getElementById('tab-btn-hall');
+    const hallRoomSelect = document.getElementById('hall-room-select');
+    const hallCategorySelect = document.getElementById('hall-category-select');
+    const btnShowHighScore = document.getElementById('btn-show-highscore');
+    const btnShowCareer = document.getElementById('btn-show-career');
+    const hallOfFameList = document.getElementById('hall-of-fame-list');
+
+    let hallData = { highScores: [], careerScores: [] };
+    let currentHallTab = 'high';
+
     tabBtnLobby.addEventListener('click', () => {
-      tabBtnLobby.classList.add('active');
-      tabBtnHall.classList.remove('active');
-      hostLobbyView.classList.remove('hidden');
+      tabBtnLobby.classList.remove('off');
+      tabBtnHall.classList.add('off');
+      hostLobby.classList.remove('hidden');
       hostHallView.classList.add('hidden');
-      fetchLobbyPresets();
     });
 
     tabBtnHall.addEventListener('click', () => {
-      tabBtnHall.classList.add('active');
-      tabBtnLobby.classList.remove('active');
+      tabBtnHall.classList.remove('off');
+      tabBtnLobby.classList.add('off');
+      hostLobby.classList.add('hidden');
       hostHallView.classList.remove('hidden');
-      hostLobbyView.classList.add('hidden');
       loadHallOfFame();
-    });
-
-    hallRoomSelect.addEventListener('change', () => {
-      const isGlobal = hallRoomSelect.value === 'all';
-      hallCategorySelect.disabled = !isGlobal;
-      hallCategorySelect.style.opacity = isGlobal ? '1' : '0.4';
-      loadHallOfFame();
-    });
-
-    hallCategorySelect.addEventListener('change', loadHallOfFame);
-
-    btnShowHighScore.addEventListener('click', () => {
-      btnShowHighScore.classList.add('active');
-      btnShowCareer.classList.remove('active');
-      currentHallTab = 'high';
-      renderHallList();
-    });
-
-    btnShowCareer.addEventListener('click', () => {
-      btnShowCareer.classList.add('active');
-      btnShowHighScore.classList.remove('active');
-      currentHallTab = 'career';
-      renderHallList();
     });
 
     async function loadHallOfFame() {
@@ -1069,7 +985,7 @@
         hallData = await res.json();
         renderHallList();
       } catch (e) {
-        hallOfFameList.innerHTML = '<li>Unable to load Hall of Fame.</li>';
+        hallOfFameList.innerHTML = '<li style="background:#1e293b; padding:10px; border-radius:8px;">Unable to load Hall of Fame.</li>';
       }
     }
 
@@ -1077,27 +993,40 @@
       hallOfFameList.innerHTML = '';
       const list = currentHallTab === 'high' ? hallData.highScores : hallData.careerScores;
       if (!list || list.length === 0) {
-        hallOfFameList.innerHTML = '<li>No records logged for this room/category yet.</li>';
+        hallOfFameList.innerHTML = '<li style="background:#1e293b; padding:10px; border-radius:8px;">No records logged yet.</li>';
         return;
       }
-      list.forEach((p, idx) => {
+      list.slice(0, 50).forEach((p, idx) => {
         const li = document.createElement('li');
-        li.innerHTML = `<span>#${idx + 1} ${p.avatar || '🚀'} ${p.username} (${p.games_played} games)</span><strong style="color:#38bdf8;">${Number(p.score).toLocaleString()} pts</strong>`;
+        li.style.cssText = 'background:#1e293b; padding:10px 14px; border-radius:8px; display:flex; justify-content:space-between; align-items:center; font-weight:700;';
+        li.innerHTML = `<span>#${idx+1} ${p.avatar || '🚀'} ${p.username} (${p.games_played || 1} games)</span><strong style="color:#38bdf8;">${Number(p.score).toLocaleString()} pts</strong>`;
         hallOfFameList.appendChild(li);
       });
     }
 
-    const hostLobby = document.getElementById('host-lobby');
+    btnShowHighScore.addEventListener('click', () => {
+      btnShowHighScore.classList.remove('off');
+      btnShowCareer.classList.add('off');
+      currentHallTab = 'high';
+      renderHallList();
+    });
+
+    btnShowCareer.addEventListener('click', () => {
+      btnShowCareer.classList.remove('off');
+      btnShowHighScore.classList.add('off');
+      currentHallTab = 'career';
+      renderHallList();
+    });
+
+    hallRoomSelect.addEventListener('change', loadHallOfFame);
+    hallCategorySelect.addEventListener('change', loadHallOfFame);
+
+    // IN-GAME SCREEN ELEMENTS
     const hostGame = document.getElementById('host-game');
-    const hostMilestone = document.getElementById('host-milestone');
-    const hostMilestoneText = document.getElementById('host-milestone-text');
-    const hostMilestoneLeaderboard = document.getElementById('host-milestone-leaderboard');
     const hostRoundEnd = document.getElementById('host-round-end');
+    const hostMilestone = document.getElementById('host-milestone');
     const hostGameOver = document.getElementById('host-game-over');
-    const podiumArea = document.getElementById('podium-area');
-    const playerCount = document.getElementById('player-count');
-    const hostLobbyPlayers = document.getElementById('host-lobby-players');
-    const hostCategory = document.getElementById('host-category');
+
     const hostTimer = document.getElementById('host-timer');
     const hostQuestion = document.getElementById('host-question');
     const hostImageContainer = document.getElementById('host-image-container');
@@ -1105,17 +1034,19 @@
     const hostOptions = document.getElementById('host-options');
     const hostCorrectAnswer = document.getElementById('host-correct-answer');
     const hostLeaderboard = document.getElementById('host-leaderboard');
-    const hostFinalLeaderboard = document.getElementById('host-final-leaderboard');
+    const resultsScrollContainer = document.getElementById('results-scroll-container');
+    const milestoneScrollContainer = document.getElementById('milestone-scroll-container');
+    const hostMilestoneLeaderboard = document.getElementById('host-milestone-leaderboard');
+    const podiumArea = document.getElementById('podium-area');
 
     const speedName = document.getElementById('speed-name');
     const speedTime = document.getElementById('speed-time');
     const snailName = document.getElementById('snail-name');
     const snailTime = document.getElementById('snail-time');
-
+    const chartBarsWrapper = document.getElementById('chart-bars-wrapper');
+    const chartTotalLabel = document.getElementById('chart-total-label');
     const submissionCounterLabel = document.getElementById('submission-counter-label');
     const submissionChipsContainer = document.getElementById('submission-chips-container');
-    const chartTotalLabel = document.getElementById('chart-total-label');
-    const chartBarsWrapper = document.getElementById('chart-bars-wrapper');
 
     const btnStart = document.getElementById('btn-start');
     const btnRestart = document.getElementById('btn-restart');
@@ -1123,22 +1054,17 @@
     const categorySelect = document.getElementById('category-select');
     const difficultySelect = document.getElementById('difficulty-select');
     const questionCountSelect = document.getElementById('question-count');
-
-    const toughestCard = document.getElementById('toughest-question-card');
-    const toughestAccuracy = document.getElementById('toughest-accuracy');
-    const toughestText = document.getElementById('toughest-text');
-    const toughestAnswer = document.getElementById('toughest-answer');
+    const autoNextMode = document.getElementById('auto-next-mode');
+    const autoStartBanner = document.getElementById('auto-start-banner');
+    const autoStartTimer = document.getElementById('auto-start-timer');
+    const autoNextCatLabel = document.getElementById('auto-next-cat-label');
 
     btnStart.addEventListener('click', () => {
       cancelAutoStart();
       matchQuestionStats = [];
       initAudio();
-
       activeMatchCategory = categorySelect.value;
-      if (autoNextMode.value === 'playlist') {
-        currentPlaylistIndex = 0;
-        activeMatchCategory = PLAYLIST_CATEGORIES[0];
-      }
+      if (autoNextMode.value === 'playlist') activeMatchCategory = PLAYLIST_CATEGORIES[0];
 
       socket.emit('host:start_game', {
         roomCode: currentRoomCode,
@@ -1149,22 +1075,12 @@
       });
     });
 
-    document.querySelectorAll('.stop-game-btn').forEach(btn => {
-      btn.addEventListener('click', () => {
-        cancelAutoStart();
-        const displayName = ROOM_NAMES[currentRoomCode] || currentRoomCode;
-        if (confirm(`End match in ${displayName}? Final scores will be saved.`)) {
-          socket.emit('host:stop_game', currentRoomCode);
-        }
-      });
-    });
-
     btnRestart.addEventListener('click', () => {
       cancelAutoStart();
+      stopAllAutoScroll();
       hostGameOver.classList.add('hidden');
-      hostLobby.classList.remove('hidden');
+      hostLobbyView.classList.remove('hidden');
       floatingQrContainer.classList.add('hidden');
-      toughestCard.classList.add('hidden');
       fetchLobbyPresets();
     });
 
@@ -1185,16 +1101,11 @@
       }
       activeMatchCategory = nextCategory;
 
-      const catDisplayMap = { 'bible': 'BIBLE TRIVIA', 'movie': 'MOVIE QUOTES', 'music': 'POP CULTURE', 'all': 'MIXED' };
-      autoNextCatLabel.textContent = catDisplayMap[nextCategory] || nextCategory.toUpperCase();
+      autoNextCatLabel.textContent = nextCategory.toUpperCase();
       autoStartBanner.classList.remove('hidden');
 
       let seconds = 10;
       autoStartTimer.textContent = seconds;
-
-      if (autoStartInterval) clearInterval(autoStartInterval);
-      if (autoStartTimeout) clearTimeout(autoStartTimeout);
-
       autoStartInterval = setInterval(() => {
         seconds--;
         autoStartTimer.textContent = seconds;
@@ -1215,19 +1126,17 @@
     }
 
     socket.on('game:player_list', (players) => {
-      playerCount.textContent = players.length;
-      hostLobbyPlayers.innerHTML = '';
+      document.getElementById('player-count').textContent = players.length;
+      const list = document.getElementById('host-lobby-players');
+      list.innerHTML = '';
       players.forEach(p => {
         const li = document.createElement('li');
-        li.style.display = 'flex';
-        li.style.justifyContent = 'space-between';
-        li.style.alignItems = 'center';
-
+        li.style.cssText = 'background:#1e293b; padding:8px 12px; border-radius:6px; display:flex; justify-content:space-between; align-items:center;';
         li.innerHTML = `
           <span>${p.avatar || '🚀'} ${p.name}</span>
           <button class="btn-kick" onclick="kickPlayer('${p.name}')">Kick</button>
         `;
-        hostLobbyPlayers.appendChild(li);
+        list.appendChild(li);
       });
     });
 
@@ -1240,15 +1149,16 @@
 
     socket.on('game:new_question', (data) => {
       cancelAutoStart();
-      hostLobby.classList.add('hidden');
-      hostMilestone.classList.add('hidden');
+      stopAllAutoScroll();
+
+      hostLobbyView.classList.add('hidden');
       hostRoundEnd.classList.add('hidden');
+      hostMilestone.classList.add('hidden');
       hostGameOver.classList.add('hidden');
       hostGame.classList.remove('hidden');
-      
       floatingQrContainer.classList.remove('hidden');
 
-      hostCategory.textContent = `${data.category} (${data.questionNumber}/${data.totalQuestions})`;
+      document.getElementById('host-category').textContent = `${data.category} (${data.questionNumber}/${data.totalQuestions})`;
       hostTimer.textContent = data.timeLeft;
       hostQuestion.textContent = data.question;
 
@@ -1264,44 +1174,36 @@
       }
 
       hostOptions.innerHTML = '';
-      data.options.forEach(opt => {
-        const div = document.createElement('button');
-        div.textContent = opt;
-        div.disabled = true;
+      data.options.forEach((opt, idx) => {
+        const div = document.createElement('div');
+        div.className = 'tv-option-btn';
+        div.textContent = `${String.fromCharCode(65 + idx)}. ${opt}`;
         hostOptions.appendChild(div);
       });
 
       submissionChipsContainer.innerHTML = '';
       const list = data.connectedPlayers || [];
       submissionCounterLabel.textContent = `0 / ${list.length} Answered`;
-
       list.forEach(p => {
         const chip = document.createElement('div');
         chip.className = 'sub-chip';
         chip.id = `sub-chip-${p.name}`;
-        chip.innerHTML = `<span>○</span><span>${p.avatar || '🚀'} ${p.name}</span>`;
+        chip.textContent = `${p.avatar || '🚀'} ${p.name}`;
         submissionChipsContainer.appendChild(chip);
       });
     });
 
     socket.on('game:submission_update', (data) => {
       const chip = document.getElementById(`sub-chip-${data.username}`);
-      if (chip) {
-        chip.classList.add('answered');
-        chip.innerHTML = `<span>✓</span><span>${data.avatar || '🚀'} ${data.username}</span>`;
-      }
+      if (chip) chip.classList.add('answered');
       submissionCounterLabel.textContent = `${data.submittedCount} / ${data.totalCount} Answered`;
     });
 
     socket.on('game:timer_tick', (data) => {
       const timeLeft = typeof data === 'object' ? data.timeLeft : data;
       const totalDuration = typeof data === 'object' ? data.duration : 15;
-
       hostTimer.textContent = timeLeft;
-
-      const pct = Math.max(0, (timeLeft / totalDuration) * 100);
-      timerBar.style.width = `${pct}%`;
-
+      timerBar.style.width = `${Math.max(0, (timeLeft / totalDuration) * 100)}%`;
       if (timeLeft <= 3) {
         timerBar.className = 'timer-meter-bar danger';
         playTickSound(true);
@@ -1318,64 +1220,43 @@
       hostGame.classList.add('hidden');
       hostMilestone.classList.add('hidden');
       hostRoundEnd.classList.remove('hidden');
-      
       floatingQrContainer.classList.add('hidden');
 
       playRevealSound();
       hostCorrectAnswer.textContent = data.correctAnswerText;
 
       const total = data.totalResponders || 0;
-      const correctCount = (data.distribution && typeof data.correctAnswer === 'number')
-        ? (data.distribution[data.correctAnswer] || 0)
-        : 0;
+      const correctCount = (data.distribution && typeof data.correctAnswer === 'number') ? (data.distribution[data.correctAnswer] || 0) : 0;
       const accuracyPct = total > 0 ? Math.round((correctCount / total) * 100) : 0;
 
-      matchQuestionStats.push({
-        question: hostQuestion.textContent,
-        answer: data.correctAnswerText,
-        accuracy: accuracyPct
-      });
+      matchQuestionStats.push({ question: hostQuestion.textContent, answer: data.correctAnswerText, accuracy: accuracyPct });
 
-      if (data.fastestPlayer) {
-        speedName.textContent = `${data.fastestPlayer.avatar || '⚡'} ${data.fastestPlayer.name}`;
-        speedTime.textContent = `Answered in ${data.fastestPlayer.time}s!`;
-      } else {
-        speedName.textContent = 'None';
-        speedTime.textContent = 'No correct answers';
-      }
-
-      if (data.slowestPlayer) {
-        snailName.textContent = `${data.slowestPlayer.avatar || '🐢'} ${data.slowestPlayer.name}`;
-        snailTime.textContent = `Took ${data.slowestPlayer.time}s to answer`;
-      } else {
-        snailName.textContent = 'None';
-        snailTime.textContent = 'No submissions';
-      }
+      speedName.textContent = data.fastestPlayer ? `${data.fastestPlayer.avatar || '⚡'} ${data.fastestPlayer.name}` : 'None';
+      speedTime.textContent = data.fastestPlayer ? `${data.fastestPlayer.time}s` : '--';
+      snailName.textContent = data.slowestPlayer ? `${data.slowestPlayer.avatar || '🐢'} ${data.slowestPlayer.name}` : 'None';
+      snailTime.textContent = data.slowestPlayer ? `${data.slowestPlayer.time}s` : '--';
 
       renderDistributionChart(data);
 
+      // Render & Start Auto-Scrolling Standings on TV
       hostLeaderboard.innerHTML = '';
-      data.leaderboard.forEach(p => {
+      data.leaderboard.forEach((p, idx) => {
         const li = document.createElement('li');
-        const streakTag = p.streak >= 2 ? `<span style="color:#f59e0b; margin-left:0.4rem; font-size:0.8rem;">🔥 ${p.streak}</span>` : '';
-
         let deltaHtml = '<span class="delta-badge delta-same">• 0</span>';
         if (p.rankDelta > 0) deltaHtml = `<span class="delta-badge delta-up">▲ +${p.rankDelta}</span>`;
         else if (p.rankDelta < 0) deltaHtml = `<span class="delta-badge delta-down">▼ ${p.rankDelta}</span>`;
 
-        li.innerHTML = `
-          <span>${p.avatar || '🚀'} ${p.name}${streakTag}${deltaHtml}</span>
-          <strong>${p.score} pts</strong>
-        `;
+        li.innerHTML = `<span>#${idx + 1} ${p.avatar || '🚀'} ${p.name} ${deltaHtml}</span><strong style="color:#38bdf8;">${p.score} pts</strong>`;
         hostLeaderboard.appendChild(li);
       });
+
+      startAutoScroll(resultsScrollContainer, hostLeaderboard, 1);
     });
 
     function renderDistributionChart(data) {
       chartBarsWrapper.innerHTML = '';
       const total = data.totalResponders || 0;
-      chartTotalLabel.textContent = `${total} ${total === 1 ? 'Player' : 'Players'} Answered`;
-
+      chartTotalLabel.textContent = `${total} Answered`;
       if (!data.options || !data.distribution) return;
 
       data.options.forEach((optText, idx) => {
@@ -1387,19 +1268,14 @@
         row.className = 'chart-row';
         row.innerHTML = `
           <div class="chart-row-meta">
-            <span style="${isCorrect ? 'color: #10b981; font-weight: 800;' : ''}">${isCorrect ? '✓ ' : ''}${optText}</span>
+            <span style="${isCorrect ? 'color: #10b981; font-weight:800;' : ''}">${isCorrect ? '✓ ' : ''}${optText}</span>
             <span style="color: #94a3b8;">${count} (${pct}%)</span>
           </div>
           <div class="chart-track">
-            <div class="chart-fill ${isCorrect ? 'correct-bar' : 'incorrect-bar'}" style="width: 0%;"></div>
+            <div class="chart-fill ${isCorrect ? 'correct-bar' : 'incorrect-bar'}" style="width: ${Math.max(pct, count > 0 ? 8 : 0)}%;"></div>
           </div>
         `;
         chartBarsWrapper.appendChild(row);
-
-        setTimeout(() => {
-          const fill = row.querySelector('.chart-fill');
-          if (fill) fill.style.width = `${Math.max(pct, count > 0 ? 8 : 0)}%`;
-        }, 50);
       });
     }
 
@@ -1407,19 +1283,19 @@
       hostRoundEnd.classList.add('hidden');
       hostGame.classList.add('hidden');
       hostMilestone.classList.remove('hidden');
-      floatingQrContainer.classList.add('hidden');
 
-      hostMilestoneText.textContent = `Standings After ${data.questionNumber} Questions`;
       hostMilestoneLeaderboard.innerHTML = '';
       data.leaderboard.forEach((p, idx) => {
         const li = document.createElement('li');
-        const streakTag = p.streak >= 2 ? `<span style="color:#f59e0b; margin-left:0.5rem; font-size:0.8rem;">🔥 ${p.streak}</span>` : '';
-        li.innerHTML = `<span>#${idx + 1} ${p.avatar || '🚀'} ${p.name}${streakTag}</span><strong>${p.score} pts</strong>`;
+        li.innerHTML = `<span>#${idx + 1} ${p.avatar || '🚀'} ${p.name}</span><strong style="color:#38bdf8;">${p.score} pts</strong>`;
         hostMilestoneLeaderboard.appendChild(li);
       });
+
+      startAutoScroll(milestoneScrollContainer, hostMilestoneLeaderboard, 1.2);
     });
 
     socket.on('game:over', (data) => {
+      stopAllAutoScroll();
       hostGame.classList.add('hidden');
       hostMilestone.classList.add('hidden');
       hostRoundEnd.classList.add('hidden');
@@ -1432,39 +1308,33 @@
       const leaderboard = Array.isArray(data) ? data : data.leaderboard;
       renderPodium(leaderboard);
 
+      const toughestCard = document.getElementById('toughest-question-card');
       if (matchQuestionStats.length > 0) {
         matchQuestionStats.sort((a, b) => a.accuracy - b.accuracy);
         const hardest = matchQuestionStats[0];
-        toughestAccuracy.textContent = `${hardest.accuracy}% Correct`;
-        toughestText.textContent = hardest.question;
-        toughestAnswer.textContent = hardest.answer;
+        document.getElementById('toughest-accuracy').textContent = `${hardest.accuracy}% Correct`;
+        document.getElementById('toughest-text').textContent = hardest.question;
+        document.getElementById('toughest-answer').textContent = hardest.answer;
         toughestCard.classList.remove('hidden');
       } else {
         toughestCard.classList.add('hidden');
       }
 
-      hostFinalLeaderboard.innerHTML = '';
-      leaderboard.forEach((p, idx) => {
-        const li = document.createElement('li');
-        li.innerHTML = `<span>#${idx + 1} ${p.avatar || '🚀'} ${p.name}</span><strong>${p.score} pts</strong>`;
-        hostFinalLeaderboard.appendChild(li);
-      });
+      if (typeof confetti === 'function') {
+        confetti({ particleCount: 120, spread: 80, origin: { y: 0.6 } });
+      }
 
-      triggerVictoryConfetti();
-
-      // Trigger the automatic countdown if auto-loop/playlist is active
       handleAutoPlayCountdown();
     });
 
+    // CSV MATCH RECAP EXPORT
     btnExportRecap.addEventListener('click', () => {
       if (!lastCompletedMatchData || !lastCompletedMatchData.leaderboard) {
         return alert('No match data available to export.');
       }
-
       const rows = [
         ['Rank', 'Avatar', 'Username', 'Score (PTS)', 'Final Streak', 'Room', 'Category', 'Timestamp']
       ];
-
       const roomCode = lastCompletedMatchData.roomCode || currentRoomCode;
       const roomDisplayName = ROOM_NAMES[roomCode] || lastCompletedMatchData.roomName || roomCode;
       const cat = lastCompletedMatchData.category || activeMatchCategory || 'Mixed';
@@ -1496,70 +1366,23 @@
     function renderPodium(players) {
       podiumArea.innerHTML = '';
       if (!players || players.length === 0) return;
-
       const p1 = players[0] || null;
       const p2 = players[1] || null;
       const p3 = players[2] || null;
 
       let html = '';
-      if (p2) {
-        html += `
-          <div class="podium-slot second">
-            <div class="podium-avatar">${p2.avatar || '🥈'}</div>
-            <div class="podium-name">${p2.name}</div>
-            <div class="podium-score">${Number(p2.score).toLocaleString()} pts</div>
-            <div class="podium-step">2</div>
-          </div>
-        `;
-      }
-      if (p1) {
-        html += `
-          <div class="podium-slot first">
-            <div class="podium-avatar">${p1.avatar || '👑'}</div>
-            <div class="podium-name">${p1.name}</div>
-            <div class="podium-score">${Number(p1.score).toLocaleString()} pts</div>
-            <div class="podium-step">1</div>
-          </div>
-        `;
-      }
-      if (p3) {
-        html += `
-          <div class="podium-slot third">
-            <div class="podium-avatar">${p3.avatar || '🥉'}</div>
-            <div class="podium-name">${p3.name}</div>
-            <div class="podium-score">${Number(p3.score).toLocaleString()} pts</div>
-            <div class="podium-step">3</div>
-          </div>
-        `;
-      }
+      if (p2) html += `<div class="podium-slot second"><div class="podium-avatar">${p2.avatar || '🥈'}</div><div class="podium-name">${p2.name}</div><div class="podium-score">${p2.score} pts</div><div class="podium-step">2</div></div>`;
+      if (p1) html += `<div class="podium-slot first"><div class="podium-avatar">${p1.avatar || '👑'}</div><div class="podium-name">${p1.name}</div><div class="podium-score">${p1.score} pts</div><div class="podium-step">1</div></div>`;
+      if (p3) html += `<div class="podium-slot third"><div class="podium-avatar">${p3.avatar || '🥉'}</div><div class="podium-name">${p3.name}</div><div class="podium-score">${p3.score} pts</div><div class="podium-step">3</div></div>`;
       podiumArea.innerHTML = html;
     }
 
-    function triggerVictoryConfetti() {
-      if (typeof confetti !== 'function') return;
-
-      const duration = 3.5 * 1000;
-      const end = Date.now() + duration;
-
-      (function frame() {
-        confetti({
-          particleCount: 4,
-          angle: 60,
-          spread: 60,
-          origin: { x: 0, y: 0.65 },
-          colors: ['#facc15', '#38bdf8', '#10b981', '#f43f5e']
-        });
-        confetti({
-          particleCount: 4,
-          angle: 120,
-          spread: 60,
-          origin: { x: 1, y: 0.65 },
-          colors: ['#facc15', '#38bdf8', '#10b981', '#f43f5e']
-        });
-
-        if (Date.now() < end) requestAnimationFrame(frame);
-      }());
-    }
+    document.querySelectorAll('.stop-game-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        cancelAutoStart();
+        if (confirm('End match?')) socket.emit('host:stop_game', currentRoomCode);
+      });
+    });
   </script>
 </body>
 </html>
