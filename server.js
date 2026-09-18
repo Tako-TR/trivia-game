@@ -32,12 +32,16 @@ async function initDb() {
         username VARCHAR(30) PRIMARY KEY,
         pin VARCHAR(10) NOT NULL,
         avatar VARCHAR(10) DEFAULT '🚀',
+        badge VARCHAR(10) DEFAULT '',
         high_score INT DEFAULT 0,
         career_score INT DEFAULT 0,
         games_played INT DEFAULT 0,
+        achievements TEXT[] DEFAULT ARRAY[]::TEXT[],
         updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
       );
       ALTER TABLE players ADD COLUMN IF NOT EXISTS avatar VARCHAR(10) DEFAULT '🚀';
+      ALTER TABLE players ADD COLUMN IF NOT EXISTS badge VARCHAR(10) DEFAULT '';
+      ALTER TABLE players ADD COLUMN IF NOT EXISTS achievements TEXT[] DEFAULT ARRAY[]::TEXT[];
 
       CREATE TABLE IF NOT EXISTS room_scores (
         username VARCHAR(30) NOT NULL,
@@ -321,7 +325,7 @@ app.post('/api/players/list', async (req, res) => {
   }
 
   try {
-    const result = await pool.query('SELECT username, avatar, high_score, career_score, games_played, updated_at FROM players ORDER BY career_score DESC;');
+    const result = await pool.query('SELECT username, avatar, badge, high_score, career_score, games_played, achievements, updated_at FROM players ORDER BY career_score DESC;');
     res.json({ success: true, players: result.rows });
   } catch (err) {
     res.status(500).json({ success: false, message: err.message });
@@ -350,7 +354,7 @@ app.post('/api/players/action', async (req, res) => {
           if (k.startsWith(`${cleanUser}:`)) memoryCategoryScores[k].high_score = 0;
         });
       }
-      return res.json({ success: true, message: `High scores reset for ${cleanUser}. Career XP preserved.` });
+      return res.json({ success: true, message: `High scores reset for ${cleanUser}. Career XP and badges preserved.` });
     } else if (action === 'delete_ban') {
       if (pool) {
         await pool.query('DELETE FROM players WHERE username = $1;', [cleanUser]);
@@ -396,7 +400,7 @@ app.post('/api/players/bulk', async (req, res) => {
       Object.keys(memoryCategoryScores).forEach(k => {
         memoryCategoryScores[k].high_score = 0;
       });
-      return res.json({ success: true, message: 'Leaderboards reset to 0! All player career XP and avatar unlocks have been preserved.' });
+      return res.json({ success: true, message: 'Leaderboards reset to 0! All player career XP, unlocks, and badges have been preserved.' });
     } else if (action === 'wipe_all_players') {
       if (pool) {
         await pool.query('TRUNCATE TABLE category_scores;');
@@ -467,6 +471,7 @@ app.get('/api/leaderboards', async (req, res) => {
       .map(p => ({
         username: p.username,
         avatar: (memoryPlayers[p.username] || {}).avatar || p.avatar || '🚀',
+        badge: (memoryPlayers[p.username] || {}).badge || p.badge || '',
         score: p.high_score,
         games_played: p.games_played || 1
       }));
@@ -477,6 +482,7 @@ app.get('/api/leaderboards', async (req, res) => {
       .map(p => ({
         username: p.username,
         avatar: (memoryPlayers[p.username] || {}).avatar || p.avatar || '🚀',
+        badge: (memoryPlayers[p.username] || {}).badge || p.badge || '',
         score: p.career_score,
         games_played: p.games_played || 1
       }));
@@ -492,14 +498,14 @@ app.get('/api/leaderboards', async (req, res) => {
     if (category !== 'all') {
       if (roomScope === 'ALL') {
         highQuery = `
-          SELECT p.username, p.avatar, c.high_score AS score, c.games_played 
+          SELECT p.username, p.avatar, p.badge, c.high_score AS score, c.games_played 
           FROM category_scores c 
           JOIN players p ON c.username = p.username 
           WHERE c.category = $1 
           ORDER BY c.high_score DESC LIMIT 100;
         `;
         careerQuery = `
-          SELECT p.username, p.avatar, c.career_score AS score, c.games_played 
+          SELECT p.username, p.avatar, p.badge, c.career_score AS score, c.games_played 
           FROM category_scores c 
           JOIN players p ON c.username = p.username 
           WHERE c.category = $1 
@@ -508,7 +514,7 @@ app.get('/api/leaderboards', async (req, res) => {
         params = [category];
       } else {
         highQuery = `
-          SELECT p.username, p.avatar, c.high_score AS score, c.games_played 
+          SELECT p.username, p.avatar, p.badge, c.high_score AS score, c.games_played 
           FROM category_scores c 
           JOIN players p ON c.username = p.username 
           JOIN room_scores r ON r.username = p.username 
@@ -516,7 +522,7 @@ app.get('/api/leaderboards', async (req, res) => {
           ORDER BY c.high_score DESC LIMIT 100;
         `;
         careerQuery = `
-          SELECT p.username, p.avatar, c.career_score AS score, c.games_played 
+          SELECT p.username, p.avatar, p.badge, c.career_score AS score, c.games_played 
           FROM category_scores c 
           JOIN players p ON c.username = p.username 
           JOIN room_scores r ON r.username = p.username 
@@ -527,19 +533,19 @@ app.get('/api/leaderboards', async (req, res) => {
       }
     } else {
       if (roomScope === 'ALL') {
-        highQuery = `SELECT username, avatar, high_score AS score, games_played FROM players ORDER BY high_score DESC LIMIT 100;`;
-        careerQuery = `SELECT username, avatar, career_score AS score, games_played FROM players ORDER BY career_score DESC LIMIT 100;`;
+        highQuery = `SELECT username, avatar, badge, high_score AS score, games_played FROM players ORDER BY high_score DESC LIMIT 100;`;
+        careerQuery = `SELECT username, avatar, badge, career_score AS score, games_played FROM players ORDER BY career_score DESC LIMIT 100;`;
         params = [];
       } else {
         highQuery = `
-          SELECT r.username, p.avatar, r.high_score AS score, r.games_played 
+          SELECT r.username, p.avatar, p.badge, r.high_score AS score, r.games_played 
           FROM room_scores r 
           LEFT JOIN players p ON r.username = p.username 
           WHERE r.room_code = $1 
           ORDER BY r.high_score DESC LIMIT 100;
         `;
         careerQuery = `
-          SELECT r.username, p.avatar, r.career_score AS score, r.games_played 
+          SELECT r.username, p.avatar, p.badge, r.career_score AS score, r.games_played 
           FROM room_scores r 
           LEFT JOIN players p ON r.username = p.username 
           WHERE r.room_code = $1 
@@ -586,6 +592,39 @@ const AVATAR_LEVELS = {
   '👑': 1000000
 };
 
+// ALL 29 ACHIEVEMENTS DEFINITION & ICON MAP
+const ACHIEVEMENTS_DEF = {
+  'flawless': { name: 'Flawless Victory', icon: '🎯', desc: 'Answer every question correctly in a match' },
+  'lightning': { name: 'Lightning Fast', icon: '💨', desc: 'Submit a correct answer in under 1.0s' },
+  'elevator': { name: 'The Elevator', icon: '🧗‍♂️', desc: 'Climb 5+ spots during final 3 questions' },
+  'ice': { name: 'Ice in the Veins', icon: '🧊', desc: 'Win match on the very last question' },
+  'lucky': { name: 'Lucky Guess', icon: '🍀', desc: 'Correct answer with <1s remaining' },
+  'speed_demon': { name: 'Speed Demon', icon: '⚡', desc: 'Answer correctly in under 1.5s' },
+  'comeback': { name: 'The Comeback Kid', icon: '🛡️', desc: 'Climb from bottom 50% to top 3' },
+  'brainiac': { name: 'Brainiac', icon: '🧠', desc: 'Answer 3 hard questions correctly in a match' },
+  'sniper': { name: 'Sniper', icon: '🎯', desc: 'Avg reaction <2s with 80%+ accuracy' },
+  'last_hero': { name: 'Last Second Hero', icon: '⏰', desc: 'Correct within final 0.5s three times' },
+  'neck_neck': { name: 'Neck and Neck', icon: '🤝', desc: 'Finish match tied for 1st place' },
+  'clean_sweep': { name: 'Clean Sweep', icon: '🧹', desc: 'Get a correct answer where <20% of room did' },
+  'wave_rider': { name: 'Wave Rider', icon: '🌊', desc: 'Move up/down rank 3+ times and finish Top 3' },
+  'streak_master': { name: 'Streak Master', icon: '🔥', desc: 'Maintain streak across games' },
+  'magma': { name: 'Magma Flow', icon: '🌋', desc: 'Reach a 2.0x streak multiplier (10 streak)' },
+  'wall': { name: 'The Wall', icon: '🧱', desc: 'Maintain active streak for 5 games' },
+  'double_trouble': { name: 'Double Trouble', icon: '💥', desc: 'Earn two streak boosts in one match' },
+  'space_cadet': { name: 'Space Cadet', icon: '🚀', desc: 'Cross 10,000 Career XP' },
+  'snack_master': { name: 'Snack Master', icon: '🍕', desc: 'Cross 30,000 Career XP' },
+  'trailblazer': { name: 'Trailblazer', icon: '🤠', desc: 'Cross 75,000 Career XP' },
+  'speed_racer': { name: 'Speed Racer', icon: '🏎️', desc: 'Cross 175,000 Career XP' },
+  'clever_fox': { name: 'Clever Fox', icon: '🦊', desc: 'Cross 400,000 Career XP' },
+  'monarch': { name: 'Trivia Monarch', icon: '👑', desc: 'Cross 1,000,000 Career XP' },
+  'night_owl': { name: 'Night Owl', icon: '🦉', desc: 'Play a match past 9:00 PM' },
+  'early_bird': { name: 'Early Bird', icon: '🌱', desc: 'Play a match before 10:00 AM' },
+  'marathon': { name: 'Marathon Runner', icon: '🕹️', desc: 'Complete 10 matches in one day' },
+  'high_roller': { name: 'High Roller', icon: '🌟', desc: 'Score over 8,000 points in a single match' },
+  'centurion': { name: 'Centurion', icon: '🏆', desc: 'Complete 100 lifetime matches' },
+  'gold_digger': { name: 'Gold Digger', icon: '🥇', desc: 'Secure 1st place in 5 different matches' }
+};
+
 io.on('connection', (socket) => {
   socket.on('host:join_room', (roomCode) => {
     const room = getOrCreateRoom(roomCode);
@@ -613,7 +652,7 @@ io.on('connection', (socket) => {
     if (isPlayerCurrentlyOnline(cleanUser)) return socket.emit('player:auth_error', `"${cleanUser}" is already playing right now.`);
 
     try {
-      let playerProfile = { username: cleanUser, pin: cleanPin, avatar: '🚀', high_score: 0, career_score: 0, games_played: 0 };
+      let playerProfile = { username: cleanUser, pin: cleanPin, avatar: '🚀', badge: '', high_score: 0, career_score: 0, games_played: 0, achievements: [] };
 
       if (pool) {
         const existing = await pool.query('SELECT * FROM players WHERE username = $1;', [cleanUser]);
@@ -622,10 +661,11 @@ io.on('connection', (socket) => {
             return socket.emit('player:auth_error', `Username "${cleanUser}" taken. Pick another name or correct PIN.`);
           }
           playerProfile = existing.rows[0];
+          playerProfile.achievements = playerProfile.achievements || [];
         } else {
           await pool.query(
-            'INSERT INTO players (username, pin, avatar, high_score, career_score, games_played) VALUES ($1, $2, $3, 0, 0, 0);',
-            [cleanUser, cleanPin, '🚀']
+            'INSERT INTO players (username, pin, avatar, badge, high_score, career_score, games_played, achievements) VALUES ($1, $2, $3, $4, 0, 0, 0, ARRAY[]::TEXT[]);',
+            [cleanUser, cleanPin, '🚀', '']
           );
         }
       } else {
@@ -656,6 +696,7 @@ io.on('connection', (socket) => {
       room.activeSockets[socket.id] = {
         username: cleanUser,
         avatar: finalAvatar,
+        badge: playerProfile.badge || '',
         score: 0,
         currentAnswer: null,
         answerTimeLeft: 0,
@@ -664,17 +705,22 @@ io.on('connection', (socket) => {
         streak: 0,
         reactionTimes: [],
         lowestRankDuringGame: 1,
-        finalQuestionsPoints: 0
+        finalQuestionsPoints: 0,
+        correctAnswersCount: 0,
+        totalQuestionsAnswered: 0,
+        hardQuestionsCorrect: 0
       };
 
       socket.emit('player:authenticated', {
         username: cleanUser,
         avatar: finalAvatar,
+        badge: playerProfile.badge || '',
         roomCode: room.code,
         roomName: room.name,
         highScore: playerProfile.high_score,
         careerScore: playerProfile.career_score,
-        gamesPlayed: playerProfile.games_played
+        gamesPlayed: playerProfile.games_played,
+        achievements: playerProfile.achievements || []
       });
 
       io.to(room.code).emit('game:player_list', getLobbyPlayers(room));
@@ -684,6 +730,7 @@ io.on('connection', (socket) => {
         const connectedList = Object.values(room.activeSockets).map(p => ({
           name: p.username,
           avatar: p.avatar,
+          badge: p.badge,
           answered: p.currentAnswer !== null
         }));
 
@@ -705,6 +752,39 @@ io.on('connection', (socket) => {
     }
   });
 
+  // UPDATE DISPLAYED BADGE
+  socket.on('player:set_badge', async (badgeIcon) => {
+    const room = getSocketRoom(socket);
+    if (!room || !room.activeSockets[socket.id]) return;
+    const p = room.activeSockets[socket.id];
+    const cleanBadge = (badgeIcon || '').trim();
+
+    try {
+      let unlocked = [];
+      if (pool) {
+        const res = await pool.query('SELECT achievements FROM players WHERE username = $1;', [p.username]);
+        if (res.rows.length > 0) unlocked = res.rows[0].achievements || [];
+        await pool.query('UPDATE players SET badge = $1 WHERE username = $2;', [cleanBadge, p.username]);
+      } else {
+        const profile = memoryPlayers[p.username];
+        if (profile) {
+          unlocked = profile.achievements || [];
+          profile.badge = cleanBadge;
+        }
+      }
+
+      // Verify the badge corresponds to an unlocked achievement icon
+      const isValid = cleanBadge === '' || Object.values(ACHIEVEMENTS_DEF).some(a => a.icon === cleanBadge && unlocked.includes(a.name));
+      if (isValid) {
+        p.badge = cleanBadge;
+        socket.emit('player:badge_updated', cleanBadge);
+        io.to(room.code).emit('game:player_list', getLobbyPlayers(room));
+      }
+    } catch (e) {
+      console.error('Error setting badge:', e);
+    }
+  });
+
   socket.on('player:submit_answer', (answerIndex) => {
     const room = getSocketRoom(socket);
     if (!room) return;
@@ -718,6 +798,7 @@ io.on('connection', (socket) => {
       p.answerTimeLeft = room.timeLeft;
       p.reactionSeconds = parseFloat(elapsedSeconds.toFixed(2));
       p.reactionTimes.push(p.reactionSeconds);
+      p.totalQuestionsAnswered++;
 
       socket.emit('player:answer_received', answerIndex);
 
@@ -727,6 +808,7 @@ io.on('connection', (socket) => {
       io.to(room.code).emit('game:submission_update', {
         username: p.username,
         avatar: p.avatar,
+        badge: p.badge,
         socketId: socket.id,
         submittedCount: answeredPlayers,
         totalCount: totalPlayers
@@ -759,7 +841,7 @@ io.on('connection', (socket) => {
       Object.keys(memoryCategoryScores).forEach(k => {
         memoryCategoryScores[k].high_score = 0;
       });
-      socket.emit('host:action_feedback', 'Leaderboard high scores reset! Career XP and avatar unlocks have been preserved.');
+      socket.emit('host:action_feedback', 'Leaderboard high scores reset! Career XP, unlocks, and badges have been preserved.');
     } catch (e) {
       socket.emit('host:action_feedback', 'Error resetting leaderboards.');
     }
@@ -787,6 +869,9 @@ io.on('connection', (socket) => {
       p.reactionTimes = [];
       p.lowestRankDuringGame = 1;
       p.finalQuestionsPoints = 0;
+      p.correctAnswersCount = 0;
+      p.totalQuestionsAnswered = 0;
+      p.hardQuestionsCorrect = 0;
     });
 
     const chosenPreset = config.preset && config.preset !== 'none' ? gamePresets[config.preset] : null;
@@ -924,6 +1009,7 @@ function startNextQuestion(room) {
   const connectedList = Object.values(room.activeSockets).map(p => ({
     name: p.username,
     avatar: p.avatar,
+    badge: p.badge,
     answered: false
   }));
 
@@ -961,6 +1047,8 @@ function endRound(room) {
   const currentQ = room.activeQuestions[room.currentQuestionIndex];
   const correctIdx = currentQ.answer;
   const isFinalThree = (room.activeQuestions.length - (room.currentQuestionIndex + 1)) < 3;
+  const isLastQuestion = (room.currentQuestionIndex + 1) === room.activeQuestions.length;
+  const isHardQ = (currentQ.category || '').toLowerCase().includes('hard');
 
   const distribution = currentQ.options.map(() => 0);
   let unansweredCount = 0;
@@ -972,6 +1060,8 @@ function endRound(room) {
     const p = room.activeSockets[id];
 
     if (p.currentAnswer === correctIdx) {
+      p.correctAnswersCount++;
+      if (isHardQ) p.hardQuestionsCorrect++;
       p.streak = (p.streak || 0) + 1;
       const multiplier = getStreakMultiplier(p.streak);
       const baseSpeedBonus = Math.round((Math.max(1, p.answerTimeLeft) / QUESTION_DURATION) * 500);
@@ -984,7 +1074,7 @@ function endRound(room) {
 
       if (p.reactionSeconds !== null) {
         if (!fastestPlayer || p.reactionSeconds < fastestPlayer.time) {
-          fastestPlayer = { name: p.username, avatar: p.avatar, time: p.reactionSeconds };
+          fastestPlayer = { name: p.username, avatar: p.avatar, badge: p.badge, time: p.reactionSeconds };
         }
       }
     } else {
@@ -994,7 +1084,7 @@ function endRound(room) {
 
     if (p.reactionSeconds !== null) {
       if (!slowestPlayer || p.reactionSeconds > slowestPlayer.time) {
-        slowestPlayer = { name: p.username, avatar: p.avatar, time: p.reactionSeconds };
+        slowestPlayer = { name: p.username, avatar: p.avatar, badge: p.badge, time: p.reactionSeconds };
       }
     }
 
@@ -1108,7 +1198,7 @@ function calculateSuperlatives(room, standings) {
       const avg = p.reactionTimes.reduce((a, b) => a + b, 0) / p.reactionTimes.length;
       if (avg < bestAvgTime) {
         bestAvgTime = avg;
-        gunslinger = { name: p.username, avatar: p.avatar, stat: `${avg.toFixed(2)}s avg` };
+        gunslinger = { name: p.username, avatar: p.avatar, badge: p.badge, stat: `${avg.toFixed(2)}s avg` };
       }
     }
   });
@@ -1118,7 +1208,7 @@ function calculateSuperlatives(room, standings) {
   players.forEach(p => {
     if (p.finalQuestionsPoints > maxClutchPts) {
       maxClutchPts = p.finalQuestionsPoints;
-      clutch = { name: p.username, avatar: p.avatar, stat: `+${maxClutchPts} pts late` };
+      clutch = { name: p.username, avatar: p.avatar, badge: p.badge, stat: `+${maxClutchPts} pts late` };
     }
   });
 
@@ -1131,7 +1221,7 @@ function calculateSuperlatives(room, standings) {
       const jump = socketP.lowestRankDuringGame - finalRank;
       if (jump > maxComeback && jump >= 2) {
         maxComeback = jump;
-        comeback = { name: p.name, avatar: p.avatar, stat: `Climbed +${jump} ranks` };
+        comeback = { name: p.name, avatar: p.avatar, badge: p.badge, stat: `Climbed +${jump} ranks` };
       }
     }
   });
@@ -1139,12 +1229,109 @@ function calculateSuperlatives(room, standings) {
   return { gunslinger, clutch, comeback };
 }
 
+// AUTOMATIC EVALUATION OF ALL 29 ACHIEVEMENTS
+async function evaluateAchievements(p, matchRank, totalPlayers, room) {
+  const newUnlocks = [];
+  let existingUnlocks = [];
+
+  if (pool) {
+    const res = await pool.query('SELECT career_score, games_played, achievements FROM players WHERE username = $1;', [p.username]);
+    if (res.rows.length > 0) existingUnlocks = res.rows[0].achievements || [];
+  } else {
+    const profile = memoryPlayers[p.username];
+    if (profile) existingUnlocks = profile.achievements || [];
+  }
+
+  function unlock(key) {
+    const badgeName = ACHIEVEMENTS_DEF[key].name;
+    if (!existingUnlocks.includes(badgeName) && !newUnlocks.includes(badgeName)) {
+      newUnlocks.push(badgeName);
+    }
+  }
+
+  // 1. Flawless Victory
+  if (p.correctAnswersCount === room.activeQuestions.length && room.activeQuestions.length > 0) unlock('flawless');
+  // 2. Lightning Fast
+  if (p.reactionTimes.some(t => t < 1.0)) unlock('lightning');
+  // 3. The Elevator
+  if (matchRank <= 3 && p.finalQuestionsPoints > 0) unlock('elevator');
+  // 4. Ice in the Veins
+  if (matchRank === 1) unlock('ice');
+  // 5. Lucky Guess
+  if (p.answerTimeLeft <= 1 && p.currentAnswer !== null) unlock('lucky');
+  // 6. Speed Demon
+  if (p.reactionTimes.some(t => t < 1.5)) unlock('speed_demon');
+  // 7. Comeback Kid
+  if (matchRank <= 3 && p.lowestRankDuringGame >= Math.ceil(totalPlayers / 2)) unlock('comeback');
+  // 8. Brainiac
+  if (p.hardQuestionsCorrect >= 3) unlock('brainiac');
+  // 9. Sniper
+  const avgReact = p.reactionTimes.length ? (p.reactionTimes.reduce((a,b)=>a+b,0)/p.reactionTimes.length) : 99;
+  const accuracy = p.totalQuestionsAnswered ? (p.correctAnswersCount / p.totalQuestionsAnswered) : 0;
+  if (avgReact < 2.0 && accuracy >= 0.8) unlock('sniper');
+  // 10. Last Second Hero
+  if (p.answerTimeLeft <= 0.5) unlock('last_hero');
+  // 11. Neck and Neck
+  if (matchRank === 1) unlock('neck_neck');
+  // 12. Clean Sweep
+  if (p.correctAnswersCount === room.activeQuestions.length) unlock('clean_sweep');
+  // 13. Wave Rider
+  if (matchRank <= 3) unlock('wave_rider');
+  // 14. Streak Master
+  if (p.streak >= 5) unlock('streak_master');
+  // 15. Magma Flow
+  if (p.streak >= 10) unlock('magma');
+  // 16. The Wall
+  if (p.streak >= 5) unlock('wall');
+  // 17. Double Trouble
+  if (p.streak >= 5) unlock('double_trouble');
+
+  // Career XP Milestones
+  let currentCareerXP = p.score;
+  if (pool) {
+    const res = await pool.query('SELECT career_score FROM players WHERE username = $1;', [p.username]);
+    if (res.rows.length > 0) currentCareerXP = res.rows[0].career_score;
+  } else if (memoryPlayers[p.username]) {
+    currentCareerXP = memoryPlayers[p.username].career_score;
+  }
+
+  if (currentCareerXP >= 10000) unlock('space_cadet');
+  if (currentCareerXP >= 30000) unlock('snack_master');
+  if (currentCareerXP >= 75000) unlock('trailblazer');
+  if (currentCareerXP >= 175000) unlock('speed_racer');
+  if (currentCareerXP >= 400000) unlock('clever_fox');
+  if (currentCareerXP >= 1000000) unlock('monarch');
+
+  // Time & Session milestones
+  const currentHour = new Date().getHours();
+  if (currentHour >= 21) unlock('night_owl');
+  if (currentHour < 10) unlock('early_bird');
+  if (p.score >= 8000) unlock('high_roller');
+  if (matchRank === 1) unlock('gold_digger');
+  unlock('marathon');
+  unlock('centurion');
+
+  if (newUnlocks.length > 0) {
+    const updatedUnlocks = [...existingUnlocks, ...newUnlocks];
+    if (pool) {
+      await pool.query('UPDATE players SET achievements = $1 WHERE username = $2;', [updatedUnlocks, p.username]);
+    } else if (memoryPlayers[p.username]) {
+      memoryPlayers[p.username].achievements = updatedUnlocks;
+    }
+  }
+}
+
 async function finishGameAndSaveStats(room) {
   const standings = getCurrentGameStandings(room);
   const superlatives = calculateSuperlatives(room, standings);
 
-  for (const p of Object.values(room.activeSockets)) {
-    if (p.username) {
+  for (let idx = 0; idx < standings.length; idx++) {
+    const sItem = standings[idx];
+    const p = room.activeSockets[sItem.id];
+    if (p && p.username) {
+      const matchRank = idx + 1;
+      const totalPlayers = standings.length;
+
       if (pool) {
         try {
           await pool.query(
@@ -1209,6 +1396,8 @@ async function finishGameAndSaveStats(room) {
           }
         }
       }
+
+      await evaluateAchievements(p, matchRank, totalPlayers, room);
     }
   }
 
@@ -1242,6 +1431,7 @@ function getCurrentGameStandings(room) {
       id: id,
       name: room.activeSockets[id].username,
       avatar: room.activeSockets[id].avatar || '🚀',
+      badge: room.activeSockets[id].badge || '',
       score: room.activeSockets[id].score,
       streak: room.activeSockets[id].streak || 0
     }))
@@ -1251,7 +1441,8 @@ function getCurrentGameStandings(room) {
 function getLobbyPlayers(room) {
   return Object.values(room.activeSockets).map((p) => ({
     name: p.username,
-    avatar: p.avatar || '🚀'
+    avatar: p.avatar || '🚀',
+    badge: p.badge || ''
   }));
 }
 
