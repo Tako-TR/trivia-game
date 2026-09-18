@@ -9,149 +9,166 @@
   <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.2/dist/confetti.browser.min.js"></script>
   <style>
+    :root {
+      --bg-dark: #070b14;
+      --panel-bg: rgba(15, 23, 42, 0.92);
+      --border-subtle: rgba(56, 189, 248, 0.22);
+      --cyan: #38bdf8;
+      --cyan-glow: rgba(56, 189, 248, 0.35);
+      --green: #10b981;
+      --amber: #f59e0b;
+      --red: #ef4444;
+      --gold: #facc15;
+    }
+
     * { box-sizing: border-box; }
+
     body {
       margin: 0;
       padding: 0;
-      background-color: #0b0f19;
+      background-color: var(--bg-dark);
+      background-image: 
+        radial-gradient(circle at 15% 15%, rgba(56, 189, 248, 0.08) 0%, transparent 45%),
+        radial-gradient(circle at 85% 85%, rgba(16, 185, 129, 0.06) 0%, transparent 45%);
       color: #ffffff;
-      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", sans-serif;
       overflow-x: hidden;
     }
 
-    /* PASSWORD LOGIN OVERLAY STYLES */
+    /* PASSWORD LOGIN OVERLAY */
     #login-overlay {
       position: fixed;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      background: #0f172a;
+      top: 0; left: 0; width: 100%; height: 100%;
+      background: radial-gradient(circle, #0f172a 0%, #030712 100%);
       display: flex;
       justify-content: center;
       align-items: center;
       z-index: 99999;
     }
     .login-box {
-      background: #1e293b;
-      border: 2px solid #38bdf8;
+      background: var(--panel-bg);
+      border: 2px solid var(--cyan);
       padding: 2.5rem;
-      border-radius: 16px;
-      box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.5);
+      border-radius: 20px;
+      box-shadow: 0 20px 40px rgba(0, 0, 0, 0.8), 0 0 20px var(--cyan-glow);
       text-align: center;
       max-width: 400px;
       width: 90%;
     }
-    .login-box h2 { color: #38bdf8; margin-top: 0; margin-bottom: 0.5rem; font-size: 1.5rem; }
+    .login-box h2 { color: var(--cyan); margin-top: 0; margin-bottom: 0.5rem; font-size: 1.6rem; font-weight: 900; }
     .login-box p { color: #94a3b8; font-size: 0.9rem; margin-bottom: 1.5rem; }
     .login-box input {
       width: 100%;
-      background-color: #0f172a;
-      color: #38bdf8;
-      border: 1px solid #475569;
-      padding: 0.75rem 1rem;
-      border-radius: 8px;
-      font-size: 1rem;
-      font-weight: 600;
+      background-color: #030712;
+      color: var(--cyan);
+      border: 1.5px solid #334155;
+      padding: 0.85rem 1rem;
+      border-radius: 10px;
+      font-size: 1.05rem;
+      font-weight: 700;
       margin-bottom: 1rem;
       outline: none;
     }
-    .login-box input:focus { border-color: #38bdf8; box-shadow: 0 0 8px rgba(56, 189, 248, 0.3); }
+    .login-box input:focus { border-color: var(--cyan); box-shadow: 0 0 10px var(--cyan-glow); }
     .login-box button {
       width: 100%;
-      background-color: #10b981;
+      background: linear-gradient(135deg, #059669, var(--green));
       color: #ffffff;
       border: none;
-      padding: 0.75rem;
-      border-radius: 8px;
-      font-weight: 800;
-      font-size: 1rem;
+      padding: 0.85rem;
+      border-radius: 10px;
+      font-weight: 900;
+      font-size: 1.05rem;
       cursor: pointer;
-      transition: background-color 0.2s;
+      box-shadow: 0 4px 14px rgba(16, 185, 129, 0.4);
     }
-    .login-box button:hover { background-color: #059669; }
-    #login-error { color: #ef4444; font-size: 0.85rem; font-weight: 700; margin-top: 0.75rem; min-height: 1.2rem; }
+    #login-error { color: var(--red); font-size: 0.85rem; font-weight: 800; margin-top: 0.75rem; min-height: 1.2rem; }
 
     #host-main-wrapper { display: none; width: 100%; min-height: 100vh; }
     
     /* SCROLLABLE LOBBY & SETUP CONTAINER */
     .scrollable-lobby-container {
-      max-width: 920px;
+      max-width: 960px;
       margin: 0 auto;
-      padding: 1.5rem 1rem 3.5rem;
+      padding: 1.5rem 1.5rem 4rem;
       position: relative;
     }
 
-    /* ZERO-SCROLL TV BROADCAST VIEWPORTS (16:9 FIXED RATIO) */
+    /* ZERO-SCROLL TV BROADCAST VIEWPORTS */
     .tv-broadcast-screen {
       width: 100vw;
       height: 100vh;
       max-height: 100vh;
       overflow: hidden !important;
-      padding: 1.2rem 2.5rem;
+      padding: 1.25rem 2.75rem 1.5rem;
       display: flex;
       flex-direction: column;
       justify-content: space-between;
+      box-sizing: border-box;
       position: relative;
     }
 
+    /* TOP CONTROLS BAR */
     .top-bar-controls {
       display: flex;
       justify-content: space-between;
       align-items: center;
-      margin-bottom: 0.75rem;
+      margin-bottom: 0.85rem;
       flex-wrap: wrap;
-      gap: 0.5rem;
+      gap: 0.75rem;
     }
     .room-badge {
-      background-color: #1e293b;
-      border: 1px solid #38bdf8;
-      color: #38bdf8;
-      padding: 0.35rem 0.85rem;
+      background: rgba(56, 189, 248, 0.12);
+      border: 1.5px solid var(--cyan);
+      color: var(--cyan);
+      padding: 0.4rem 1.1rem;
       border-radius: 9999px;
-      font-weight: 800;
-      font-size: 0.85rem;
+      font-weight: 900;
+      font-size: 0.95rem;
+      letter-spacing: 0.04em;
+      box-shadow: 0 0 12px var(--cyan-glow);
     }
-    .top-toggles { display: flex; gap: 0.5rem; align-items: center; }
+    .top-toggles { display: flex; gap: 0.6rem; align-items: center; }
     .toggle-pill {
-      background-color: #1e293b;
+      background: rgba(30, 41, 59, 0.8);
       border: 1px solid #475569;
-      color: #38bdf8;
-      font-size: 0.8rem;
-      font-weight: 700;
-      padding: 0.4rem 0.8rem;
+      color: var(--cyan);
+      font-size: 0.85rem;
+      font-weight: 800;
+      padding: 0.45rem 0.95rem;
       border-radius: 9999px;
       cursor: pointer;
       user-select: none;
+      transition: all 0.15s;
     }
-    .toggle-pill.off { color: #94a3b8; border-color: #334155; }
+    .toggle-pill.off { color: #64748b; border-color: #334155; background: rgba(15, 23, 42, 0.6); }
 
-    /* STOP / END GAME BUTTON */
     .btn-stop-broadcast {
-      background-color: #b91c1c;
+      background: linear-gradient(135deg, #b91c1c, #dc2626);
       color: #ffffff;
-      border: 1px solid #ef4444;
+      border: 1px solid #f87171;
       font-size: 0.8rem;
-      font-weight: 800;
-      padding: 0.4rem 0.9rem;
+      font-weight: 900;
+      padding: 0.45rem 1rem;
       border-radius: 9999px;
       cursor: pointer;
       display: inline-flex;
       align-items: center;
-      gap: 0.35rem;
-      transition: background 0.15s;
+      gap: 0.4rem;
+      box-shadow: 0 4px 12px rgba(220, 38, 38, 0.35);
     }
-    .btn-stop-broadcast:hover { background-color: #dc2626; }
+    .btn-stop-broadcast:hover { background: #ef4444; }
 
     /* TV TIMER BAR */
     .timer-meter-wrapper {
       width: 100%;
-      height: 14px;
-      background-color: #1e293b;
+      height: 16px;
+      background: rgba(30, 41, 59, 0.7);
       border-radius: 9999px;
       overflow: hidden;
-      margin: 0.4rem 0 0.8rem 0;
-      border: 1px solid #334155;
+      margin: 0.4rem 0 0.9rem 0;
+      border: 1.5px solid rgba(255, 255, 255, 0.1);
+      box-shadow: inset 0 2px 6px rgba(0,0,0,0.5);
     }
     .timer-meter-bar {
       height: 100%;
@@ -159,71 +176,93 @@
       background: linear-gradient(90deg, #0284c7, #38bdf8);
       border-radius: 9999px;
       transition: width 1s linear, background 0.4s ease-out;
+      box-shadow: 0 0 14px rgba(56, 189, 248, 0.5);
     }
-    .timer-meter-bar.warning { background: linear-gradient(90deg, #d97706, #f59e0b); }
+    .timer-meter-bar.warning { background: linear-gradient(90deg, #d97706, #f59e0b); box-shadow: 0 0 14px rgba(245, 158, 11, 0.5); }
     .timer-meter-bar.danger {
       background: linear-gradient(90deg, #dc2626, #ef4444);
-      animation: pulseBar 0.5s infinite alternate;
+      animation: pulseDanger 0.45s infinite alternate;
     }
-    @keyframes pulseBar {
-      from { filter: drop-shadow(0 0 4px #ef4444); }
-      to { filter: drop-shadow(0 0 12px #ef4444); }
+    @keyframes pulseDanger {
+      from { box-shadow: 0 0 6px #ef4444; }
+      to { box-shadow: 0 0 20px #ef4444; }
     }
 
-    /* TV QUESTION HEADER & OPTIONS */
+    /* TV ACTIVE QUESTION BOX */
     .tv-question-box {
-      background: #111827;
-      border: 2px solid #1e293b;
-      border-radius: 16px;
-      padding: 1.5rem 2rem;
+      background: var(--panel-bg);
+      border: 2px solid var(--border-subtle);
+      border-radius: 20px;
+      padding: 1.5rem 2.2rem;
       display: flex;
       flex-direction: column;
       align-items: center;
       justify-content: center;
-      min-height: 140px;
-      margin-bottom: 0.75rem;
-      box-shadow: 0 8px 25px rgba(0,0,0,0.4);
+      min-height: 150px;
+      margin-bottom: 1rem;
+      box-shadow: 0 12px 35px rgba(0,0,0,0.6);
     }
     .tv-question-text {
-      font-size: 1.85rem;
-      font-weight: 800;
+      font-size: 2.1rem;
+      font-weight: 900;
       color: #f8fafc;
       margin: 0;
       line-height: 1.35;
       text-align: center;
+      letter-spacing: -0.01em;
     }
     .trivia-image-box {
-      margin: 0.5rem auto;
+      margin: 0.5rem auto 0.75rem;
       background-color: #fff;
       padding: 0.5rem;
-      border-radius: 10px;
+      border-radius: 12px;
       display: inline-block;
+      box-shadow: 0 4px 15px rgba(0,0,0,0.3);
     }
-    .trivia-image { max-height: 130px; max-width: 100%; object-fit: contain; display: block; }
+    .trivia-image { max-height: 125px; max-width: 100%; object-fit: contain; display: block; }
 
+    /* MATCHING TV OPTIONS GRID (IDENTICAL BADGES AS THE PHONES) */
     .tv-options-grid {
       display: grid;
       grid-template-columns: 1fr 1fr;
-      gap: 1.25rem;
+      gap: 1rem;
       flex: 1;
-      max-height: 300px;
-      margin-bottom: 0.75rem;
+      max-height: 280px;
+      margin-bottom: 0.9rem;
     }
     .tv-option-btn {
-      background: #1e293b;
+      background: rgba(22, 32, 50, 0.9);
       border: 2px solid #334155;
-      color: #f1f5f9;
-      font-size: 1.3rem;
-      font-weight: 700;
-      border-radius: 12px;
-      padding: 1rem 1.5rem;
+      border-radius: 14px;
+      padding: 0.95rem 1.4rem;
       display: flex;
       align-items: center;
-      justify-content: flex-start;
+      gap: 1rem;
       text-align: left;
+      box-shadow: 0 4px 14px rgba(0, 0, 0, 0.35);
+    }
+    .tv-opt-badge {
+      width: 42px;
+      height: 42px;
+      border-radius: 10px;
+      background: rgba(56, 189, 248, 0.15);
+      border: 1.5px solid rgba(56, 189, 248, 0.35);
+      color: var(--cyan);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.25rem;
+      font-weight: 900;
+      flex-shrink: 0;
+    }
+    .tv-opt-text {
+      font-size: 1.35rem;
+      font-weight: 800;
+      line-height: 1.25;
+      color: #f8fafc;
     }
 
-    /* TV 2-COLUMN RESULTS VIEW */
+    /* RESULTS SCREEN */
     .tv-results-split {
       display: grid;
       grid-template-columns: 1.15fr 0.85fr;
@@ -239,72 +278,80 @@
     }
 
     .answer-reveal-box {
-      background-color: #064e3b;
-      border: 2px solid #10b981;
-      padding: 1rem 1.5rem;
-      border-radius: 12px;
-      margin-bottom: 0.75rem;
+      background: linear-gradient(135deg, rgba(6, 78, 59, 0.9), rgba(4, 120, 87, 0.7));
+      border: 2px solid var(--green);
+      padding: 1.1rem 1.6rem;
+      border-radius: 16px;
+      margin-bottom: 0.85rem;
+      box-shadow: 0 8px 24px rgba(16, 185, 129, 0.3);
     }
-    .answer-reveal-label { font-size: 0.75rem; text-transform: uppercase; color: #6ee7b7; font-weight: 800; }
-    .answer-reveal-text { font-size: 1.6rem; font-weight: 900; color: #fff; margin-top: 0.2rem; }
+    .answer-reveal-label { font-size: 0.75rem; text-transform: uppercase; color: #6ee7b7; font-weight: 900; letter-spacing: 0.06em; }
+    .answer-reveal-text { font-size: 1.85rem; font-weight: 900; color: #fff; margin-top: 0.25rem; }
 
     .spotlights-container {
       display: grid;
       grid-template-columns: 1fr 1fr;
-      gap: 0.75rem;
-      margin-bottom: 0.75rem;
+      gap: 0.85rem;
+      margin-bottom: 0.85rem;
     }
     .spotlight-card {
-      background-color: #0f172a;
-      border-radius: 10px;
-      padding: 0.75rem 1rem;
+      border-radius: 14px;
+      padding: 0.85rem 1.1rem;
       display: flex;
       align-items: center;
-      gap: 0.75rem;
+      gap: 0.85rem;
       text-align: left;
     }
-    .spotlight-card.speed { border: 1px solid #10b981; background: linear-gradient(135deg, rgba(16, 185, 129, 0.1), #0f172a); }
-    .spotlight-card.snail { border: 1px solid #f59e0b; background: linear-gradient(135deg, rgba(245, 158, 11, 0.1), #0f172a); }
-    .spotlight-icon { font-size: 1.6rem; }
-    .spotlight-title { font-size: 0.7rem; font-weight: 800; text-transform: uppercase; margin-bottom: 0.15rem; }
-    .speed .spotlight-title { color: #10b981; }
-    .snail .spotlight-title { color: #f59e0b; }
-    .spotlight-name { font-size: 1rem; font-weight: 800; color: #f8fafc; }
-    .spotlight-stat { font-size: 0.75rem; color: #94a3b8; }
+    .spotlight-card.speed {
+      border: 1.5px solid var(--green);
+      background: linear-gradient(135deg, rgba(16, 185, 129, 0.15), rgba(15, 23, 42, 0.9));
+      box-shadow: 0 0 16px rgba(16, 185, 129, 0.2);
+    }
+    .spotlight-card.snail {
+      border: 1.5px solid var(--amber);
+      background: linear-gradient(135deg, rgba(245, 158, 11, 0.15), rgba(15, 23, 42, 0.9));
+      box-shadow: 0 0 16px rgba(245, 158, 11, 0.2);
+    }
+    .spotlight-icon { font-size: 1.9rem; }
+    .spotlight-title { font-size: 0.75rem; font-weight: 900; text-transform: uppercase; margin-bottom: 0.15rem; letter-spacing: 0.05em; }
+    .speed .spotlight-title { color: var(--green); }
+    .snail .spotlight-title { color: var(--amber); }
+    .spotlight-name { font-size: 1.1rem; font-weight: 900; color: #f8fafc; }
+    .spotlight-stat { font-size: 0.8rem; color: #94a3b8; font-weight: 700; }
 
-    /* DEDICATED TV QR CODE IN ROUND RESULTS */
     .results-bottom-row {
       display: grid;
       grid-template-columns: 1fr auto;
-      gap: 1rem;
+      gap: 1.1rem;
       flex: 1;
       overflow: hidden;
     }
 
     .chart-container {
-      background-color: #0f172a;
-      border: 1px solid #334155;
-      border-radius: 12px;
-      padding: 0.85rem 1.15rem;
+      background: var(--panel-bg);
+      border: 1.5px solid var(--border-subtle);
+      border-radius: 16px;
+      padding: 1rem 1.25rem;
       height: 100%;
       display: flex;
       flex-direction: column;
       justify-content: center;
+      box-shadow: 0 6px 20px rgba(0,0,0,0.4);
     }
     .chart-header {
       font-size: 0.8rem;
-      font-weight: 800;
+      font-weight: 900;
       color: #94a3b8;
       text-transform: uppercase;
-      letter-spacing: 0.05em;
-      margin-bottom: 0.6rem;
+      letter-spacing: 0.06em;
+      margin-bottom: 0.75rem;
       display: flex;
       justify-content: space-between;
     }
-    .chart-bars { display: flex; flex-direction: column; gap: 0.5rem; }
-    .chart-row { display: flex; flex-direction: column; gap: 0.15rem; }
-    .chart-row-meta { display: flex; justify-content: space-between; font-size: 0.8rem; font-weight: 700; }
-    .chart-track { background-color: #1e293b; height: 16px; border-radius: 6px; overflow: hidden; display: flex; }
+    .chart-bars { display: flex; flex-direction: column; gap: 0.6rem; }
+    .chart-row { display: flex; flex-direction: column; gap: 0.2rem; }
+    .chart-row-meta { display: flex; justify-content: space-between; font-size: 0.85rem; font-weight: 800; }
+    .chart-track { background: rgba(30, 41, 59, 0.8); height: 18px; border-radius: 6px; overflow: hidden; display: flex; }
     .chart-fill {
       height: 100%;
       border-radius: 6px;
@@ -313,43 +360,40 @@
       align-items: center;
       justify-content: flex-end;
       padding-right: 6px;
-      font-size: 0.7rem;
-      font-weight: 800;
+      font-size: 0.75rem;
+      font-weight: 900;
       color: #ffffff;
       min-width: 8px;
     }
-    .chart-fill.correct-bar { background: linear-gradient(90deg, #059669, #10b981); box-shadow: 0 0 10px rgba(16, 185, 129, 0.4); }
+    .chart-fill.correct-bar { background: linear-gradient(90deg, #059669, #10b981); box-shadow: 0 0 10px rgba(16, 185, 129, 0.5); }
     .chart-fill.incorrect-bar { background: linear-gradient(90deg, #475569, #64748b); }
 
+    /* HIGH-CONTRAST DEDICATED TV QR CARD */
     .results-qr-card {
-      background: #0f172a;
-      border: 2px solid #38bdf8;
-      border-radius: 12px;
-      padding: 0.65rem 0.85rem;
+      background: var(--panel-bg);
+      border: 2px solid var(--cyan);
+      border-radius: 16px;
+      padding: 0.85rem 1rem;
       display: flex;
       flex-direction: column;
       align-items: center;
       justify-content: center;
       text-align: center;
-      box-shadow: 0 8px 20px rgba(0,0,0,0.4);
+      box-shadow: 0 8px 24px rgba(0,0,0,0.5), 0 0 16px var(--cyan-glow);
     }
     .results-qr-title {
-      font-size: 0.75rem;
-      font-weight: 800;
-      color: #38bdf8;
+      font-size: 0.8rem;
+      font-weight: 900;
+      color: var(--cyan);
       text-transform: uppercase;
-      margin-bottom: 4px;
+      margin-bottom: 2px;
       letter-spacing: 0.05em;
     }
-    .results-qr-sub {
-      font-size: 0.65rem;
-      color: #94a3b8;
-      margin-bottom: 6px;
-    }
+    .results-qr-sub { font-size: 0.7rem; color: #94a3b8; margin-bottom: 6px; font-weight: 600; }
     #results-qrcode {
       background: #ffffff;
       padding: 6px;
-      border-radius: 8px;
+      border-radius: 10px;
       display: inline-block;
     }
     #results-qrcode img, #results-qrcode canvas {
@@ -358,49 +402,50 @@
       height: 175px !important;
     }
 
-    /* AUTO-SCROLLING LEADERBOARD CONTAINER */
+    /* AUTO-SCROLLING LEADERBOARD */
     .autoscroll-leaderboard-wrapper {
       flex: 1;
       height: 100%;
-      background: #0f172a;
-      border: 1px solid #334155;
-      border-radius: 12px;
+      background: var(--panel-bg);
+      border: 1.5px solid var(--border-subtle);
+      border-radius: 16px;
       overflow: hidden !important;
       position: relative;
-      padding: 0.5rem 0;
+      padding: 0.6rem 0;
+      box-shadow: 0 8px 25px rgba(0,0,0,0.4);
     }
     .autoscroll-list {
       list-style: none;
       margin: 0;
-      padding: 0.5rem 1rem;
+      padding: 0.5rem 1.2rem;
       display: flex;
       flex-direction: column;
-      gap: 0.5rem;
+      gap: 0.55rem;
       transition: transform 0.05s linear;
     }
     .autoscroll-list li {
-      background: #1e293b;
-      padding: 0.65rem 1rem;
-      border-radius: 8px;
+      background: rgba(30, 41, 59, 0.75);
+      padding: 0.75rem 1.2rem;
+      border-radius: 10px;
       display: flex;
       justify-content: space-between;
       align-items: center;
-      font-size: 1rem;
-      font-weight: 700;
-      border: 1px solid #334155;
+      font-size: 1.15rem;
+      font-weight: 800;
+      border: 1px solid rgba(255, 255, 255, 0.06);
     }
 
     .delta-badge {
       font-size: 0.75rem;
-      font-weight: 800;
-      padding: 0.15rem 0.45rem;
-      border-radius: 4px;
-      margin-left: 0.5rem;
+      font-weight: 900;
+      padding: 0.15rem 0.5rem;
+      border-radius: 6px;
+      margin-left: 0.6rem;
       display: inline-flex;
       align-items: center;
     }
-    .delta-up { background-color: #064e3b; color: #6ee7b7; }
-    .delta-down { background-color: #7f1d1d; color: #fca5a5; }
+    .delta-up { background-color: #064e3b; color: #6ee7b7; border: 1px solid #10b981; }
+    .delta-down { background-color: #7f1d1d; color: #fca5a5; border: 1px solid #ef4444; }
     .delta-same { background-color: #1e293b; color: #64748b; }
 
     /* PODIUM STYLING */
@@ -408,76 +453,67 @@
       display: flex;
       justify-content: center;
       align-items: flex-end;
-      gap: 1.5rem;
-      height: 220px;
-      max-width: 650px;
+      gap: 1.75rem;
+      height: 240px;
+      max-width: 700px;
       margin: 0 auto;
     }
     .podium-slot { display: flex; flex-direction: column; align-items: center; flex: 1; }
     .podium-slot.first { order: 2; }
     .podium-slot.second { order: 1; }
     .podium-slot.third { order: 3; }
-    .podium-avatar { font-size: 2.2rem; margin-bottom: 0.25rem; }
-    .podium-name { font-size: 1.1rem; font-weight: 800; color: #f8fafc; }
-    .podium-score { font-size: 0.85rem; color: #94a3b8; font-weight: 600; margin-bottom: 0.4rem; }
+    .podium-avatar { font-size: 2.5rem; margin-bottom: 0.35rem; }
+    .podium-name { font-size: 1.25rem; font-weight: 900; color: #f8fafc; }
+    .podium-score { font-size: 0.95rem; color: #94a3b8; font-weight: 700; margin-bottom: 0.5rem; }
     .podium-step {
       width: 100%;
-      border-radius: 12px 12px 0 0;
+      border-radius: 14px 14px 0 0;
       display: flex;
       justify-content: center;
       align-items: center;
-      font-size: 1.8rem;
+      font-size: 2.2rem;
       font-weight: 900;
-      color: #0f172a;
+      color: #070b14;
     }
-    .first .podium-step { height: 120px; background: linear-gradient(180deg, #facc15, #ca8a04); border: 2px solid #fef08a; border-bottom: none; }
-    .second .podium-step { height: 85px; background: linear-gradient(180deg, #cbd5e1, #64748b); border: 2px solid #f1f5f9; border-bottom: none; }
-    .third .podium-step { height: 60px; background: linear-gradient(180deg, #fdba74, #c2410c); border: 2px solid #fed7aa; border-bottom: none; }
+    .first .podium-step { height: 135px; background: linear-gradient(180deg, #facc15, #ca8a04); border: 2px solid #fef08a; border-bottom: none; box-shadow: 0 0 30px rgba(250, 204, 21, 0.4); }
+    .second .podium-step { height: 95px; background: linear-gradient(180deg, #cbd5e1, #64748b); border: 2px solid #f1f5f9; border-bottom: none; }
+    .third .podium-step { height: 65px; background: linear-gradient(180deg, #fdba74, #c2410c); border: 2px solid #fed7aa; border-bottom: none; }
 
     /* SUBMISSION TRAY */
     .submission-tray {
-      background-color: #0f172a;
-      border: 1px solid #334155;
-      border-radius: 10px;
-      padding: 0.6rem 1rem;
+      background: var(--panel-bg);
+      border: 1.5px solid var(--border-subtle);
+      border-radius: 14px;
+      padding: 0.75rem 1.25rem;
       display: flex;
       justify-content: space-between;
       align-items: center;
     }
-    .submission-chips { display: flex; gap: 0.4rem; flex-wrap: wrap; }
+    .submission-chips { display: flex; gap: 0.5rem; flex-wrap: wrap; }
     .sub-chip {
-      background-color: #1e293b;
+      background: rgba(30, 41, 59, 0.8);
       border: 1px solid #475569;
       color: #94a3b8;
-      padding: 0.25rem 0.6rem;
+      padding: 0.3rem 0.75rem;
       border-radius: 9999px;
-      font-size: 0.75rem;
-      font-weight: 700;
+      font-size: 0.8rem;
+      font-weight: 800;
     }
-    .sub-chip.answered { background-color: #064e3b; border-color: #10b981; color: #6ee7b7; }
+    .sub-chip.answered { background: rgba(16, 185, 129, 0.2); border-color: var(--green); color: #6ee7b7; }
 
-    .btn-danger { background-color: #dc2626 !important; color: #fff; border: none; padding: 0.5rem 1rem; border-radius: 6px; cursor: pointer; font-weight: 700; }
-    .btn-kick {
-      background-color: #7f1d1d;
-      color: #fca5a5;
-      border: 1px solid #ef4444;
-      padding: 0.25rem 0.6rem;
-      border-radius: 6px;
-      cursor: pointer;
-      font-size: 0.75rem;
-      font-weight: 700;
-    }
-    .btn-kick:hover { background-color: #dc2626; color: #fff; }
-    .host-links { display: flex; gap: 0.75rem; justify-content: center; flex-wrap: wrap; margin-top: 0.5rem; }
+    .host-links { display: flex; gap: 0.85rem; justify-content: center; flex-wrap: wrap; margin-top: 0.75rem; }
     .host-link-btn {
-      color: #38bdf8;
-      font-size: 0.85rem;
+      color: var(--cyan);
+      font-size: 0.9rem;
       text-decoration: none;
-      border: 1px dashed #38bdf8;
-      padding: 0.4rem 0.85rem;
-      border-radius: 6px;
-      font-weight: 600;
+      border: 1.5px dashed var(--cyan);
+      padding: 0.45rem 1rem;
+      border-radius: 8px;
+      font-weight: 700;
+      transition: background 0.15s;
     }
+    .host-link-btn:hover { background: rgba(56, 189, 248, 0.12); }
+
     .hidden { display: none !important; }
   </style>
 </head>
@@ -486,8 +522,8 @@
   <!-- PASSWORD LOGIN OVERLAY -->
   <div id="login-overlay">
     <div class="login-box">
-      <h2>Host Authentication</h2>
-      <p>Enter host password to access controls:</p>
+      <h2>Host Control Access</h2>
+      <p>Enter host password to start match display:</p>
       <input type="password" id="passcode-input" placeholder="Password..." autocomplete="current-password" autofocus />
       <button onclick="checkPasscode()">Unlock Dashboard</button>
       <div id="login-error"></div>
@@ -506,29 +542,30 @@
         </div>
       </div>
 
-      <h1 style="text-align: center; margin: 0.5rem 0;">Host Control Panel</h1>
+      <h1 style="text-align: center; margin: 0.5rem 0 0.2rem; font-size: 2.2rem; font-weight: 900; letter-spacing: -0.02em;">Host Control Panel</h1>
+      <p style="text-align: center; color: #94a3b8; margin: 0 0 1rem; font-size: 0.95rem;">Configure live room, question categories, and TV broadcast</p>
 
-      <div style="display: flex; justify-content: center; gap: 0.5rem; margin: 1rem 0;">
-        <button id="tab-btn-lobby" class="toggle-pill" style="padding: 0.6rem 1.25rem; font-size: 0.95rem;">Live Game Lobby</button>
-        <button id="tab-btn-hall" class="toggle-pill off" style="padding: 0.6rem 1.25rem; font-size: 0.95rem;">All-Time Hall of Fame</button>
+      <div style="display: flex; justify-content: center; gap: 0.6rem; margin: 1rem 0;">
+        <button id="tab-btn-lobby" class="toggle-pill" style="padding: 0.65rem 1.4rem; font-size: 1rem;">Live Game Lobby</button>
+        <button id="tab-btn-hall" class="toggle-pill off" style="padding: 0.65rem 1.4rem; font-size: 1rem;">All-Time Hall of Fame</button>
       </div>
 
       <div id="host-lobby">
-        <div style="display: flex; justify-content: center; margin: 1rem 0;">
-          <div style="background: #1e293b; border: 2px solid #38bdf8; border-radius: 16px; padding: 1.5rem; text-align: center; box-shadow: 0 10px 25px rgba(0,0,0,0.5);">
-            <h2 style="font-size: 1.3rem; color: #38bdf8; margin: 0 0 0.4rem 0;">Scan to Join: <span id="qr-room-label">Fremont Main</span></h2>
-            <div id="qrcode" style="background:#0f172a; padding:14px; border-radius:12px; display:inline-block; margin: 0.5rem 0; border: 1px solid #334155;"></div>
+        <div style="display: flex; justify-content: center; margin: 1.25rem 0;">
+          <div style="background: var(--panel-bg); border: 2px solid var(--cyan); border-radius: 20px; padding: 1.75rem; text-align: center; box-shadow: 0 12px 35px rgba(0,0,0,0.6), 0 0 20px var(--cyan-glow);">
+            <h2 style="font-size: 1.4rem; color: var(--cyan); margin: 0 0 0.5rem 0; font-weight: 900;">Scan to Join: <span id="qr-room-label">Fremont Main</span></h2>
+            <div id="qrcode" style="background:#070b14; padding:16px; border-radius:14px; display:inline-block; margin: 0.5rem 0; border: 1px solid #334155;"></div>
           </div>
         </div>
 
-        <div style="text-align: center; color: #94a3b8; margin-bottom: 1rem;">
-          Players in room: <strong id="player-count" style="color: #38bdf8; font-size: 1.2rem;">0</strong>
+        <div style="text-align: center; color: #94a3b8; margin-bottom: 1.25rem; font-size: 1.1rem; font-weight: 700;">
+          Players connected in room: <strong id="player-count" style="color: var(--cyan); font-size: 1.6rem; margin-left: 0.4rem;">0</strong>
         </div>
 
-        <div style="background-color: #0f172a; border: 1px solid #334155; padding: 1.25rem; border-radius: 12px; max-width: 520px; margin: 0 auto 1.5rem; display: flex; flex-direction: column; gap: 0.85rem;">
+        <div style="background: var(--panel-bg); border: 1.5px solid var(--border-subtle); padding: 1.5rem; border-radius: 16px; max-width: 540px; margin: 0 auto 1.5rem; display: flex; flex-direction: column; gap: 1rem; box-shadow: 0 8px 25px rgba(0,0,0,0.4);">
           <div>
-            <label style="font-size:0.75rem; font-weight:800; color:#f59e0b; text-transform:uppercase;">Select Game Room</label>
-            <select id="host-room-select" style="width:100%; background:#1e293b; color:#38bdf8; padding:8px; border-radius:6px; border:1px solid #475569; font-weight:700; margin-top:4px;">
+            <label style="font-size:0.75rem; font-weight:900; color:var(--amber); text-transform:uppercase; letter-spacing:0.05em;">Select Game Room</label>
+            <select id="host-room-select" style="width:100%; background:#070b14; color:var(--cyan); padding:10px; border-radius:8px; border:1px solid #475569; font-weight:800; font-size:0.95rem; margin-top:4px;">
               <option value="ROOM1" selected>Fremont Main</option>
               <option value="ROOM2">Fremont HS</option>
               <option value="ROOM3">Fremont MS</option>
@@ -539,16 +576,16 @@
           </div>
 
           <!-- PRESETS SELECTION -->
-          <div style="background-color: rgba(56, 189, 248, 0.08); padding: 0.6rem; border-radius: 8px; border: 1px dashed #38bdf8;">
-            <label for="preset-select" style="font-size:0.75rem; font-weight:800; color:#38bdf8; text-transform:uppercase;">Preset Game Pack (Optional)</label>
-            <select id="preset-select" style="width:100%; background:#1e293b; color:#38bdf8; padding:8px; border-radius:6px; border:1px solid #475569; font-weight:700; margin-top:4px;">
+          <div style="background-color: rgba(56, 189, 248, 0.08); padding: 0.75rem; border-radius: 10px; border: 1.5px dashed var(--cyan);">
+            <label for="preset-select" style="font-size:0.75rem; font-weight:900; color:var(--cyan); text-transform:uppercase; letter-spacing:0.05em;">Preset Game Pack (Optional)</label>
+            <select id="preset-select" style="width:100%; background:#070b14; color:var(--cyan); padding:10px; border-radius:8px; border:1px solid #475569; font-weight:800; font-size:0.95rem; margin-top:4px;">
               <option value="none" selected>-- None (Use Category & Difficulty Below) --</option>
             </select>
           </div>
 
           <div id="standard-cat-row">
-            <label style="font-size:0.75rem; font-weight:800; color:#38bdf8; text-transform:uppercase;">Category</label>
-            <select id="category-select" style="width:100%; background:#1e293b; color:#38bdf8; padding:8px; border-radius:6px; border:1px solid #475569; font-weight:700; margin-top:4px;">
+            <label style="font-size:0.75rem; font-weight:900; color:var(--cyan); text-transform:uppercase; letter-spacing:0.05em;">Category</label>
+            <select id="category-select" style="width:100%; background:#070b14; color:var(--cyan); padding:10px; border-radius:8px; border:1px solid #475569; font-weight:800; font-size:0.95rem; margin-top:4px;">
               <option value="all" selected>Mixed (All Categories)</option>
               <option value="bible">Bible Trivia Only</option>
               <option value="food">Snacks & Fast Food</option>
@@ -562,8 +599,8 @@
           </div>
 
           <div id="standard-diff-row">
-            <label style="font-size:0.75rem; font-weight:800; color:#94a3b8; text-transform:uppercase;">Difficulty</label>
-            <select id="difficulty-select" style="width:100%; background:#1e293b; color:#38bdf8; padding:8px; border-radius:6px; border:1px solid #475569; font-weight:700; margin-top:4px;">
+            <label style="font-size:0.75rem; font-weight:900; color:#94a3b8; text-transform:uppercase; letter-spacing:0.05em;">Difficulty</label>
+            <select id="difficulty-select" style="width:100%; background:#070b14; color:var(--cyan); padding:10px; border-radius:8px; border:1px solid #475569; font-weight:800; font-size:0.95rem; margin-top:4px;">
               <option value="all" selected>Mixed (All Difficulties)</option>
               <option value="easy">Easy Only</option>
               <option value="medium">Medium Only</option>
@@ -574,8 +611,8 @@
           </div>
 
           <div>
-            <label style="font-size:0.75rem; font-weight:800; color:#94a3b8; text-transform:uppercase;">Number of Questions</label>
-            <select id="question-count" style="width:100%; background:#1e293b; color:#38bdf8; padding:8px; border-radius:6px; border:1px solid #475569; font-weight:700; margin-top:4px;">
+            <label style="font-size:0.75rem; font-weight:900; color:#94a3b8; text-transform:uppercase; letter-spacing:0.05em;">Number of Questions</label>
+            <select id="question-count" style="width:100%; background:#070b14; color:var(--cyan); padding:10px; border-radius:8px; border:1px solid #475569; font-weight:800; font-size:0.95rem; margin-top:4px;">
               <option value="5">5 Questions</option>
               <option value="10" selected>10 Questions</option>
               <option value="15">15 Questions</option>
@@ -584,9 +621,9 @@
             </select>
           </div>
 
-          <div style="border-top: 1px solid #334155; padding-top: 0.75rem;">
-            <label style="font-size:0.75rem; font-weight:800; color:#38bdf8; text-transform:uppercase;">🔄 Auto-Start Next Match</label>
-            <select id="auto-next-mode" style="width:100%; background:#1e293b; color:#38bdf8; padding:8px; border-radius:6px; border:1px solid #475569; font-weight:700; margin-top:4px;">
+          <div style="border-top: 1px solid #334155; padding-top: 0.85rem;">
+            <label style="font-size:0.75rem; font-weight:900; color:var(--cyan); text-transform:uppercase; letter-spacing:0.05em;">🔄 Auto-Start Next Match</label>
+            <select id="auto-next-mode" style="width:100%; background:#070b14; color:var(--cyan); padding:10px; border-radius:8px; border:1px solid #475569; font-weight:800; font-size:0.95rem; margin-top:4px;">
               <option value="off" selected>Off (Manual Restart)</option>
               <option value="same">Auto-Loop: Same Category (Fresh Questions)</option>
               <option value="playlist">Sequential Playlist: Cycle Pure Categories</option>
@@ -595,22 +632,22 @@
         </div>
 
         <div style="text-align: center;">
-          <button id="btn-start" style="background-color: #10b981; color: #fff; font-size: 1.1rem; font-weight: 800; border: none; padding: 0.85rem 2.5rem; border-radius: 10px; cursor: pointer;">Start Game on TV</button>
+          <button id="btn-start" style="background: linear-gradient(135deg, #059669, var(--green)); color: #fff; font-size: 1.25rem; font-weight: 900; border: none; padding: 1rem 3rem; border-radius: 14px; cursor: pointer; box-shadow: 0 6px 20px rgba(16, 185, 129, 0.4); text-transform: uppercase; letter-spacing: 0.05em;">Start Game on TV</button>
           <div class="host-links">
             <a href="/add.html" class="host-link-btn">+ Add Questions</a>
             <a href="/manage.html" class="host-link-btn">⚙ Question Editor & Generator</a>
           </div>
         </div>
 
-        <h3 style="margin-top: 1.5rem; font-size: 1rem; color: #94a3b8;">Connected Roster</h3>
-        <ul id="host-lobby-players" style="list-style: none; padding: 0; display: grid; grid-template-columns: 1fr 1fr; gap: 0.5rem;"></ul>
+        <h3 style="margin-top: 2rem; font-size: 1rem; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.05em;">Connected Roster</h3>
+        <ul id="host-lobby-players" style="list-style: none; padding: 0; display: grid; grid-template-columns: 1fr 1fr; gap: 0.6rem;"></ul>
       </div>
 
       <!-- HALL OF FAME SUB-PANEL -->
       <div id="host-hall-view" class="hidden" style="margin-top: 1rem;">
-        <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:0.5rem; margin-bottom:1rem;">
-          <div style="display:flex; gap:0.5rem; align-items:center; flex-wrap:wrap;">
-            <select id="hall-room-select" style="background:#1e293b; color:#f59e0b; border:1px solid #f59e0b; padding:6px 12px; border-radius:6px; font-weight:700;">
+        <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:0.6rem; margin-bottom:1.25rem;">
+          <div style="display:flex; gap:0.6rem; align-items:center; flex-wrap:wrap;">
+            <select id="hall-room-select" style="background:#070b14; color:var(--amber); border:1.5px solid var(--amber); padding:8px 14px; border-radius:8px; font-weight:800;">
               <option value="all">All Rooms Combined</option>
               <option value="ROOM1">Fremont Main</option>
               <option value="ROOM2">Fremont HS</option>
@@ -619,7 +656,7 @@
               <option value="ROOM5">Sandusky</option>
               <option value="ROOM6">Northwood</option>
             </select>
-            <select id="hall-category-select" style="background:#1e293b; color:#38bdf8; border:1px solid #475569; padding:6px 12px; border-radius:6px; font-weight:700;">
+            <select id="hall-category-select" style="background:#070b14; color:var(--cyan); border:1.5px solid #475569; padding:8px 14px; border-radius:8px; font-weight:800;">
               <option value="all" selected>All Categories</option>
               <option value="bible">Bible Trivia</option>
               <option value="food">Snacks & Fast Food</option>
@@ -632,12 +669,12 @@
             </select>
           </div>
           <div style="display:flex; gap:0.5rem;">
-            <button id="btn-show-highscore" class="toggle-pill" style="border-radius:6px;">High Scores</button>
-            <button id="btn-show-career" class="toggle-pill off" style="border-radius:6px;">Career XP</button>
+            <button id="btn-show-highscore" class="toggle-pill" style="border-radius:8px;">High Scores</button>
+            <button id="btn-show-career" class="toggle-pill off" style="border-radius:8px;">Career XP</button>
           </div>
         </div>
-        <ul id="hall-of-fame-list" style="list-style:none; padding:0; display:flex; flex-direction:column; gap:0.5rem;">
-          <li style="background:#1e293b; padding:10px; border-radius:8px;">Select a filter to view records.</li>
+        <ul id="hall-of-fame-list" style="list-style:none; padding:0; display:flex; flex-direction:column; gap:0.6rem;">
+          <li style="background:var(--panel-bg); padding:12px; border-radius:10px;">Select a filter to view records.</li>
         </ul>
       </div>
     </div>
@@ -646,11 +683,11 @@
     <div id="host-game" class="tv-broadcast-screen hidden">
       <div>
         <div style="display: flex; justify-content: space-between; align-items: center;">
-          <div style="display: flex; align-items: center; gap: 0.75rem;">
-            <span id="host-category" style="background: #1e293b; border: 1px solid #38bdf8; color: #38bdf8; font-weight: 800; padding: 6px 16px; border-radius: 9999px; font-size: 0.95rem;">Category</span>
+          <div style="display: flex; align-items: center; gap: 0.85rem;">
+            <span id="host-category" style="background: rgba(56, 189, 248, 0.12); border: 1.5px solid var(--cyan); color: var(--cyan); font-weight: 900; padding: 7px 18px; border-radius: 9999px; font-size: 1.05rem; letter-spacing: 0.04em;">Category</span>
             <button class="btn-stop-broadcast stop-game-btn">⏹ End Match</button>
           </div>
-          <span id="host-timer" style="font-size: 2.2rem; font-weight: 900; color: #facc15;">15</span>
+          <span id="host-timer" style="font-size: 2.8rem; font-weight: 900; color: var(--gold); line-height: 1;">15</span>
         </div>
         <div class="timer-meter-wrapper">
           <div id="timer-bar" class="timer-meter-bar"></div>
@@ -664,19 +701,20 @@
         <p id="host-question" class="tv-question-text">Question Prompt</p>
       </div>
 
+      <!-- STREAMLINED OPTION CARDS (MATCHES MOBILE APP LOOK) -->
       <div id="host-options" class="tv-options-grid"></div>
 
       <div class="submission-tray">
-        <span id="submission-counter-label" style="font-size: 0.85rem; font-weight: 800; color: #38bdf8;">0 / 0 Answered</span>
+        <span id="submission-counter-label" style="font-size: 0.95rem; font-weight: 900; color: var(--cyan);">0 / 0 Answered</span>
         <div id="submission-chips-container" class="submission-chips"></div>
       </div>
     </div>
 
-    <!-- 2. ZERO-SCROLL TV SCREEN: 2-COLUMN ROUND RESULTS (FEATURING LARGE 175PX QR CODE) -->
+    <!-- 2. ZERO-SCROLL TV SCREEN: 2-COLUMN ROUND RESULTS -->
     <div id="host-round-end" class="tv-broadcast-screen hidden">
       <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem;">
-        <h2 style="margin: 0; font-size: 1.35rem; color: #38bdf8;">Round Results</h2>
-        <span style="color: #f59e0b; font-weight: 800; font-size: 1rem;">Next Question Loading...</span>
+        <h2 style="margin: 0; font-size: 1.6rem; color: var(--cyan); font-weight: 900;">Round Results</h2>
+        <span style="color: var(--amber); font-weight: 800; font-size: 1.1rem;">Next Question Loading...</span>
         <button class="btn-stop-broadcast stop-game-btn">⏹ End Match</button>
       </div>
 
@@ -711,7 +749,7 @@
             <div class="chart-container">
               <div class="chart-header">
                 <span>Response Breakdown</span>
-                <span id="chart-total-label" style="color:#38bdf8;">0 Answered</span>
+                <span id="chart-total-label" style="color:var(--cyan);">0 Answered</span>
               </div>
               <div id="chart-bars-wrapper" class="chart-bars"></div>
             </div>
@@ -719,7 +757,7 @@
             <!-- DEDICATED TV JOIN QR CARD -->
             <div class="results-qr-card">
               <div class="results-qr-title">📲 Join Next Question</div>
-              <div class="results-qr-sub">Scan to jump in now</div>
+              <div class="results-qr-sub">Scan with your camera</div>
               <div id="results-qrcode"></div>
             </div>
           </div>
@@ -727,7 +765,7 @@
 
         <!-- RIGHT COLUMN: STANDINGS WITH AUTO-SCROLLING LEADERBOARD -->
         <div class="tv-results-right">
-          <div style="font-size: 0.85rem; font-weight: 800; color: #94a3b8; text-transform: uppercase; margin-bottom: 0.5rem;">Live Standings</div>
+          <div style="font-size: 0.9rem; font-weight: 900; color: #94a3b8; text-transform: uppercase; margin-bottom: 0.6rem; letter-spacing: 0.05em;">Live Standings</div>
           <div class="autoscroll-leaderboard-wrapper" id="results-scroll-container">
             <ul id="host-leaderboard" class="autoscroll-list"></ul>
           </div>
@@ -740,19 +778,19 @@
       <div style="display: flex; justify-content: space-between; align-items: center;">
         <div style="flex: 1;"></div>
         <div style="text-align: center; flex: 2;">
-          <h1 style="color: #38bdf8; margin: 0; font-size: 2rem;">Checkpoint Standings</h1>
-          <p id="host-milestone-text" style="color: #f59e0b; font-weight: 800; font-size: 1.1rem; margin: 0.25rem 0;">Match Standings</p>
+          <h1 style="color: var(--cyan); margin: 0; font-size: 2.4rem; font-weight: 900;">Checkpoint Standings</h1>
+          <p id="host-milestone-text" style="color: var(--amber); font-weight: 900; font-size: 1.2rem; margin: 0.35rem 0;">Match Standings</p>
         </div>
         <div style="flex: 1; text-align: right;">
           <button class="btn-stop-broadcast stop-game-btn">⏹ End Match</button>
         </div>
       </div>
 
-      <div class="autoscroll-leaderboard-wrapper" id="milestone-scroll-container" style="max-width: 700px; margin: 0 auto; width: 100%;">
+      <div class="autoscroll-leaderboard-wrapper" id="milestone-scroll-container" style="max-width: 740px; margin: 0 auto; width: 100%;">
         <ul id="host-milestone-leaderboard" class="autoscroll-list"></ul>
       </div>
 
-      <div style="text-align: center; color: #94a3b8; font-weight: 700; font-size: 0.9rem;">
+      <div style="text-align: center; color: #94a3b8; font-weight: 800; font-size: 1rem;">
         Resuming match automatically in 10 seconds...
       </div>
     </div>
@@ -760,31 +798,31 @@
     <!-- 4. ZERO-SCROLL TV SCREEN: MATCH GAME OVER & PODIUM -->
     <div id="host-game-over" class="tv-broadcast-screen hidden">
       <div style="text-align: center;">
-        <h1 style="color: #facc15; font-size: 2rem; margin: 0;">👑 Champion Crowned!</h1>
-        <p style="color: #94a3b8; font-weight: 700; margin: 0.2rem 0;">Final Match Podium</p>
+        <h1 style="color: var(--gold); font-size: 2.5rem; font-weight: 900; margin: 0; text-shadow: 0 0 20px rgba(250, 204, 21, 0.4);">👑 Champion Crowned!</h1>
+        <p style="color: #94a3b8; font-weight: 800; margin: 0.3rem 0; font-size: 1.1rem;">Final Match Podium</p>
       </div>
 
       <div id="podium-area" class="podium-container"></div>
 
       <!-- TOUGHEST QUESTION STAT CARD -->
-      <div id="toughest-question-card" class="hidden" style="background:#1e293b; border:1px solid #f59e0b; border-radius:10px; padding:0.75rem 1.25rem; max-width:650px; margin:0 auto; width:100%;">
+      <div id="toughest-question-card" class="hidden" style="background:var(--panel-bg); border:1.5px solid var(--amber); border-radius:14px; padding:0.85rem 1.4rem; max-width:680px; margin:0 auto; width:100%; box-shadow:0 6px 20px rgba(0,0,0,0.5);">
         <div style="display:flex; justify-content:space-between; align-items:center;">
-          <span style="font-size:0.75rem; font-weight:800; color:#f59e0b; text-transform:uppercase;">🧠 Toughest Question</span>
-          <span id="toughest-accuracy" style="font-size:0.8rem; font-weight:800; color:#ef4444;">0% Correct</span>
+          <span style="font-size:0.8rem; font-weight:900; color:var(--amber); text-transform:uppercase; letter-spacing:0.05em;">🧠 Toughest Question</span>
+          <span id="toughest-accuracy" style="font-size:0.85rem; font-weight:900; color:var(--red);">0% Correct</span>
         </div>
-        <p id="toughest-text" style="font-size:0.9rem; font-weight:700; margin:0.2rem 0; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">Question</p>
-        <div style="font-size:0.75rem; color:#94a3b8;">Correct: <strong id="toughest-answer" style="color:#10b981;">---</strong></div>
+        <p id="toughest-text" style="font-size:1rem; font-weight:800; margin:0.3rem 0; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">Question</p>
+        <div style="font-size:0.85rem; color:#94a3b8;">Correct: <strong id="toughest-answer" style="color:var(--green);">---</strong></div>
       </div>
 
       <!-- AUTO-PLAY NEXT MATCH COUNTDOWN -->
-      <div id="auto-start-banner" class="hidden" style="background: rgba(16, 185, 129, 0.15); border: 2px solid #10b981; color: #6ee7b7; padding: 0.6rem 1.25rem; border-radius: 10px; margin: 0 auto; max-width: 500px; font-weight: 800; display: flex; justify-content: space-between; align-items: center;">
-        <span>⏳ Next Match (<span id="auto-next-cat-label" style="color:#fff;">BIBLE</span>) starts in <strong id="auto-start-timer" style="color:#facc15;">10</strong>s...</span>
-        <button onclick="cancelAutoStart()" style="background:#dc2626; color:#fff; border:none; padding:4px 8px; border-radius:4px; cursor:pointer;">Cancel</button>
+      <div id="auto-start-banner" class="hidden" style="background: rgba(16, 185, 129, 0.18); border: 2px solid var(--green); color: #6ee7b7; padding: 0.75rem 1.4rem; border-radius: 12px; margin: 0 auto; max-width: 540px; font-weight: 900; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 0 16px rgba(16, 185, 129, 0.3);">
+        <span>⏳ Next Match (<span id="auto-next-cat-label" style="color:#fff;">BIBLE</span>) starts in <strong id="auto-start-timer" style="color:var(--gold); font-size:1.2rem;">10</strong>s...</span>
+        <button onclick="cancelAutoStart()" style="background:#dc2626; color:#fff; border:none; padding:5px 10px; border-radius:6px; cursor:pointer; font-weight:800;">Cancel</button>
       </div>
 
-      <div style="display: flex; justify-content: center; gap: 0.75rem; margin-top: 0.5rem;">
-        <button id="btn-export-recap" style="background-color: #10b981; color:#fff; font-weight:700; border:none; padding:0.6rem 1.25rem; border-radius:8px; cursor:pointer;">📥 Export Match Recap (CSV)</button>
-        <button id="btn-restart" style="background-color: #3b82f6; color:#fff; font-weight:800; border:none; padding:0.6rem 1.5rem; border-radius:8px; cursor:pointer;">Return to Lobby</button>
+      <div style="display: flex; justify-content: center; gap: 0.85rem; margin-top: 0.5rem;">
+        <button id="btn-export-recap" style="background: linear-gradient(135deg, #059669, var(--green)); color:#fff; font-weight:800; border:none; padding:0.75rem 1.4rem; border-radius:10px; cursor:pointer;">📥 Export Match Recap (CSV)</button>
+        <button id="btn-restart" style="background: linear-gradient(135deg, #0284c7, #38bdf8); color:#070b14; font-weight:900; border:none; padding:0.75rem 1.8rem; border-radius:10px; cursor:pointer;">Return to Lobby</button>
       </div>
     </div>
   </div>
@@ -944,7 +982,6 @@
       activeScrollIntervals.push(interval);
     }
 
-    // EXPANDED CATEGORY ROTATION LIST
     const PLAYLIST_CATEGORIES = [
       'bible', 
       'food', 
@@ -971,12 +1008,11 @@
     const resultsQrcodeContainer = document.getElementById("results-qrcode");
     const timerBar = document.getElementById('timer-bar');
 
-    // RENDER LARGE 240PX LOBBY QR AND HIGH-VISIBILITY 175PX RESULTS QR
     function renderQRCode(roomCode) {
       const joinUrl = `${window.location.origin}/?room=${roomCode}`;
 
       qrcodeContainer.innerHTML = '';
-      new QRCode(qrcodeContainer, { text: joinUrl, width: 240, height: 240, colorDark: "#38bdf8", colorLight: "#0f172a" });
+      new QRCode(qrcodeContainer, { text: joinUrl, width: 240, height: 240, colorDark: "#38bdf8", colorLight: "#070b14" });
 
       resultsQrcodeContainer.innerHTML = '';
       new QRCode(resultsQrcodeContainer, { text: joinUrl, width: 175, height: 175, colorDark: "#000000", colorLight: "#ffffff" });
@@ -995,7 +1031,6 @@
     hostRoomSelect.addEventListener('change', (e) => switchRoom(e.target.value));
     switchRoom(currentRoomCode);
 
-    // PRESETS LOADING
     const presetSelect = document.getElementById('preset-select');
     const standardCatRow = document.getElementById('standard-cat-row');
     const standardDiffRow = document.getElementById('standard-diff-row');
@@ -1024,7 +1059,6 @@
       standardDiffRow.style.opacity = isPreset ? '0.4' : '1';
     });
 
-    // HALL OF FAME NAVIGATION & LOADING
     const hostLobbyView = document.getElementById('host-lobby-view');
     const hostLobby = document.getElementById('host-lobby');
     const hostHallView = document.getElementById('host-hall-view');
@@ -1062,7 +1096,7 @@
         hallData = await res.json();
         renderHallList();
       } catch (e) {
-        hallOfFameList.innerHTML = '<li style="background:#1e293b; padding:10px; border-radius:8px;">Unable to load Hall of Fame.</li>';
+        hallOfFameList.innerHTML = '<li style="background:var(--panel-bg); padding:12px; border-radius:10px;">Unable to load Hall of Fame.</li>';
       }
     }
 
@@ -1070,13 +1104,13 @@
       hallOfFameList.innerHTML = '';
       const list = currentHallTab === 'high' ? hallData.highScores : hallData.careerScores;
       if (!list || list.length === 0) {
-        hallOfFameList.innerHTML = '<li style="background:#1e293b; padding:10px; border-radius:8px;">No records logged yet.</li>';
+        hallOfFameList.innerHTML = '<li style="background:var(--panel-bg); padding:12px; border-radius:10px;">No records logged yet.</li>';
         return;
       }
       list.slice(0, 50).forEach((p, idx) => {
         const li = document.createElement('li');
-        li.style.cssText = 'background:#1e293b; padding:10px 14px; border-radius:8px; display:flex; justify-content:space-between; align-items:center; font-weight:700;';
-        li.innerHTML = `<span>#${idx+1} ${p.avatar || '🚀'} ${p.username} (${p.games_played || 1} games)</span><strong style="color:#38bdf8;">${Number(p.score).toLocaleString()} pts</strong>`;
+        li.style.cssText = 'background:var(--panel-bg); padding:12px 18px; border-radius:10px; display:flex; justify-content:space-between; align-items:center; font-weight:800; border: 1px solid rgba(255,255,255,0.06);';
+        li.innerHTML = `<span>#${idx+1} ${p.avatar || '🚀'} ${p.username} (${p.games_played || 1} games)</span><strong style="color:var(--cyan);">${Number(p.score).toLocaleString()} pts</strong>`;
         hallOfFameList.appendChild(li);
       });
     }
@@ -1098,7 +1132,6 @@
     hallRoomSelect.addEventListener('change', loadHallOfFame);
     hallCategorySelect.addEventListener('change', loadHallOfFame);
 
-    // IN-GAME SCREEN ELEMENTS
     const hostGame = document.getElementById('host-game');
     const hostRoundEnd = document.getElementById('host-round-end');
     const hostMilestone = document.getElementById('host-milestone');
@@ -1219,10 +1252,10 @@
       list.innerHTML = '';
       players.forEach(p => {
         const li = document.createElement('li');
-        li.style.cssText = 'background:#1e293b; padding:8px 12px; border-radius:6px; display:flex; justify-content:space-between; align-items:center;';
+        li.style.cssText = 'background:var(--panel-bg); padding:10px 14px; border-radius:10px; display:flex; justify-content:space-between; align-items:center; border: 1px solid rgba(255,255,255,0.06);';
         li.innerHTML = `
-          <span>${p.avatar || '🚀'} ${p.name}</span>
-          <button class="btn-kick" onclick="kickPlayer('${p.name}')">Kick</button>
+          <span style="font-weight:800; font-size:1.05rem;">${p.avatar || '🚀'} ${p.name}</span>
+          <button class="btn-kick" style="background:#7f1d1d; color:#fca5a5; border:1px solid #ef4444; padding:4px 10px; border-radius:6px; font-weight:800; cursor:pointer;" onclick="kickPlayer('${p.name}')">Kick</button>
         `;
         list.appendChild(li);
       });
@@ -1264,7 +1297,10 @@
       data.options.forEach((opt, idx) => {
         const div = document.createElement('div');
         div.className = 'tv-option-btn';
-        div.textContent = `${String.fromCharCode(65 + idx)}. ${opt}`;
+        div.innerHTML = `
+          <div class="tv-opt-badge">${String.fromCharCode(65 + idx)}</div>
+          <div class="tv-opt-text">${opt}</div>
+        `;
         hostOptions.appendChild(div);
       });
 
@@ -1331,7 +1367,7 @@
         if (p.rankDelta > 0) deltaHtml = `<span class="delta-badge delta-up">▲ +${p.rankDelta}</span>`;
         else if (p.rankDelta < 0) deltaHtml = `<span class="delta-badge delta-down">▼ ${p.rankDelta}</span>`;
 
-        li.innerHTML = `<span>#${idx + 1} ${p.avatar || '🚀'} ${p.name} ${deltaHtml}</span><strong style="color:#38bdf8;">${p.score} pts</strong>`;
+        li.innerHTML = `<span>#${idx + 1} ${p.avatar || '🚀'} ${p.name} ${deltaHtml}</span><strong style="color:var(--cyan);">${p.score} pts</strong>`;
         hostLeaderboard.appendChild(li);
       });
 
@@ -1353,7 +1389,7 @@
         row.className = 'chart-row';
         row.innerHTML = `
           <div class="chart-row-meta">
-            <span style="${isCorrect ? 'color: #10b981; font-weight:800;' : ''}">${isCorrect ? '✓ ' : ''}${optText}</span>
+            <span style="${isCorrect ? 'color: var(--green); font-weight:900;' : ''}">${isCorrect ? '✓ ' : ''}${optText}</span>
             <span style="color: #94a3b8;">${count} (${pct}%)</span>
           </div>
           <div class="chart-track">
@@ -1372,7 +1408,7 @@
       hostMilestoneLeaderboard.innerHTML = '';
       data.leaderboard.forEach((p, idx) => {
         const li = document.createElement('li');
-        li.innerHTML = `<span>#${idx + 1} ${p.avatar || '🚀'} ${p.name}</span><strong style="color:#38bdf8;">${p.score} pts</strong>`;
+        li.innerHTML = `<span>#${idx + 1} ${p.avatar || '🚀'} ${p.name}</span><strong style="color:var(--cyan);">${p.score} pts</strong>`;
         hostMilestoneLeaderboard.appendChild(li);
       });
 
@@ -1405,13 +1441,12 @@
       }
 
       if (typeof confetti === 'function') {
-        confetti({ particleCount: 120, spread: 80, origin: { y: 0.6 } });
+        confetti({ particleCount: 140, spread: 85, origin: { y: 0.6 } });
       }
 
       handleAutoPlayCountdown();
     });
 
-    // CSV MATCH RECAP EXPORT
     btnExportRecap.addEventListener('click', () => {
       if (!lastCompletedMatchData || !lastCompletedMatchData.leaderboard) {
         return alert('No match data available to export.');
