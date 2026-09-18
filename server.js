@@ -1264,7 +1264,6 @@ async function evaluateAchievements(p, matchRank, totalPlayers, room) {
   if (p.streak >= 10) unlock('magma');
   if (p.streak >= 5) unlock('double_trouble');
 
-  let wonDailyPop = false;
   if (totalPlayers >= 3) {
     if (matchRank <= 3 && p.finalQuestionsPoints > 0) unlock('elevator');
     if (matchRank === 1) unlock('ice');
@@ -1273,13 +1272,6 @@ async function evaluateAchievements(p, matchRank, totalPlayers, room) {
     if (matchRank <= 3) unlock('wave_rider');
     if (matchRank === 1) unlock('gold_digger');
 
-    // Check if Feature is Enabled and Room 1 First Winner of Day
-    if (isFreePopEnabled && room.code === 'ROOM1' && matchRank === 1) {
-      const todayStr = new Date().toISOString().slice(0, 10);
-      const alreadyClaimed = await checkDailyPopClaimed(todayStr);
-      if (!alreadyClaimed) {
-        await claimDailyPop(todayStr, p.username);
-        wonDailyPop = true;
       }
     }
   }
