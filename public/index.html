@@ -102,38 +102,6 @@
       letter-spacing: 0.05em;
     }
 
-    .avatar-grid {
-      display: grid;
-      grid-template-columns: repeat(4, 1fr);
-      gap: 0.5rem;
-      margin-top: 0.25rem;
-    }
-    .avatar-btn {
-      background-color: #1e293b;
-      border: 2px solid #334155;
-      border-radius: 12px;
-      padding: 0.5rem 0.2rem;
-      cursor: pointer;
-      text-align: center;
-      transition: all 0.15s;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-    }
-    .avatar-btn .av-icon { font-size: 1.45rem; }
-    .avatar-btn .av-req { font-size: 0.6rem; font-weight: 800; color: #94a3b8; margin-top: 2px; }
-    .avatar-btn.selected {
-      border-color: #38bdf8;
-      background-color: rgba(56, 189, 248, 0.2);
-      transform: scale(1.05);
-    }
-    .avatar-btn.locked {
-      opacity: 0.45;
-      cursor: not-allowed;
-      border-color: #1e293b;
-    }
-    .avatar-btn.locked .av-req { color: #f59e0b; }
-
     .room-tag {
       background-color: #1e293b;
       border: 1px solid #38bdf8;
@@ -169,7 +137,6 @@
       margin: 0.25rem 0 0 0;
     }
 
-    /* ACHIEVEMENTS SHELF IN LOBBY */
     .achievements-section {
       background-color: #0f172a;
       border: 1px solid #334155;
@@ -498,51 +465,13 @@
   <div class="container">
     <div id="join-screen">
       <h1>Trivia Login</h1>
-      <p class="question-text">Pick your avatar and jump into the arena</p>
+      <p class="question-text">Enter your name and PIN to enter the arena</p>
       <p id="auth-error" class="error-msg"></p>
 
       <form id="auth-form" class="auth-card">
         <div class="locked-room-box">
           <span class="locked-room-label">Joining Room:</span>
           <span class="locked-room-val" id="display-assigned-room">Room 1</span>
-        </div>
-
-        <div>
-          <label>Choose Avatar (Career XP Unlocks)</label>
-          <div class="avatar-grid" id="avatar-selector">
-            <div class="avatar-btn selected" data-avatar="🚀" data-req="0">
-              <span class="av-icon">🚀</span>
-              <span class="av-req">FREE</span>
-            </div>
-            <div class="avatar-btn" data-avatar="🎯" data-req="0">
-              <span class="av-icon">🎯</span>
-              <span class="av-req">FREE</span>
-            </div>
-            <div class="avatar-btn" data-avatar="⚡" data-req="10000">
-              <span class="av-icon">⚡</span>
-              <span class="av-req">10k XP</span>
-            </div>
-            <div class="avatar-btn" data-avatar="🍕" data-req="30000">
-              <span class="av-icon">🍕</span>
-              <span class="av-req">30k XP</span>
-            </div>
-            <div class="avatar-btn" data-avatar="🤠" data-req="75000">
-              <span class="av-icon">🤠</span>
-              <span class="av-req">75k XP</span>
-            </div>
-            <div class="avatar-btn" data-avatar="🏎️" data-req="175000">
-              <span class="av-icon">🏎️</span>
-              <span class="av-req">175k XP</span>
-            </div>
-            <div class="avatar-btn" data-avatar="🦊" data-req="400000">
-              <span class="av-icon">🦊</span>
-              <span class="av-req">400k XP</span>
-            </div>
-            <div class="avatar-btn" data-avatar="👑" data-req="1000000">
-              <span class="av-icon">👑</span>
-              <span class="av-req">1M XP</span>
-            </div>
-          </div>
         </div>
 
         <div>
@@ -560,7 +489,7 @@
     <!-- Lobby Screen -->
     <div id="lobby-screen" class="hidden">
       <div class="room-tag" id="display-room-tag">ROOM: Room 1</div>
-      <h1>Ready, <span id="display-player-badge"></span><span id="display-player-avatar">🚀</span> <span id="display-player-name" style="color: #38bdf8;"></span>!</h1>
+      <h1>Ready, <span id="display-player-badge"></span><span id="display-player-name" style="color: #38bdf8;"></span>!</h1>
 
       <div class="stats-card">
         <div class="stat-item">
@@ -729,17 +658,6 @@
       'ROOM6': 'Northwood'
     };
 
-    const AVATAR_LEVELS = {
-      '🚀': 0,
-      '🎯': 0,
-      '⚡': 10000,
-      '🍕': 30000,
-      '🤠': 75000,
-      '🏎️': 175000,
-      '🦊': 400000,
-      '👑': 1000000
-    };
-
     const ACHIEVEMENTS_DEF = {
       'flawless': { name: 'Flawless Victory', icon: '🎯', desc: 'Answer every question correctly in a match' },
       'lightning': { name: 'Lightning Fast', icon: '💨', desc: 'Submit a correct answer in under 1.0s' },
@@ -774,8 +692,6 @@
 
     const socket = io();
     let selectedAnswer = null;
-    let chosenAvatar = '🚀';
-    let userCareerXP = 0;
     let playerAchievements = [];
     let equippedBadge = '';
 
@@ -802,20 +718,6 @@
       setTimeout(clearBodyFlashes, 1000);
     }
 
-    function refreshAvatarGrid(careerXP) {
-      userCareerXP = careerXP;
-      const avatarBtns = document.querySelectorAll('.avatar-btn');
-      avatarBtns.forEach(btn => {
-        const req = parseInt(btn.dataset.req, 10);
-        if (careerXP < req) {
-          btn.classList.add('locked');
-          btn.title = `Requires ${req} Career XP`;
-        } else {
-          btn.classList.remove('locked');
-        }
-      });
-    }
-
     function renderAchievementsShelf(unlockedList) {
       playerAchievements = unlockedList || [];
       const shelfGrid = document.getElementById('achievements-shelf-grid');
@@ -839,9 +741,9 @@
         if (isUnlocked) {
           div.addEventListener('click', () => {
             if (equippedBadge === badge.icon) {
-              equippedBadge = ''; // Unequip
+              equippedBadge = '';
             } else {
-              equippedBadge = badge.icon; // Equip
+              equippedBadge = badge.icon;
             }
             socket.emit('player:set_badge', equippedBadge);
             renderAchievementsShelf(playerAchievements);
@@ -862,20 +764,6 @@
       }
     }
 
-    const avatarBtns = document.querySelectorAll('.avatar-btn');
-    avatarBtns.forEach(btn => {
-      btn.addEventListener('click', () => {
-        if (btn.classList.contains('locked')) {
-          haptic([80, 40, 80]);
-          return alert(`Locked! Earn ${btn.dataset.req} Career XP to unlock ${btn.dataset.avatar}`);
-        }
-        avatarBtns.forEach(b => b.classList.remove('selected'));
-        btn.classList.add('selected');
-        chosenAvatar = btn.dataset.avatar;
-        haptic(25);
-      });
-    });
-
     const joinScreen = document.getElementById('join-screen');
     const lobbyScreen = document.getElementById('lobby-screen');
     const gameScreen = document.getElementById('game-screen');
@@ -887,7 +775,6 @@
     const pinInput = document.getElementById('pin-input');
     const authError = document.getElementById('auth-error');
     const displayPlayerName = document.getElementById('display-player-name');
-    const displayPlayerAvatar = document.getElementById('display-player-avatar');
     const displayRoomTag = document.getElementById('display-room-tag');
     const statHighScore = document.getElementById('stat-high-score');
     const statCareerScore = document.getElementById('stat-career-score');
@@ -939,14 +826,11 @@
 
     const savedUser = localStorage.getItem('trivia_user');
     const savedPin = localStorage.getItem('trivia_pin');
-    const savedAvatar = localStorage.getItem('trivia_avatar') || '🚀';
 
     if (savedUser && savedPin) {
-      chosenAvatar = savedAvatar;
       socket.emit('player:auth', {
         username: savedUser,
         pin: savedPin,
-        avatar: chosenAvatar,
         roomCode: assignedRoomCode
       });
     }
@@ -960,7 +844,6 @@
       socket.emit('player:auth', {
         username,
         pin,
-        avatar: chosenAvatar,
         roomCode: assignedRoomCode
       });
     });
@@ -974,16 +857,13 @@
     socket.on('player:authenticated', (data) => {
       localStorage.setItem('trivia_user', data.username);
       localStorage.setItem('trivia_pin', pinInput.value.trim() || savedPin);
-      localStorage.setItem('trivia_avatar', data.avatar || chosenAvatar);
 
-      refreshAvatarGrid(data.careerScore);
       equippedBadge = data.badge || '';
       renderAchievementsShelf(data.achievements || []);
       updatePlayerHeaderDisplay();
 
       const displayName = data.roomName || ROOM_NAMES[data.roomCode] || data.roomCode;
       displayPlayerName.textContent = data.username;
-      displayPlayerAvatar.textContent = data.avatar || '🚀';
       displayRoomTag.textContent = `ROOM: ${displayName}`;
       statHighScore.textContent = Number(data.highScore).toLocaleString() + ' pts';
       statCareerScore.textContent = Number(data.careerScore).toLocaleString() + ' pts';
@@ -1033,7 +913,7 @@
       list.forEach((p, idx) => {
         const li = document.createElement('li');
         const badgeStr = p.badge ? `${p.badge} ` : '';
-        li.innerHTML = `<span>#${idx + 1} ${badgeStr}${p.avatar || '🚀'} ${p.username}</span><strong style="color:#38bdf8;">${Number(p.score).toLocaleString()} pts</strong>`;
+        li.innerHTML = `<span>#${idx + 1} ${badgeStr}${p.username}</span><strong style="color:#38bdf8;">${Number(p.score).toLocaleString()} pts</strong>`;
         lobbyHallList.appendChild(li);
       });
     }
@@ -1263,7 +1143,7 @@
       list.forEach((p, idx) => {
         const li = document.createElement('li');
         const badgeStr = p.badge ? `${p.badge} ` : '';
-        li.innerHTML = `<span>#${idx + 1} ${badgeStr}${p.avatar || '🚀'} ${p.username}</span><strong style="color:#38bdf8;">${Number(p.score).toLocaleString()} pts</strong>`;
+        li.innerHTML = `<span>#${idx + 1} ${badgeStr}${p.username}</span><strong style="color:#38bdf8;">${Number(p.score).toLocaleString()} pts</strong>`;
         postgameHallList.appendChild(li);
       });
     }
@@ -1294,9 +1174,9 @@
       const p3 = players[2] || null;
 
       let html = '';
-      if (p2) html += `<div class="p-slot second"><span class="p-icon">${p2.badge || ''}${p2.avatar || '🥈'}</span><span class="p-name">${p2.name}</span><div class="p-step">2</div></div>`;
-      if (p1) html += `<div class="p-slot first"><span class="p-icon">${p1.badge || ''}${p1.avatar || '👑'}</span><span class="p-name">${p1.name}</span><div class="p-step">1</div></div>`;
-      if (p3) html += `<div class="p-slot third"><span class="p-icon">${p3.badge || ''}${p3.avatar || '🥉'}</span><span class="p-name">${p3.name}</span><div class="p-step">3</div></div>`;
+      if (p2) html += `<div class="p-slot second"><span class="p-icon">${p2.badge || '🥈'}</span><span class="p-name">${p2.name}</span><div class="p-step">2</div></div>`;
+      if (p1) html += `<div class="p-slot first"><span class="p-icon">${p1.badge || '👑'}</span><span class="p-name">${p1.name}</span><div class="p-step">1</div></div>`;
+      if (p3) html += `<div class="p-slot third"><span class="p-icon">${p3.badge || '🥉'}</span><span class="p-name">${p3.name}</span><div class="p-step">3</div></div>`;
 
       playerPodiumArea.innerHTML = html;
     }
@@ -1309,7 +1189,7 @@
         li.style.border = isMe ? '2px solid #38bdf8' : 'none';
         const badgeStr = p.badge ? `${p.badge} ` : '';
         const streakTag = p.streak >= 2 ? `<span style="color:#f59e0b; margin-left:0.4rem; font-size:0.8rem;">🔥 ${p.streak}</span>` : '';
-        li.innerHTML = `<span>#${idx + 1} ${badgeStr}${p.avatar || '🚀'} ${p.name} ${isMe ? '(You)' : ''}${streakTag}</span><strong>${p.score} pts</strong>`;
+        li.innerHTML = `<span>#${idx + 1} ${badgeStr}${p.name} ${isMe ? '(You)' : ''}${streakTag}</span><strong>${p.score} pts</strong>`;
         targetElement.appendChild(li);
       });
     }
