@@ -168,6 +168,47 @@
       color: #38bdf8;
       margin: 0.25rem 0 0 0;
     }
+
+    /* ACHIEVEMENTS SHELF IN LOBBY */
+    .achievements-section {
+      background-color: #0f172a;
+      border: 1px solid #334155;
+      padding: 1rem;
+      border-radius: 12px;
+      margin: 1rem 0;
+      text-align: left;
+    }
+    .achievements-grid {
+      display: grid;
+      grid-template-columns: repeat(5, 1fr);
+      gap: 0.5rem;
+      max-height: 180px;
+      overflow-y: auto;
+      margin-top: 0.5rem;
+    }
+    .achievement-badge-item {
+      background: #1e293b;
+      border: 2px solid #334155;
+      border-radius: 10px;
+      padding: 0.4rem;
+      text-align: center;
+      cursor: pointer;
+      position: relative;
+    }
+    .achievement-badge-item.unlocked {
+      border-color: var(--green);
+      background: rgba(16, 185, 129, 0.15);
+    }
+    .achievement-badge-item.equipped {
+      border-color: var(--cyan);
+      box-shadow: 0 0 10px var(--cyan-glow);
+    }
+    .achievement-badge-item.locked {
+      opacity: 0.35;
+      filter: grayscale(1);
+    }
+    .badge-icon { font-size: 1.5rem; }
+
     .tab-bar {
       display: flex;
       justify-content: center;
@@ -519,7 +560,7 @@
     <!-- Lobby Screen -->
     <div id="lobby-screen" class="hidden">
       <div class="room-tag" id="display-room-tag">ROOM: Room 1</div>
-      <h1>Ready, <span id="display-player-avatar">🚀</span> <span id="display-player-name" style="color: #38bdf8;"></span>!</h1>
+      <h1>Ready, <span id="display-player-badge"></span><span id="display-player-avatar">🚀</span> <span id="display-player-name" style="color: #38bdf8;"></span>!</h1>
 
       <div class="stats-card">
         <div class="stat-item">
@@ -530,6 +571,16 @@
           <h3>Career Points</h3>
           <p id="stat-career-score">0</p>
         </div>
+      </div>
+
+      <!-- ACHIEVEMENTS SHELF & BADGE SELECTOR -->
+      <div class="achievements-section">
+        <div style="display:flex; justify-content:space-between; align-items:center;">
+          <h3 style="margin:0; font-size:1rem; color:#f8fafc;">🏆 Achievements Shelf</h3>
+          <span id="achievement-count-label" style="font-size:0.75rem; color:var(--cyan); font-weight:800;">0 / 29 Unlocked</span>
+        </div>
+        <p style="margin:0.2rem 0 0.5rem; font-size:0.75rem; color:#94a3b8;">Click an unlocked badge icon below to equip it next to your name</p>
+        <div id="achievements-shelf-grid" class="achievements-grid"></div>
       </div>
 
       <div style="background-color: #0f172a; border: 1px solid #334155; padding: 1rem; border-radius: 12px; margin: 1rem 0;">
@@ -689,10 +740,44 @@
       '👑': 1000000
     };
 
+    const ACHIEVEMENTS_DEF = {
+      'flawless': { name: 'Flawless Victory', icon: '🎯', desc: 'Answer every question correctly in a match' },
+      'lightning': { name: 'Lightning Fast', icon: '💨', desc: 'Submit a correct answer in under 1.0s' },
+      'elevator': { name: 'The Elevator', icon: '🧗‍♂️', desc: 'Climb 5+ spots during final 3 questions' },
+      'ice': { name: 'Ice in the Veins', icon: '🧊', desc: 'Win match on the very last question' },
+      'lucky': { name: 'Lucky Guess', icon: '🍀', desc: 'Correct answer with <1s remaining' },
+      'speed_demon': { name: 'Speed Demon', icon: '⚡', desc: 'Answer correctly in under 1.5s' },
+      'comeback': { name: 'The Comeback Kid', icon: '🛡️', desc: 'Climb from bottom 50% to top 3' },
+      'brainiac': { name: 'Brainiac', icon: '🧠', desc: 'Answer 3 hard questions correctly in a match' },
+      'sniper': { name: 'Sniper', icon: '🎯', desc: 'Avg reaction <2s with 80%+ accuracy' },
+      'last_hero': { name: 'Last Second Hero', icon: '⏰', desc: 'Correct within final 0.5s three times' },
+      'neck_neck': { name: 'Neck and Neck', icon: '🤝', desc: 'Finish match tied for 1st place' },
+      'clean_sweep': { name: 'Clean Sweep', icon: '🧹', desc: 'Get a correct answer where <20% of room did' },
+      'wave_rider': { name: 'Wave Rider', icon: '🌊', desc: 'Move up/down rank 3+ times and finish Top 3' },
+      'streak_master': { name: 'Streak Master', icon: '🔥', desc: 'Maintain streak across games' },
+      'magma': { name: 'Magma Flow', icon: '🌋', desc: 'Reach a 2.0x streak multiplier (10 streak)' },
+      'wall': { name: 'The Wall', icon: '🧱', desc: 'Maintain active streak for 5 games' },
+      'double_trouble': { name: 'Double Trouble', icon: '💥', desc: 'Earn two streak boosts in one match' },
+      'space_cadet': { name: 'Space Cadet', icon: '🚀', desc: 'Cross 10,000 Career XP' },
+      'snack_master': { name: 'Snack Master', icon: '🍕', desc: 'Cross 30,000 Career XP' },
+      'trailblazer': { name: 'Trailblazer', icon: '🤠', desc: 'Cross 75,000 Career XP' },
+      'speed_racer': { name: 'Speed Racer', icon: '🏎️', desc: 'Cross 175,000 Career XP' },
+      'clever_fox': { name: 'Clever Fox', icon: '🦊', desc: 'Cross 400,000 Career XP' },
+      'monarch': { name: 'Trivia Monarch', icon: '👑', desc: 'Cross 1,000,000 Career XP' },
+      'night_owl': { name: 'Night Owl', icon: '🦉', desc: 'Play a match past 9:00 PM' },
+      'early_bird': { name: 'Early Bird', icon: '🌱', desc: 'Play a match before 10:00 AM' },
+      'marathon': { name: 'Marathon Runner', icon: '🕹️', desc: 'Complete 10 matches in one day' },
+      'high_roller': { name: 'High Roller', icon: '🌟', desc: 'Score over 8,000 points in a single match' },
+      'centurion': { name: 'Centurion', icon: '🏆', desc: 'Complete 100 lifetime matches' },
+      'gold_digger': { name: 'Gold Digger', icon: '🥇', desc: 'Secure 1st place in 5 different matches' }
+    };
+
     const socket = io();
     let selectedAnswer = null;
     let chosenAvatar = '🚀';
     let userCareerXP = 0;
+    let playerAchievements = [];
+    let equippedBadge = '';
 
     const urlParams = new URLSearchParams(window.location.search);
     const assignedRoomCode = (urlParams.get('room') || 'ROOM1').trim().toUpperCase();
@@ -729,6 +814,52 @@
           btn.classList.remove('locked');
         }
       });
+    }
+
+    function renderAchievementsShelf(unlockedList) {
+      playerAchievements = unlockedList || [];
+      const shelfGrid = document.getElementById('achievements-shelf-grid');
+      const countLabel = document.getElementById('achievement-count-label');
+      if (!shelfGrid) return;
+
+      shelfGrid.innerHTML = '';
+      const allDefs = Object.values(ACHIEVEMENTS_DEF);
+      let unlockedCount = 0;
+
+      allDefs.forEach(badge => {
+        const isUnlocked = playerAchievements.includes(badge.name);
+        if (isUnlocked) unlockedCount++;
+        const isEquipped = equippedBadge === badge.icon;
+
+        const div = document.createElement('div');
+        div.className = `achievement-badge-item ${isUnlocked ? 'unlocked' : 'locked'} ${isEquipped ? 'equipped' : ''}`;
+        div.title = `${badge.name}: ${badge.desc} ${isUnlocked ? '(Unlocked)' : '(Locked)'}`;
+        div.innerHTML = `<span class="badge-icon">${badge.icon}</span>`;
+
+        if (isUnlocked) {
+          div.addEventListener('click', () => {
+            if (equippedBadge === badge.icon) {
+              equippedBadge = ''; // Unequip
+            } else {
+              equippedBadge = badge.icon; // Equip
+            }
+            socket.emit('player:set_badge', equippedBadge);
+            renderAchievementsShelf(playerAchievements);
+            updatePlayerHeaderDisplay();
+            haptic(25);
+          });
+        }
+        shelfGrid.appendChild(div);
+      });
+
+      if (countLabel) countLabel.textContent = `${unlockedCount} / ${allDefs.length} Unlocked`;
+    }
+
+    function updatePlayerHeaderDisplay() {
+      const displayBadge = document.getElementById('display-player-badge');
+      if (displayBadge) {
+        displayBadge.textContent = equippedBadge ? `${equippedBadge} ` : '';
+      }
     }
 
     const avatarBtns = document.querySelectorAll('.avatar-btn');
@@ -846,6 +977,9 @@
       localStorage.setItem('trivia_avatar', data.avatar || chosenAvatar);
 
       refreshAvatarGrid(data.careerScore);
+      equippedBadge = data.badge || '';
+      renderAchievementsShelf(data.achievements || []);
+      updatePlayerHeaderDisplay();
 
       const displayName = data.roomName || ROOM_NAMES[data.roomCode] || data.roomCode;
       displayPlayerName.textContent = data.username;
@@ -857,6 +991,11 @@
       joinScreen.classList.add('hidden');
       lobbyScreen.classList.remove('hidden');
       loadLobbyLeaderboards();
+    });
+
+    socket.on('player:badge_updated', (badge) => {
+      equippedBadge = badge;
+      updatePlayerHeaderDisplay();
     });
 
     socket.on('player:kicked', (reason) => {
@@ -893,7 +1032,8 @@
       }
       list.forEach((p, idx) => {
         const li = document.createElement('li');
-        li.innerHTML = `<span>#${idx + 1} ${p.avatar || '🚀'} ${p.username}</span><strong style="color:#38bdf8;">${Number(p.score).toLocaleString()} pts</strong>`;
+        const badgeStr = p.badge ? `${p.badge} ` : '';
+        li.innerHTML = `<span>#${idx + 1} ${badgeStr}${p.avatar || '🚀'} ${p.username}</span><strong style="color:#38bdf8;">${Number(p.score).toLocaleString()} pts</strong>`;
         lobbyHallList.appendChild(li);
       });
     }
@@ -1122,7 +1262,8 @@
       }
       list.forEach((p, idx) => {
         const li = document.createElement('li');
-        li.innerHTML = `<span>#${idx + 1} ${p.avatar || '🚀'} ${p.username}</span><strong style="color:#38bdf8;">${Number(p.score).toLocaleString()} pts</strong>`;
+        const badgeStr = p.badge ? `${p.badge} ` : '';
+        li.innerHTML = `<span>#${idx + 1} ${badgeStr}${p.avatar || '🚀'} ${p.username}</span><strong style="color:#38bdf8;">${Number(p.score).toLocaleString()} pts</strong>`;
         postgameHallList.appendChild(li);
       });
     }
@@ -1153,9 +1294,9 @@
       const p3 = players[2] || null;
 
       let html = '';
-      if (p2) html += `<div class="p-slot second"><span class="p-icon">${p2.avatar || '🥈'}</span><span class="p-name">${p2.name}</span><div class="p-step">2</div></div>`;
-      if (p1) html += `<div class="p-slot first"><span class="p-icon">${p1.avatar || '👑'}</span><span class="p-name">${p1.name}</span><div class="p-step">1</div></div>`;
-      if (p3) html += `<div class="p-slot third"><span class="p-icon">${p3.avatar || '🥉'}</span><span class="p-name">${p3.name}</span><div class="p-step">3</div></div>`;
+      if (p2) html += `<div class="p-slot second"><span class="p-icon">${p2.badge || ''}${p2.avatar || '🥈'}</span><span class="p-name">${p2.name}</span><div class="p-step">2</div></div>`;
+      if (p1) html += `<div class="p-slot first"><span class="p-icon">${p1.badge || ''}${p1.avatar || '👑'}</span><span class="p-name">${p1.name}</span><div class="p-step">1</div></div>`;
+      if (p3) html += `<div class="p-slot third"><span class="p-icon">${p3.badge || ''}${p3.avatar || '🥉'}</span><span class="p-name">${p3.name}</span><div class="p-step">3</div></div>`;
 
       playerPodiumArea.innerHTML = html;
     }
@@ -1166,8 +1307,9 @@
         const li = document.createElement('li');
         const isMe = p.id === socket.id;
         li.style.border = isMe ? '2px solid #38bdf8' : 'none';
+        const badgeStr = p.badge ? `${p.badge} ` : '';
         const streakTag = p.streak >= 2 ? `<span style="color:#f59e0b; margin-left:0.4rem; font-size:0.8rem;">🔥 ${p.streak}</span>` : '';
-        li.innerHTML = `<span>#${idx + 1} ${p.avatar || '🚀'} ${p.name} ${isMe ? '(You)' : ''}${streakTag}</span><strong>${p.score} pts</strong>`;
+        li.innerHTML = `<span>#${idx + 1} ${badgeStr}${p.avatar || '🚀'} ${p.name} ${isMe ? '(You)' : ''}${streakTag}</span><strong>${p.score} pts</strong>`;
         targetElement.appendChild(li);
       });
     }
