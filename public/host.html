@@ -94,7 +94,6 @@
       position: relative;
     }
 
-    /* PRE-GAME DUAL COLUMN LAYOUT */
     .lobby-broadcast-grid {
       display: grid;
       grid-template-columns: 1fr 1.05fr;
@@ -118,7 +117,6 @@
       flex-direction: column;
     }
 
-    /* JOIN DISPLAY HERO */
     .join-hero-box {
       display: flex;
       flex-direction: column;
@@ -143,7 +141,6 @@
       font-weight: 700;
     }
 
-    /* CONNECTED ROSTER CHIPS */
     .roster-chip-area {
       margin-top: 1.25rem;
       flex: 1;
@@ -189,7 +186,6 @@
       line-height: 1;
     }
 
-    /* CONTROL DECK FORM */
     .control-deck {
       display: flex;
       flex-direction: column;
@@ -219,7 +215,7 @@
       border-color: var(--cyan);
     }
 
-    /* ZERO-SCROLL TV BROADCAST VIEWPORTS (16:9 FIXED RATIO) */
+    /* ZERO-SCROLL TV BROADCAST VIEWPORTS */
     .tv-broadcast-screen {
       width: 100vw;
       height: 100vh;
@@ -233,7 +229,6 @@
       position: relative;
     }
 
-    /* TOP CONTROLS BAR */
     .top-bar-controls {
       display: flex;
       justify-content: space-between;
@@ -284,7 +279,6 @@
     }
     .btn-stop-broadcast:hover { background: #ef4444; }
 
-    /* TV TIMER BAR */
     .timer-meter-wrapper {
       width: 100%;
       height: 16px;
@@ -313,28 +307,29 @@
       to { box-shadow: 0 0 20px #ef4444; }
     }
 
-    /* TV ACTIVE QUESTION BOX */
+    /* REFINED READABLE TV QUESTION BOX */
     .tv-question-box {
       background: var(--panel-bg);
       border: 2px solid var(--border-subtle);
       border-radius: 20px;
-      padding: 1.5rem 2.2rem;
+      padding: 1.4rem 2.2rem;
       display: flex;
       flex-direction: column;
       align-items: center;
       justify-content: center;
       min-height: 150px;
-      margin-bottom: 1rem;
+      margin-bottom: 0.9rem;
       box-shadow: 0 12px 35px rgba(0,0,0,0.6);
     }
     .tv-question-text {
-      font-size: 2.1rem;
+      font-size: clamp(1.8rem, 3.2vw, 2.8rem);
       font-weight: 900;
       color: #f8fafc;
       margin: 0;
       line-height: 1.35;
       text-align: center;
       letter-spacing: -0.01em;
+      text-shadow: 0 2px 10px rgba(0, 0, 0, 0.7);
     }
     .trivia-image-box {
       margin: 0.5rem auto 0.75rem;
@@ -346,7 +341,7 @@
     }
     .trivia-image { max-height: 125px; max-width: 100%; object-fit: contain; display: block; }
 
-    /* MATCHING TV OPTIONS GRID */
+    /* MATCHING TV OPTIONS GRID WITH CORRECT-REVEAL PULSE */
     .tv-options-grid {
       display: grid;
       grid-template-columns: 1fr 1fr;
@@ -365,6 +360,7 @@
       gap: 1rem;
       text-align: left;
       box-shadow: 0 4px 14px rgba(0, 0, 0, 0.35);
+      transition: all 0.25s ease-out;
     }
     .tv-opt-badge {
       width: 42px;
@@ -385,6 +381,23 @@
       font-weight: 800;
       line-height: 1.25;
       color: #f8fafc;
+    }
+
+    /* WINNING REVEAL CARD EFFECT */
+    .tv-option-btn.correct-reveal {
+      background: linear-gradient(135deg, rgba(6, 78, 59, 0.95), rgba(4, 120, 87, 0.85)) !important;
+      border: 3px solid var(--green) !important;
+      box-shadow: 0 0 24px rgba(16, 185, 129, 0.6) !important;
+      transform: scale(1.02);
+    }
+    .tv-option-btn.correct-reveal .tv-opt-badge {
+      background: #ffffff !important;
+      color: #065f46 !important;
+      border-color: #ffffff !important;
+    }
+    .tv-option-btn.dimmed {
+      opacity: 0.35;
+      filter: grayscale(0.5);
     }
 
     /* RESULTS SCREEN */
@@ -493,7 +506,6 @@
     .chart-fill.correct-bar { background: linear-gradient(90deg, #059669, #10b981); box-shadow: 0 0 10px rgba(16, 185, 129, 0.5); }
     .chart-fill.incorrect-bar { background: linear-gradient(90deg, #475569, #64748b); }
 
-    /* HIGH-CONTRAST DEDICATED TV QR CARD */
     .results-qr-card {
       background: var(--panel-bg);
       border: 2px solid var(--cyan);
@@ -527,7 +539,7 @@
       height: 175px !important;
     }
 
-    /* AUTO-SCROLLING LEADERBOARD */
+    /* AUTO-SCROLLING LEADERBOARD WITH FLAME STREAKS */
     .autoscroll-leaderboard-wrapper {
       flex: 1;
       height: 100%;
@@ -558,6 +570,20 @@
       font-size: 1.15rem;
       font-weight: 800;
       border: 1px solid rgba(255, 255, 255, 0.06);
+    }
+
+    .tv-streak-tag {
+      background: rgba(245, 158, 11, 0.15);
+      color: #f59e0b;
+      border: 1px solid rgba(245, 158, 11, 0.4);
+      font-size: 0.8rem;
+      font-weight: 900;
+      padding: 0.15rem 0.45rem;
+      border-radius: 6px;
+      margin-left: 0.45rem;
+      display: inline-flex;
+      align-items: center;
+      gap: 2px;
     }
 
     .delta-badge {
@@ -675,7 +701,7 @@
       <div id="host-lobby">
         <div class="lobby-broadcast-grid">
           
-          <!-- LEFT: LIVE TV STAGE (BIG QR + CONNECTED ROSTER CHIPS) -->
+          <!-- LEFT: LIVE TV STAGE -->
           <div class="lobby-stage-card">
             <div class="join-hero-box">
               <h2>Scan to Join: <span id="qr-room-label">Fremont Main</span></h2>
@@ -836,7 +862,7 @@
         <p id="host-question" class="tv-question-text">Question Prompt</p>
       </div>
 
-      <!-- STREAMLINED OPTION CARDS (MATCHES MOBILE APP LOOK) -->
+      <!-- TV OPTIONS GRID (IDENTICAL TO PLAYER BADGES) -->
       <div id="host-options" class="tv-options-grid"></div>
 
       <div class="submission-tray">
@@ -889,7 +915,6 @@
               <div id="chart-bars-wrapper" class="chart-bars"></div>
             </div>
 
-            <!-- DEDICATED TV JOIN QR CARD -->
             <div class="results-qr-card">
               <div class="results-qr-title">📲 Join Next Question</div>
               <div class="results-qr-sub">Scan with your camera</div>
@@ -939,7 +964,6 @@
 
       <div id="podium-area" class="podium-container"></div>
 
-      <!-- TOUGHEST QUESTION STAT CARD -->
       <div id="toughest-question-card" class="hidden" style="background:var(--panel-bg); border:1.5px solid var(--amber); border-radius:14px; padding:0.85rem 1.4rem; max-width:680px; margin:0 auto; width:100%; box-shadow:0 6px 20px rgba(0,0,0,0.5);">
         <div style="display:flex; justify-content:space-between; align-items:center;">
           <span style="font-size:0.8rem; font-weight:900; color:var(--amber); text-transform:uppercase; letter-spacing:0.05em;">🧠 Toughest Question</span>
@@ -949,7 +973,6 @@
         <div style="font-size:0.85rem; color:#94a3b8;">Correct: <strong id="toughest-answer" style="color:var(--green);">---</strong></div>
       </div>
 
-      <!-- AUTO-PLAY NEXT MATCH COUNTDOWN -->
       <div id="auto-start-banner" class="hidden" style="background: rgba(16, 185, 129, 0.18); border: 2px solid var(--green); color: #6ee7b7; padding: 0.75rem 1.4rem; border-radius: 12px; margin: 0 auto; max-width: 540px; font-weight: 900; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 0 16px rgba(16, 185, 129, 0.3);">
         <span>⏳ Next Match (<span id="auto-next-cat-label" style="color:#fff;">BIBLE</span>) starts in <strong id="auto-start-timer" style="color:var(--gold); font-size:1.2rem;">10</strong>s...</span>
         <button onclick="cancelAutoStart()" style="background:#dc2626; color:#fff; border:none; padding:5px 10px; border-radius:6px; cursor:pointer; font-weight:800;">Cancel</button>
@@ -963,7 +986,6 @@
   </div>
 
   <script>
-    // HOST PASSCODE PROTECTION
     const HOST_PASSCODE = "admin";
 
     function checkPasscode() {
@@ -1003,7 +1025,6 @@
     let matchQuestionStats = [];
     let lastCompletedMatchData = null;
 
-    // SYNTHESIZED SOUND EFFECTS ENGINE
     function initAudio() {
       if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
       if (audioCtx.state === 'suspended') audioCtx.resume();
@@ -1077,7 +1098,6 @@
       btnToggleAutoPilot.classList.toggle('off', !isAutoPilot);
     });
 
-    // AUTO-SCROLLING ENGINE FOR LEADERBOARDS
     let activeScrollIntervals = [];
 
     function stopAllAutoScroll() {
@@ -1432,6 +1452,7 @@
       data.options.forEach((opt, idx) => {
         const div = document.createElement('div');
         div.className = 'tv-option-btn';
+        div.id = `tv-opt-${idx}`;
         div.innerHTML = `
           <div class="tv-opt-badge">${String.fromCharCode(65 + idx)}</div>
           <div class="tv-opt-text">${opt}</div>
@@ -1475,6 +1496,20 @@
     });
 
     socket.on('game:round_ended', (data) => {
+      // 1. HIGHLIGHT CORRECT OPTION & DIM OTHERS ON TV
+      if (typeof data.correctAnswer === 'number') {
+        const optBtns = hostOptions.querySelectorAll('.tv-option-btn');
+        optBtns.forEach((btn, idx) => {
+          if (idx === data.correctAnswer) {
+            btn.classList.add('correct-reveal');
+            btn.classList.remove('dimmed');
+          } else {
+            btn.classList.add('dimmed');
+            btn.classList.remove('correct-reveal');
+          }
+        });
+      }
+
       hostGame.classList.add('hidden');
       hostMilestone.classList.add('hidden');
       hostRoundEnd.classList.remove('hidden');
@@ -1502,7 +1537,13 @@
         if (p.rankDelta > 0) deltaHtml = `<span class="delta-badge delta-up">▲ +${p.rankDelta}</span>`;
         else if (p.rankDelta < 0) deltaHtml = `<span class="delta-badge delta-down">▼ ${p.rankDelta}</span>`;
 
-        li.innerHTML = `<span>#${idx + 1} ${p.avatar || '🚀'} ${p.name} ${deltaHtml}</span><strong style="color:var(--cyan);">${p.score} pts</strong>`;
+        // 2. FLAME BADGE FOR STREAKS ON TV LEADERBOARD
+        let flameHtml = '';
+        if (p.streak && p.streak >= 2) {
+          flameHtml = `<span class="tv-streak-tag">🔥 ${p.streak}</span>`;
+        }
+
+        li.innerHTML = `<span>#${idx + 1} ${p.avatar || '🚀'} ${p.name}${flameHtml} ${deltaHtml}</span><strong style="color:var(--cyan);">${p.score} pts</strong>`;
         hostLeaderboard.appendChild(li);
       });
 
@@ -1543,7 +1584,8 @@
       hostMilestoneLeaderboard.innerHTML = '';
       data.leaderboard.forEach((p, idx) => {
         const li = document.createElement('li');
-        li.innerHTML = `<span>#${idx + 1} ${p.avatar || '🚀'} ${p.name}</span><strong style="color:var(--cyan);">${p.score} pts</strong>`;
+        let flameHtml = p.streak >= 2 ? `<span class="tv-streak-tag">🔥 ${p.streak}</span>` : '';
+        li.innerHTML = `<span>#${idx + 1} ${p.avatar || '🚀'} ${p.name}${flameHtml}</span><strong style="color:var(--cyan);">${p.score} pts</strong>`;
         hostMilestoneLeaderboard.appendChild(li);
       });
 
@@ -1582,7 +1624,6 @@
       handleAutoPlayCountdown();
     });
 
-    // CSV MATCH RECAP EXPORT
     btnExportRecap.addEventListener('click', () => {
       if (!lastCompletedMatchData || !lastCompletedMatchData.leaderboard) {
         return alert('No match data available to export.');
