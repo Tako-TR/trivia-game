@@ -86,15 +86,140 @@
 
     #host-main-wrapper { display: none; width: 100%; min-height: 100vh; }
     
-    /* SCROLLABLE LOBBY & SETUP CONTAINER */
-    .scrollable-lobby-container {
-      max-width: 960px;
+    /* PRE-GAME STAGE CONTAINER */
+    .lobby-stage-container {
+      max-width: 1200px;
       margin: 0 auto;
-      padding: 1.5rem 1.5rem 4rem;
+      padding: 1.5rem 2rem 4rem;
       position: relative;
     }
 
-    /* ZERO-SCROLL TV BROADCAST VIEWPORTS */
+    /* PRE-GAME DUAL COLUMN LAYOUT */
+    .lobby-broadcast-grid {
+      display: grid;
+      grid-template-columns: 1fr 1.05fr;
+      gap: 1.75rem;
+      margin-top: 1.25rem;
+    }
+
+    @media (max-width: 900px) {
+      .lobby-broadcast-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .lobby-stage-card {
+      background: var(--panel-bg);
+      border: 1.5px solid var(--border-subtle);
+      border-radius: 20px;
+      padding: 1.5rem;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* JOIN DISPLAY HERO */
+    .join-hero-box {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      text-align: center;
+      background: radial-gradient(circle at center, rgba(56, 189, 248, 0.08) 0%, rgba(15, 23, 42, 0.6) 100%);
+      border: 1.5px solid rgba(56, 189, 248, 0.35);
+      border-radius: 16px;
+      padding: 1.5rem 1rem;
+      box-shadow: 0 0 25px rgba(56, 189, 248, 0.15);
+    }
+    .join-hero-box h2 {
+      margin: 0 0 0.3rem 0;
+      font-size: 1.4rem;
+      font-weight: 900;
+      color: var(--cyan);
+    }
+    .join-hero-box p {
+      margin: 0 0 1rem 0;
+      font-size: 0.85rem;
+      color: #94a3b8;
+      font-weight: 700;
+    }
+
+    /* CONNECTED ROSTER CHIPS */
+    .roster-chip-area {
+      margin-top: 1.25rem;
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+    }
+    .roster-grid {
+      list-style: none;
+      padding: 0;
+      margin: 0.5rem 0 0;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.5rem;
+      max-height: 220px;
+      overflow-y: auto;
+    }
+    .roster-chip {
+      background: rgba(30, 41, 59, 0.85);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 9999px;
+      padding: 0.35rem 0.85rem;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      font-size: 0.9rem;
+      font-weight: 800;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+      animation: chipPop 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
+    }
+    @keyframes chipPop {
+      from { transform: scale(0.8); opacity: 0; }
+      to { transform: scale(1); opacity: 1; }
+    }
+    .btn-kick-chip {
+      background: #7f1d1d;
+      color: #fca5a5;
+      border: 1px solid #ef4444;
+      padding: 2px 6px;
+      border-radius: 9999px;
+      font-size: 0.65rem;
+      font-weight: 900;
+      cursor: pointer;
+      line-height: 1;
+    }
+
+    /* CONTROL DECK FORM */
+    .control-deck {
+      display: flex;
+      flex-direction: column;
+      gap: 0.85rem;
+    }
+    .deck-group label {
+      display: block;
+      font-size: 0.75rem;
+      font-weight: 900;
+      color: #94a3b8;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      margin-bottom: 0.3rem;
+    }
+    .deck-group select {
+      width: 100%;
+      background: #070b14;
+      color: var(--cyan);
+      padding: 10px 12px;
+      border-radius: 10px;
+      border: 1.5px solid #334155;
+      font-weight: 800;
+      font-size: 0.95rem;
+      outline: none;
+    }
+    .deck-group select:focus {
+      border-color: var(--cyan);
+    }
+
+    /* ZERO-SCROLL TV BROADCAST VIEWPORTS (16:9 FIXED RATIO) */
     .tv-broadcast-screen {
       width: 100vw;
       height: 100vh;
@@ -221,7 +346,7 @@
     }
     .trivia-image { max-height: 125px; max-width: 100%; object-fit: contain; display: block; }
 
-    /* MATCHING TV OPTIONS GRID (IDENTICAL BADGES AS THE PHONES) */
+    /* MATCHING TV OPTIONS GRID */
     .tv-options-grid {
       display: grid;
       grid-template-columns: 1fr 1fr;
@@ -501,13 +626,13 @@
     }
     .sub-chip.answered { background: rgba(16, 185, 129, 0.2); border-color: var(--green); color: #6ee7b7; }
 
-    .host-links { display: flex; gap: 0.85rem; justify-content: center; flex-wrap: wrap; margin-top: 0.75rem; }
+    .host-links { display: flex; gap: 0.85rem; justify-content: center; flex-wrap: wrap; margin-top: 1rem; }
     .host-link-btn {
       color: var(--cyan);
-      font-size: 0.9rem;
+      font-size: 0.85rem;
       text-decoration: none;
       border: 1.5px dashed var(--cyan);
-      padding: 0.45rem 1rem;
+      padding: 0.4rem 0.9rem;
       border-radius: 8px;
       font-weight: 700;
       transition: background 0.15s;
@@ -532,8 +657,8 @@
 
   <div id="host-main-wrapper">
     
-    <!-- LOBBY & SETUP VIEW -->
-    <div id="host-lobby-view" class="scrollable-lobby-container">
+    <!-- PRE-GAME LOBBY STAGE -->
+    <div id="host-lobby-view" class="lobby-stage-container">
       <div class="top-bar-controls">
         <div class="room-badge" id="host-room-badge">ROOM: Fremont Main</div>
         <div class="top-toggles">
@@ -542,105 +667,115 @@
         </div>
       </div>
 
-      <h1 style="text-align: center; margin: 0.5rem 0 0.2rem; font-size: 2.2rem; font-weight: 900; letter-spacing: -0.02em;">Host Control Panel</h1>
-      <p style="text-align: center; color: #94a3b8; margin: 0 0 1rem; font-size: 0.95rem;">Configure live room, question categories, and TV broadcast</p>
-
-      <div style="display: flex; justify-content: center; gap: 0.6rem; margin: 1rem 0;">
-        <button id="tab-btn-lobby" class="toggle-pill" style="padding: 0.65rem 1.4rem; font-size: 1rem;">Live Game Lobby</button>
-        <button id="tab-btn-hall" class="toggle-pill off" style="padding: 0.65rem 1.4rem; font-size: 1rem;">All-Time Hall of Fame</button>
+      <div style="display: flex; justify-content: center; gap: 0.6rem; margin: 0.5rem 0 1rem;">
+        <button id="tab-btn-lobby" class="toggle-pill" style="padding: 0.55rem 1.4rem; font-size: 0.95rem;">Live Broadcast Lobby</button>
+        <button id="tab-btn-hall" class="toggle-pill off" style="padding: 0.55rem 1.4rem; font-size: 0.95rem;">All-Time Hall of Fame</button>
       </div>
 
       <div id="host-lobby">
-        <div style="display: flex; justify-content: center; margin: 1.25rem 0;">
-          <div style="background: var(--panel-bg); border: 2px solid var(--cyan); border-radius: 20px; padding: 1.75rem; text-align: center; box-shadow: 0 12px 35px rgba(0,0,0,0.6), 0 0 20px var(--cyan-glow);">
-            <h2 style="font-size: 1.4rem; color: var(--cyan); margin: 0 0 0.5rem 0; font-weight: 900;">Scan to Join: <span id="qr-room-label">Fremont Main</span></h2>
-            <div id="qrcode" style="background:#070b14; padding:16px; border-radius:14px; display:inline-block; margin: 0.5rem 0; border: 1px solid #334155;"></div>
+        <div class="lobby-broadcast-grid">
+          
+          <!-- LEFT: LIVE TV STAGE (BIG QR + CONNECTED ROSTER CHIPS) -->
+          <div class="lobby-stage-card">
+            <div class="join-hero-box">
+              <h2>Scan to Join: <span id="qr-room-label">Fremont Main</span></h2>
+              <p>Point your phone's camera at the screen</p>
+              <div id="qrcode" style="background:#070b14; padding:14px; border-radius:14px; display:inline-block; border: 1.5px solid var(--border-subtle);"></div>
+            </div>
+
+            <div class="roster-chip-area">
+              <div style="display: flex; justify-content: space-between; align-items: baseline; border-bottom: 1px solid rgba(255,255,255,0.08); padding-bottom: 0.4rem;">
+                <span style="font-size: 0.8rem; font-weight: 900; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.05em;">Connected Roster</span>
+                <span style="font-size: 0.9rem; font-weight: 800; color: var(--cyan);"><strong id="player-count" style="font-size:1.3rem;">0</strong> Players</span>
+              </div>
+              <ul id="host-lobby-players" class="roster-grid"></ul>
+            </div>
+          </div>
+
+          <!-- RIGHT: MATCH CONTROL DECK -->
+          <div class="lobby-stage-card" style="justify-content: space-between;">
+            <div>
+              <div style="font-size: 1.1rem; font-weight: 900; color: #f8fafc; margin-bottom: 0.25rem;">Match Setup Deck</div>
+              <p style="font-size: 0.8rem; color: #94a3b8; margin: 0 0 1rem;">Set room parameters and launch the presentation screen</p>
+
+              <div class="control-deck">
+                <div class="deck-group">
+                  <label>Game Room Destination</label>
+                  <select id="host-room-select" style="color:var(--amber); border-color:rgba(245, 158, 11, 0.4);">
+                    <option value="ROOM1" selected>Fremont Main</option>
+                    <option value="ROOM2">Fremont HS</option>
+                    <option value="ROOM3">Fremont MS</option>
+                    <option value="ROOM4">Tiffin</option>
+                    <option value="ROOM5">Sandusky</option>
+                    <option value="ROOM6">Northwood</option>
+                  </select>
+                </div>
+
+                <div class="deck-group" style="background: rgba(56, 189, 248, 0.06); padding: 0.65rem; border-radius: 10px; border: 1.5px dashed var(--cyan);">
+                  <label style="color:var(--cyan);">Preset Pack (Optional)</label>
+                  <select id="preset-select">
+                    <option value="none" selected>-- None (Use Standard Settings Below) --</option>
+                  </select>
+                </div>
+
+                <div class="deck-group" id="standard-cat-row">
+                  <label>Category</label>
+                  <select id="category-select">
+                    <option value="all" selected>Mixed (All Categories)</option>
+                    <option value="bible">Bible Trivia Only</option>
+                    <option value="food">Snacks & Fast Food</option>
+                    <option value="superhero">Superheroes & Sci-Fi</option>
+                    <option value="sports">Sports & Records</option>
+                    <option value="factorcap">Fact or Cap? (Trivia Oddities)</option>
+                    <option value="disney">Disney & Pixar Animation</option>
+                    <option value="movie">Movie Quotes Only</option>
+                    <option value="music">Pop Culture & Music Only</option>
+                  </select>
+                </div>
+
+                <div class="deck-group" id="standard-diff-row">
+                  <label>Difficulty</label>
+                  <select id="difficulty-select">
+                    <option value="all" selected>Mixed (All Difficulties)</option>
+                    <option value="easy">Easy Only</option>
+                    <option value="medium">Medium Only</option>
+                    <option value="hard">Hard Only</option>
+                    <option value="easy_medium">Easy & Medium</option>
+                    <option value="medium_hard">Medium & Hard</option>
+                  </select>
+                </div>
+
+                <div class="deck-group">
+                  <label>Question Count</label>
+                  <select id="question-count">
+                    <option value="5">5 Questions</option>
+                    <option value="10" selected>10 Questions</option>
+                    <option value="15">15 Questions</option>
+                    <option value="20">20 Questions</option>
+                    <option value="25">25 Questions</option>
+                  </select>
+                </div>
+
+                <div class="deck-group">
+                  <label>🔄 Auto-Start Mode</label>
+                  <select id="auto-next-mode">
+                    <option value="off" selected>Off (Manual Restart)</option>
+                    <option value="same">Auto-Loop: Same Category (Fresh Questions)</option>
+                    <option value="playlist">Sequential Playlist: Cycle Pure Categories</option>
+                  </select>
+                </div>
+              </div>
+            </div>
+
+            <div style="margin-top: 1.25rem;">
+              <button id="btn-start" style="width:100%; background: linear-gradient(135deg, #059669, var(--green)); color: #fff; font-size: 1.15rem; font-weight: 900; border: none; padding: 1rem; border-radius: 12px; cursor: pointer; box-shadow: 0 6px 20px rgba(16, 185, 129, 0.4); text-transform: uppercase; letter-spacing: 0.05em;">▶ Launch Game on TV</button>
+              <div class="host-links">
+                <a href="/add.html" class="host-link-btn">+ Add Questions</a>
+                <a href="/manage.html" class="host-link-btn">⚙ Question Editor & Generator</a>
+              </div>
+            </div>
           </div>
         </div>
-
-        <div style="text-align: center; color: #94a3b8; margin-bottom: 1.25rem; font-size: 1.1rem; font-weight: 700;">
-          Players connected in room: <strong id="player-count" style="color: var(--cyan); font-size: 1.6rem; margin-left: 0.4rem;">0</strong>
-        </div>
-
-        <div style="background: var(--panel-bg); border: 1.5px solid var(--border-subtle); padding: 1.5rem; border-radius: 16px; max-width: 540px; margin: 0 auto 1.5rem; display: flex; flex-direction: column; gap: 1rem; box-shadow: 0 8px 25px rgba(0,0,0,0.4);">
-          <div>
-            <label style="font-size:0.75rem; font-weight:900; color:var(--amber); text-transform:uppercase; letter-spacing:0.05em;">Select Game Room</label>
-            <select id="host-room-select" style="width:100%; background:#070b14; color:var(--cyan); padding:10px; border-radius:8px; border:1px solid #475569; font-weight:800; font-size:0.95rem; margin-top:4px;">
-              <option value="ROOM1" selected>Fremont Main</option>
-              <option value="ROOM2">Fremont HS</option>
-              <option value="ROOM3">Fremont MS</option>
-              <option value="ROOM4">Tiffin</option>
-              <option value="ROOM5">Sandusky</option>
-              <option value="ROOM6">Northwood</option>
-            </select>
-          </div>
-
-          <!-- PRESETS SELECTION -->
-          <div style="background-color: rgba(56, 189, 248, 0.08); padding: 0.75rem; border-radius: 10px; border: 1.5px dashed var(--cyan);">
-            <label for="preset-select" style="font-size:0.75rem; font-weight:900; color:var(--cyan); text-transform:uppercase; letter-spacing:0.05em;">Preset Game Pack (Optional)</label>
-            <select id="preset-select" style="width:100%; background:#070b14; color:var(--cyan); padding:10px; border-radius:8px; border:1px solid #475569; font-weight:800; font-size:0.95rem; margin-top:4px;">
-              <option value="none" selected>-- None (Use Category & Difficulty Below) --</option>
-            </select>
-          </div>
-
-          <div id="standard-cat-row">
-            <label style="font-size:0.75rem; font-weight:900; color:var(--cyan); text-transform:uppercase; letter-spacing:0.05em;">Category</label>
-            <select id="category-select" style="width:100%; background:#070b14; color:var(--cyan); padding:10px; border-radius:8px; border:1px solid #475569; font-weight:800; font-size:0.95rem; margin-top:4px;">
-              <option value="all" selected>Mixed (All Categories)</option>
-              <option value="bible">Bible Trivia Only</option>
-              <option value="food">Snacks & Fast Food</option>
-              <option value="superhero">Superheroes & Sci-Fi</option>
-              <option value="sports">Sports & Records</option>
-              <option value="factorcap">Fact or Cap? (Trivia Oddities)</option>
-              <option value="disney">Disney & Pixar Animation</option>
-              <option value="movie">Movie Quotes Only</option>
-              <option value="music">Pop Culture & Music Only</option>
-            </select>
-          </div>
-
-          <div id="standard-diff-row">
-            <label style="font-size:0.75rem; font-weight:900; color:#94a3b8; text-transform:uppercase; letter-spacing:0.05em;">Difficulty</label>
-            <select id="difficulty-select" style="width:100%; background:#070b14; color:var(--cyan); padding:10px; border-radius:8px; border:1px solid #475569; font-weight:800; font-size:0.95rem; margin-top:4px;">
-              <option value="all" selected>Mixed (All Difficulties)</option>
-              <option value="easy">Easy Only</option>
-              <option value="medium">Medium Only</option>
-              <option value="hard">Hard Only</option>
-              <option value="easy_medium">Easy & Medium</option>
-              <option value="medium_hard">Medium & Hard</option>
-            </select>
-          </div>
-
-          <div>
-            <label style="font-size:0.75rem; font-weight:900; color:#94a3b8; text-transform:uppercase; letter-spacing:0.05em;">Number of Questions</label>
-            <select id="question-count" style="width:100%; background:#070b14; color:var(--cyan); padding:10px; border-radius:8px; border:1px solid #475569; font-weight:800; font-size:0.95rem; margin-top:4px;">
-              <option value="5">5 Questions</option>
-              <option value="10" selected>10 Questions</option>
-              <option value="15">15 Questions</option>
-              <option value="20">20 Questions</option>
-              <option value="25">25 Questions</option>
-            </select>
-          </div>
-
-          <div style="border-top: 1px solid #334155; padding-top: 0.85rem;">
-            <label style="font-size:0.75rem; font-weight:900; color:var(--cyan); text-transform:uppercase; letter-spacing:0.05em;">🔄 Auto-Start Next Match</label>
-            <select id="auto-next-mode" style="width:100%; background:#070b14; color:var(--cyan); padding:10px; border-radius:8px; border:1px solid #475569; font-weight:800; font-size:0.95rem; margin-top:4px;">
-              <option value="off" selected>Off (Manual Restart)</option>
-              <option value="same">Auto-Loop: Same Category (Fresh Questions)</option>
-              <option value="playlist">Sequential Playlist: Cycle Pure Categories</option>
-            </select>
-          </div>
-        </div>
-
-        <div style="text-align: center;">
-          <button id="btn-start" style="background: linear-gradient(135deg, #059669, var(--green)); color: #fff; font-size: 1.25rem; font-weight: 900; border: none; padding: 1rem 3rem; border-radius: 14px; cursor: pointer; box-shadow: 0 6px 20px rgba(16, 185, 129, 0.4); text-transform: uppercase; letter-spacing: 0.05em;">Start Game on TV</button>
-          <div class="host-links">
-            <a href="/add.html" class="host-link-btn">+ Add Questions</a>
-            <a href="/manage.html" class="host-link-btn">⚙ Question Editor & Generator</a>
-          </div>
-        </div>
-
-        <h3 style="margin-top: 2rem; font-size: 1rem; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.05em;">Connected Roster</h3>
-        <ul id="host-lobby-players" style="list-style: none; padding: 0; display: grid; grid-template-columns: 1fr 1fr; gap: 0.6rem;"></ul>
       </div>
 
       <!-- HALL OF FAME SUB-PANEL -->
@@ -1040,7 +1175,7 @@
         const res = await fetch('/api/presets/list');
         const data = await res.json();
         if (res.ok && data.success && data.presets) {
-          presetSelect.innerHTML = '<option value="none" selected>-- None (Use Category & Difficulty Below) --</option>';
+          presetSelect.innerHTML = '<option value="none" selected>-- None (Use Standard Settings Below) --</option>';
           Object.keys(data.presets).forEach(name => {
             const count = data.presets[name].length;
             const opt = document.createElement('option');
@@ -1252,10 +1387,10 @@
       list.innerHTML = '';
       players.forEach(p => {
         const li = document.createElement('li');
-        li.style.cssText = 'background:var(--panel-bg); padding:10px 14px; border-radius:10px; display:flex; justify-content:space-between; align-items:center; border: 1px solid rgba(255,255,255,0.06);';
+        li.className = 'roster-chip';
         li.innerHTML = `
-          <span style="font-weight:800; font-size:1.05rem;">${p.avatar || '🚀'} ${p.name}</span>
-          <button class="btn-kick" style="background:#7f1d1d; color:#fca5a5; border:1px solid #ef4444; padding:4px 10px; border-radius:6px; font-weight:800; cursor:pointer;" onclick="kickPlayer('${p.name}')">Kick</button>
+          <span>${p.avatar || '🚀'} ${p.name}</span>
+          <button class="btn-kick-chip" onclick="kickPlayer('${p.name}')">&times;</button>
         `;
         list.appendChild(li);
       });
@@ -1447,6 +1582,7 @@
       handleAutoPlayCountdown();
     });
 
+    // CSV MATCH RECAP EXPORT
     btnExportRecap.addEventListener('click', () => {
       if (!lastCompletedMatchData || !lastCompletedMatchData.leaderboard) {
         return alert('No match data available to export.');
