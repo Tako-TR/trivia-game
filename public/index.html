@@ -697,12 +697,7 @@
       });
     }
 
-    lobbyRoomSelect.addEventListener('change', () => {
-      const isGlobal = lobbyRoomSelect.value === 'all';
-      lobbyCategorySelect.disabled = !isGlobal;
-      lobbyCategorySelect.style.opacity = isGlobal ? '1' : '0.4';
-      loadLobbyLeaderboards();
-    });
+    lobbyRoomSelect.addEventListener('change', loadLobbyLeaderboards);
     lobbyCategorySelect.addEventListener('change', loadLobbyLeaderboards);
 
     btnLobbyHigh.addEventListener('click', () => {
@@ -911,12 +906,7 @@
       });
     }
 
-    postgameRoomSelect.addEventListener('change', () => {
-      const isGlobal = postgameRoomSelect.value === 'all';
-      postgameCategorySelect.disabled = !isGlobal;
-      postgameCategorySelect.style.opacity = isGlobal ? '1' : '0.4';
-      loadPostgameLeaderboards();
-    });
+    postgameRoomSelect.addEventListener('change', loadPostgameLeaderboards);
     postgameCategorySelect.addEventListener('change', loadPostgameLeaderboards);
 
     btnPostgameHigh.addEventListener('click', () => {
