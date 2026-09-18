@@ -142,7 +142,7 @@ function getOrCreateRoom(rawRoomCode) {
       isPaused: false,
       currentGameCategory: 'all',
       previousRankings: {},
-      usedQuestionIds: new Set() // Tracks used questions to avoid repetition in loops
+      usedQuestionIds: new Set()
     };
   }
   return rooms[code];
@@ -690,6 +690,12 @@ io.on('connection', (socket) => {
         else if (room.currentGameCategory === 'bible') matchCat = cat.includes('bible');
         else if (room.currentGameCategory === 'movie') matchCat = cat.includes('movie');
         else if (room.currentGameCategory === 'music') matchCat = cat.includes('music') || cat.includes('pop culture');
+        // 5 NEW CATEGORIES
+        else if (room.currentGameCategory === 'food') matchCat = cat.includes('food') || cat.includes('snack') || cat.includes('brand');
+        else if (room.currentGameCategory === 'superhero') matchCat = cat.includes('superhero') || cat.includes('marvel') || cat.includes('sci-fi') || cat.includes('star wars');
+        else if (room.currentGameCategory === 'sports') matchCat = cat.includes('sport') || cat.includes('record');
+        else if (room.currentGameCategory === 'factorcap') matchCat = cat.includes('cap') || cat.includes('fact');
+        else if (room.currentGameCategory === 'disney') matchCat = cat.includes('disney') || cat.includes('pixar') || cat.includes('animation');
         if (!matchCat) return false;
 
         switch (requestedDifficulty) {
@@ -822,7 +828,7 @@ function startNextQuestion(room) {
 
   clearInterval(room.questionTimer);
   room.questionTimer = setInterval(() => {
-    if (room.isPaused) return; // Freeze timer countdown if host paused
+    if (room.isPaused) return;
 
     room.timeLeft--;
     io.to(room.code).emit('game:timer_tick', {
