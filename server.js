@@ -1213,32 +1213,42 @@ async function evaluateAchievements(p, matchRank, totalPlayers, room) {
     }
   }
 
+  // SOLO-FRIENDLY FEATS (Can be earned alone)
   if (p.correctAnswersCount === room.activeQuestions.length && room.activeQuestions.length > 0) unlock('flawless');
   if (p.reactionTimes.some(t => t < 1.0)) unlock('lightning');
-  if (matchRank <= 3 && p.finalQuestionsPoints > 0) unlock('elevator');
-  if (matchRank === 1) unlock('ice');
   if (p.answerTimeLeft <= 1 && p.currentAnswer !== null) unlock('lucky');
   if (p.reactionTimes.some(t => t < 1.5)) unlock('speed_demon');
-  if (matchRank <= 3 && p.lowestRankDuringGame >= Math.ceil(totalPlayers / 2)) unlock('comeback');
   if (p.hardQuestionsCorrect >= 3) unlock('brainiac');
   const avgReact = p.reactionTimes.length ? (p.reactionTimes.reduce((a,b)=>a+b,0)/p.reactionTimes.length) : 99;
   const accuracy = p.totalQuestionsAnswered ? (p.correctAnswersCount / p.totalQuestionsAnswered) : 0;
   if (avgReact < 2.0 && accuracy >= 0.8) unlock('sniper');
   if (p.answerTimeLeft <= 0.5) unlock('last_hero');
-  if (matchRank === 1) unlock('neck_neck');
   if (p.correctAnswersCount === room.activeQuestions.length) unlock('clean_sweep');
-  if (matchRank <= 3) unlock('wave_rider');
   if (p.streak >= 5) unlock('streak_master');
   if (p.streak >= 10) unlock('magma');
-  if (p.streak >= 5) unlock('wall');
   if (p.streak >= 5) unlock('double_trouble');
 
+  // MULTIPLAYER-ONLY FEATS (Require 3+ players in the room to trigger)
+  if (totalPlayers >= 3) {
+    if (matchRank <= 3 && p.finalQuestionsPoints > 0) unlock('elevator');
+    if (matchRank === 1) unlock('ice');
+    if (matchRank <= 3 && p.lowestRankDuringGame >= Math.ceil(totalPlayers / 2)) unlock('comeback');
+    if (matchRank === 1) unlock('neck_neck');
+    if (matchRank <= 3) unlock('wave_rider');
+    if (matchRank === 1) unlock('gold_digger');
+  }
+
   let currentCareerXP = p.score;
+  let totalGamesPlayed = 1;
   if (pool) {
-    const res = await pool.query('SELECT career_score FROM players WHERE username = $1;', [p.username]);
-    if (res.rows.length > 0) currentCareerXP = res.rows[0].career_score;
+    const res = await pool.query('SELECT career_score, games_played FROM players WHERE username = $1;', [p.username]);
+    if (res.rows.length > 0) {
+      currentCareerXP = res.rows[0].career_score;
+      totalGamesPlayed = res.rows[0].games_played;
+    }
   } else if (memoryPlayers[p.username]) {
     currentCareerXP = memoryPlayers[p.username].career_score;
+    totalGamesPlayed = memoryPlayers[p.username].games_played;
   }
 
   if (currentCareerXP >= 10000) unlock('space_cadet');
@@ -1252,9 +1262,10 @@ async function evaluateAchievements(p, matchRank, totalPlayers, room) {
   if (currentHour >= 21) unlock('night_owl');
   if (currentHour < 10) unlock('early_bird');
   if (p.score >= 8000) unlock('high_roller');
-  if (matchRank === 1) unlock('gold_digger');
-  unlock('marathon');
-  unlock('centurion');
+
+  if (totalGamesPlayed >= 5) unlock('wall');
+  if (totalGamesPlayed >= 10) unlock('marathon');
+  if (totalGamesPlayed >= 100) unlock('centurion');
 
   if (newUnlocks.length > 0) {
     const updatedUnlocks = [...existingUnlocks, ...newUnlocks];
