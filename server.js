@@ -182,20 +182,6 @@ app.post('/api/questions/list', (req, res) => {
   return res.json({ success: true, questions: masterQuestions });
 });
 
-// MANUAL RESET FOR DAILY FREPOP REWARD VIA MANAGER TAB
-app.post('/api/freepop/reset', async (req, res) => {
-  const { password } = req.body;
-  if (password !== ADMIN_PASSWORD) return res.status(401).json({ success: false, message: 'Invalid admin passcode.' });
-  
-  dailyPopWinnerCache = { date: '', winner: '' };
-  if (pool) {
-    try {
-      await pool.query('TRUNCATE TABLE daily_pop_reward;');
-    } catch (e) {}
-  }
-  return res.json({ success: true, message: 'Daily Free Pop reward status has been manually reset.' });
-});
-
 app.post('/api/questions/add', (req, res) => {
   const { password, category, difficulty, question, options, answer, image } = req.body;
   if (password !== ADMIN_PASSWORD) return res.status(401).json({ success: false, message: 'Invalid admin passcode.' });
