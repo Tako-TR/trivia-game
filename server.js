@@ -21,10 +21,6 @@ const memoryPlayers = {};
 const memoryRoomScores = {};
 const memoryCategoryScores = {};
 
-// Daily Fremont Pop state & Host Toggle
-let dailyPopWinnerCache = { date: '', winner: '' };
-let isFreePopEnabled = true;
-
 async function initDb() {
   if (!pool) {
     console.warn('DATABASE_URL not detected. Persistent stats running in memory only.');
