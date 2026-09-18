@@ -395,9 +395,14 @@
           <input type="text" id="search-input" placeholder="Search questions or answers...">
           <select id="category-filter">
             <option value="all">All Categories & Difficulties</option>
-            <option value="music">Music & Pop Culture</option>
             <option value="bible">Bible</option>
+            <option value="food">Snacks & Fast Food</option>
+            <option value="superhero">Superheroes & Sci-Fi</option>
+            <option value="sports">Sports & Records</option>
+            <option value="factorcap">Fact or Cap</option>
+            <option value="disney">Disney & Pixar</option>
             <option value="movie">Movie Quotes</option>
+            <option value="music">Music & Pop Culture</option>
             <option value="easy">Easy Only</option>
             <option value="medium">Medium Only</option>
             <option value="hard">Hard Only</option>
@@ -427,13 +432,18 @@
           <p style="font-size: 0.85rem; color: #94a3b8; margin-bottom: 0.75rem;">Filter by any combination of categories and difficulties, select your questions, and save them as a ready-to-launch pack.</p>
           
           <label for="preset-name-input" style="font-size: 0.8rem; font-weight: 700; color: #94a3b8; text-transform: uppercase;">Game Pack Name</label>
-          <input type="text" id="preset-name-input" placeholder="e.g. Sunday School Hard, 80s Movies & Music, All-Star Trivia" style="width: 100%; background-color: #1e293b; color: #fff; border: 1px solid #475569; padding: 0.6rem; border-radius: 8px; margin: 0.3rem 0 0.75rem 0; box-sizing: border-box;">
+          <input type="text" id="preset-name-input" placeholder="e.g. Youth Night Snacks & Marvel, Sunday School Trivia" style="width: 100%; background-color: #1e293b; color: #fff; border: 1px solid #475569; padding: 0.6rem; border-radius: 8px; margin: 0.3rem 0 0.75rem 0; box-sizing: border-box;">
 
           <div class="preset-filter-box">
             <div class="filter-group">
               <span class="filter-label">Categories:</span>
               <label class="filter-pill active" id="pill-cat-all"><input type="checkbox" id="chk-cat-all" checked> All</label>
               <label class="filter-pill" id="pill-cat-bible"><input type="checkbox" class="chk-cat" value="bible"> Bible</label>
+              <label class="filter-pill" id="pill-cat-food"><input type="checkbox" class="chk-cat" value="food"> Snacks & Food</label>
+              <label class="filter-pill" id="pill-cat-superhero"><input type="checkbox" class="chk-cat" value="superhero"> Superheroes</label>
+              <label class="filter-pill" id="pill-cat-sports"><input type="checkbox" class="chk-cat" value="sports"> Sports</label>
+              <label class="filter-pill" id="pill-cat-factorcap"><input type="checkbox" class="chk-cat" value="cap"> Fact or Cap</label>
+              <label class="filter-pill" id="pill-cat-disney"><input type="checkbox" class="chk-cat" value="disney"> Disney</label>
               <label class="filter-pill" id="pill-cat-movie"><input type="checkbox" class="chk-cat" value="movie"> Movies</label>
               <label class="filter-pill" id="pill-cat-music"><input type="checkbox" class="chk-cat" value="music"> Pop Culture & Music</label>
             </div>
@@ -516,7 +526,7 @@
       <input type="hidden" id="edit-q-index">
 
       <label for="edit-q-cat">Category & Difficulty</label>
-      <input type="text" id="edit-q-cat" required placeholder="e.g. Bible: Easy, Movie Quotes: Medium">
+      <input type="text" id="edit-q-cat" required placeholder="e.g. Snacks & Fast Food: Easy, Superheroes & Sci-Fi: Medium">
 
       <label for="edit-q-text">Question Prompt</label>
       <input type="text" id="edit-q-text" required>
@@ -561,7 +571,7 @@
       </p>
 
       <input type="file" id="csv-file-input" accept=".csv, .txt" style="color: #94a3b8; font-size: 0.85rem; margin-bottom: 0.5rem;">
-      <textarea id="csv-text-input" placeholder="Music: Easy, Who sang Thriller?, Prince, Michael Jackson, Lionel Richie, Usher, 1, "></textarea>
+      <textarea id="csv-text-input" placeholder="Snacks & Fast Food: Easy, Which chain says Have It Your Way?, McDonalds, Burger King, Wendys, Sonic, 1, "></textarea>
 
       <div style="display: flex; justify-content: flex-end; gap: 0.75rem;">
         <button id="btn-cancel-import" style="background: none; border: 1px solid #475569; color: #94a3b8; padding: 0.5rem 1rem; border-radius: 6px; cursor: pointer;">Cancel</button>
@@ -719,8 +729,23 @@
         .map((q, originalIndex) => ({ ...q, originalIndex }))
         .filter(q => {
           const cat = (q.category || '').toLowerCase();
-          const matchesQuery = !query || q.question.toLowerCase().includes(query) || q.options.some(opt => opt.toLowerCase().includes(query));
-          const matchesCat = filter === 'all' || cat.includes(filter);
+          const qText = (q.question || '').toLowerCase();
+          const matchesQuery = !query || qText.includes(query) || q.options.some(opt => opt.toLowerCase().includes(query));
+
+          let matchesCat = (filter === 'all');
+          if (!matchesCat) {
+            if (filter === 'bible') matchesCat = cat.includes('bible');
+            else if (filter === 'movie') matchesCat = cat.includes('movie');
+            else if (filter === 'music') matchesCat = cat.includes('music') || cat.includes('pop culture');
+            else if (filter === 'food') matchesCat = cat.includes('food') || cat.includes('snack');
+            else if (filter === 'superhero') matchesCat = cat.includes('superhero') || cat.includes('sci-fi') || cat.includes('marvel');
+            else if (filter === 'sports') matchesCat = cat.includes('sport') || cat.includes('record');
+            else if (filter === 'factorcap') matchesCat = cat.includes('cap') || cat.includes('fact');
+            else if (filter === 'disney') matchesCat = cat.includes('disney') || cat.includes('pixar');
+            else if (filter === 'easy') matchesCat = cat.includes('easy');
+            else if (filter === 'medium') matchesCat = cat.includes('medium');
+            else if (filter === 'hard') matchesCat = cat.includes('hard');
+          }
           return matchesQuery && matchesCat;
         });
 
@@ -807,7 +832,7 @@
           alert(`Successfully deleted ${data.deletedCount} questions.`);
           selectedQuestionIndices.clear();
           selectAllVisible.checked = false;
-          allQuestions = data.questions || []; // fallback or reload list
+          allQuestions = data.questions || [];
           loadQuestions();
         } else {
           alert(data.message || 'Deletion failed.');
@@ -974,7 +999,14 @@
 
         let matchesCat = isAllCat;
         if (!matchesCat) {
-          matchesCat = activeCats.some(selectedCat => cat.includes(selectedCat));
+          matchesCat = activeCats.some(selectedCat => {
+            if (selectedCat === 'food') return cat.includes('food') || cat.includes('snack');
+            if (selectedCat === 'superhero') return cat.includes('superhero') || cat.includes('sci-fi') || cat.includes('marvel');
+            if (selectedCat === 'sports') return cat.includes('sport') || cat.includes('record');
+            if (selectedCat === 'cap') return cat.includes('cap') || cat.includes('fact');
+            if (selectedCat === 'disney') return cat.includes('disney') || cat.includes('pixar');
+            return cat.includes(selectedCat);
+          });
         }
 
         let matchesDiff = isAllDiff;
@@ -1018,7 +1050,6 @@
 
     let selectedForPreset = new Set();
     btnSelectVisible.addEventListener('click', () => {
-      // Re-run matching to select visible
       const query = presetSearchInput.value.toLowerCase().trim();
       const isAllCat = chkCatAll.checked;
       const activeCats = Array.from(chkCats).filter(c => c.checked).map(c => c.value);
@@ -1027,7 +1058,14 @@
 
       allQuestions.forEach((q, idx) => {
         const cat = (q.category || '').toLowerCase();
-        let matchesCat = isAllCat || activeCats.some(c => cat.includes(c));
+        let matchesCat = isAllCat || activeCats.some(c => {
+          if (c === 'food') return cat.includes('food') || cat.includes('snack');
+          if (c === 'superhero') return cat.includes('superhero') || cat.includes('sci-fi') || cat.includes('marvel');
+          if (c === 'sports') return cat.includes('sport') || cat.includes('record');
+          if (c === 'cap') return cat.includes('cap') || cat.includes('fact');
+          if (c === 'disney') return cat.includes('disney') || cat.includes('pixar');
+          return cat.includes(c);
+        });
         let matchesDiff = isAllDiff || activeDiffs.some(d => cat.includes(d));
         let matchesQuery = !query || q.question.toLowerCase().includes(query) || q.options.some(opt => opt.toLowerCase().includes(query));
         if (matchesCat && matchesDiff && matchesQuery) selectedForPreset.add(idx);
@@ -1044,7 +1082,14 @@
 
       allQuestions.forEach((q, idx) => {
         const cat = (q.category || '').toLowerCase();
-        let matchesCat = isAllCat || activeCats.some(c => cat.includes(c));
+        let matchesCat = isAllCat || activeCats.some(c => {
+          if (c === 'food') return cat.includes('food') || cat.includes('snack');
+          if (c === 'superhero') return cat.includes('superhero') || cat.includes('sci-fi') || cat.includes('marvel');
+          if (c === 'sports') return cat.includes('sport') || cat.includes('record');
+          if (c === 'cap') return cat.includes('cap') || cat.includes('fact');
+          if (c === 'disney') return cat.includes('disney') || cat.includes('pixar');
+          return cat.includes(c);
+        });
         let matchesDiff = isAllDiff || activeDiffs.some(d => cat.includes(d));
         let matchesQuery = !query || q.question.toLowerCase().includes(query) || q.options.some(opt => opt.toLowerCase().includes(query));
         if (matchesCat && matchesDiff && matchesQuery) selectedForPreset.delete(idx);
@@ -1093,6 +1138,9 @@
         const data = await res.json();
         if (res.ok && data.success) {
           allPresets = data.presets || {};
+          renderPresetsGrid();
+        } else {
+          allPresets = {};
           renderPresetsGrid();
         }
       } catch (e) {}
@@ -1262,7 +1310,7 @@
 
     window.resetPlayerScores = async function(username) {
       if (!confirm(`Reset ${username}'s High Score and Career XP to 0?`)) return;
-      const password = adminPassInput.value.term;
+      const password = adminPassInput.value.trim();
 
       const res = await fetch('/api/players/action', {
         method: 'POST',
