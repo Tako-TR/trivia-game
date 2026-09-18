@@ -2,289 +2,391 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="theme-color" content="#0a0e17">
   <title>Trivia Player</title>
   <link rel="stylesheet" href="style.css">
   <script src="/socket.io/socket.io.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.2/dist/confetti.browser.min.js"></script>
   <style>
+    /* =========================================================
+       COMPLETE MOBILE MAKEOVER (OVERRIDING OLD STYLE.CSS)
+    ========================================================= */
+    :root {
+      --bg: #0a0e17;
+      --panel: #141b2d;
+      --cyan: #00e5ff;
+      --red: #e63946;
+      --blue: #1d3557;
+      --yellow: #f4a261;
+      --green: #2a9d8f;
+      --border: rgba(255, 255, 255, 0.08);
+      --font-main: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    }
+
+    * {
+      box-sizing: border-box !important;
+      -webkit-tap-highlight-color: transparent;
+      user-select: none;
+      -webkit-user-select: none;
+      touch-action: manipulation;
+    }
+
+    html, body {
+      margin: 0 !important;
+      padding: 0 !important;
+      background: var(--bg) !important;
+      color: #ffffff !important;
+      font-family: var(--font-main) !important;
+      width: 100vw;
+      height: 100vh;
+      min-height: -webkit-fill-available;
+      overflow-x: hidden;
+    }
+
     /* FULL-SCREEN RESULT FLASH ANIMATIONS */
-    body {
-      transition: background-color 0.2s ease-out;
-    }
-    body.flash-correct {
-      animation: flashGreen 1.2s ease-out;
-    }
-    body.flash-incorrect {
-      animation: flashRed 1.2s ease-out;
-    }
-    body.flash-timeout {
-      animation: flashAmber 1.2s ease-out;
-    }
+    body.flash-correct { animation: flashG 0.8s ease-out; }
+    body.flash-incorrect { animation: flashR 0.8s ease-out; }
+    body.flash-timeout { animation: flashA 0.8s ease-out; }
 
-    @keyframes flashGreen {
-      0% { background-color: #064e3b; }
-      15% { background-color: #047857; }
-      100% { background-color: #0f172a; }
-    }
-    @keyframes flashRed {
-      0% { background-color: #7f1d1d; }
-      15% { background-color: #b91c1c; }
-      100% { background-color: #0f172a; }
-    }
-    @keyframes flashAmber {
-      0% { background-color: #78350f; }
-      15% { background-color: #b45309; }
-      100% { background-color: #0f172a; }
-    }
+    @keyframes flashG { 0% { background: #064e3b !important; } 100% { background: var(--bg) !important; } }
+    @keyframes flashR { 0% { background: #7f1d1d !important; } 100% { background: var(--bg) !important; } }
+    @keyframes flashA { 0% { background: #78350f !important; } 100% { background: var(--bg) !important; } }
 
-    .auth-card {
-      background-color: #0f172a;
-      border: 1px solid #334155;
-      padding: 1.5rem;
-      border-radius: 12px;
+    .app-viewport {
+      width: 100%;
+      height: 100vh;
+      height: -webkit-fill-available;
       display: flex;
       flex-direction: column;
-      gap: 0.85rem;
-      text-align: left;
-      margin: 1rem 0;
-    }
-    .auth-card label {
-      font-size: 0.8rem;
-      font-weight: 700;
-      color: #94a3b8;
-      text-transform: uppercase;
-    }
-    .auth-card input {
-      background-color: #1e293b;
-      color: #f8fafc;
-      border: 1px solid #475569;
-      padding: 0.75rem 1rem;
-      border-radius: 8px;
-      font-size: 1rem;
+      justify-content: space-between;
+      padding: max(12px, env(safe-area-inset-top)) 16px max(14px, env(safe-area-inset-bottom));
+      box-sizing: border-box;
+      position: relative;
     }
 
-    .locked-room-box {
-      background-color: rgba(56, 189, 248, 0.08);
-      border: 1px dashed #38bdf8;
-      border-radius: 8px;
-      padding: 0.6rem 0.85rem;
+    /* GLASS CARD SYSTEM */
+    .glass-card {
+      background: rgba(20, 27, 45, 0.95);
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      padding: 1.25rem;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.6);
+    }
+
+    /* AUTH SCREEN */
+    .login-container {
+      margin: auto 0;
       display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin-bottom: 0.25rem;
+      flex-direction: column;
+      gap: 1rem;
     }
-    .locked-room-label {
-      font-size: 0.75rem;
-      font-weight: 700;
-      color: #94a3b8;
-      text-transform: uppercase;
-    }
-    .locked-room-val {
-      font-size: 1.05rem;
+    .brand-title {
+      font-size: 1.9rem;
       font-weight: 900;
-      color: #38bdf8;
-      letter-spacing: 0.05em;
-    }
-
-    .avatar-grid {
-      display: flex;
-      gap: 0.5rem;
-      justify-content: space-between;
-      margin-top: 0.25rem;
-    }
-    .avatar-btn {
-      background-color: #1e293b;
-      border: 2px solid #334155;
-      border-radius: 10px;
-      font-size: 1.35rem;
-      padding: 0.4rem 0;
-      flex: 1;
-      cursor: pointer;
       text-align: center;
-      transition: all 0.15s;
-    }
-    .avatar-btn.selected {
-      border-color: #38bdf8;
-      background-color: rgba(56, 189, 248, 0.2);
-      transform: scale(1.1);
-    }
-
-    .room-tag {
-      background-color: #1e293b;
-      border: 1px solid #38bdf8;
-      color: #38bdf8;
-      padding: 0.3rem 0.75rem;
-      border-radius: 9999px;
-      font-size: 0.8rem;
-      font-weight: 800;
-      display: inline-block;
-      margin-bottom: 0.5rem;
-    }
-    .stats-card {
-      background: linear-gradient(135deg, #1e293b, #0f172a);
-      border: 1px solid #38bdf8;
-      border-radius: 12px;
-      padding: 1rem;
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 0.75rem;
-      margin: 1rem 0;
-      text-align: center;
-    }
-    .stat-item h3 {
-      font-size: 0.75rem;
-      color: #94a3b8;
-      text-transform: uppercase;
       margin: 0;
+      letter-spacing: -0.02em;
+      background: linear-gradient(135deg, #00e5ff, #38bdf8);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
     }
-    .stat-item p {
-      font-size: 1.25rem;
-      font-weight: 800;
-      color: #38bdf8;
-      margin: 0.25rem 0 0 0;
-    }
-    .tab-bar {
-      display: flex;
-      justify-content: center;
-      gap: 0.4rem;
-      margin: 0.75rem 0;
-    }
-    .tab-btn {
-      background-color: #1e293b;
+    .brand-subtitle {
+      font-size: 0.85rem;
       color: #94a3b8;
-      border: 1px solid #334155;
-      padding: 0.45rem 0.85rem;
-      border-radius: 8px;
-      font-weight: 700;
-      font-size: 0.85rem;
-      cursor: pointer;
+      text-align: center;
+      margin-top: -0.5rem;
     }
-    .tab-btn.active {
-      background-color: #38bdf8;
-      color: #0f172a;
-      border-color: #38bdf8;
-    }
-    .hall-panel {
-      background-color: #0f172a;
-      border: 1px solid #334155;
-      padding: 0.75rem;
-      border-radius: 10px;
-      max-height: 250px;
-      overflow-y: auto;
-      margin-top: 0.5rem;
-      text-align: left;
-    }
-    .rank-badge-box {
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      gap: 0.5rem;
-      background-color: #334155;
-      padding: 0.5rem 1.25rem;
-      border-radius: 9999px;
-      margin: 0.75rem auto 0.5rem;
-      font-size: 1.1rem;
-      font-weight: 700;
-      color: #f8fafc;
-      border: 1px solid #475569;
-    }
-    .streak-banner {
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      background: linear-gradient(90deg, #f59e0b, #ef4444);
-      color: #fff;
-      font-weight: 900;
-      font-size: 0.85rem;
-      padding: 0.35rem 0.9rem;
-      border-radius: 9999px;
-      margin-bottom: 0.75rem;
-      letter-spacing: 0.05em;
-      box-shadow: 0 4px 12px rgba(245, 158, 11, 0.4);
-      animation: pulse 1.2s infinite;
-    }
-    @keyframes pulse {
-      0%, 100% { transform: scale(1); }
-      50% { transform: scale(1.05); }
-    }
-    .reaction-pill {
-      display: inline-block;
-      font-size: 0.85rem;
-      color: #38bdf8;
-      font-weight: 700;
-      background-color: rgba(56, 189, 248, 0.1);
-      border: 1px solid #0284c7;
-      padding: 0.25rem 0.65rem;
-      border-radius: 9999px;
-      margin-bottom: 0.5rem;
-    }
-    .player-answer-reveal {
-      background-color: #064e3b;
-      border: 2px solid #10b981;
-      padding: 1rem;
-      border-radius: 8px;
-      margin: 1rem 0;
-    }
-    .player-answer-label {
-      text-transform: uppercase;
-      font-size: 0.75rem;
-      letter-spacing: 0.1em;
-      color: #6ee7b7;
-      margin-bottom: 0.3rem;
-    }
-    .player-answer-text {
-      font-size: 1.35rem;
+    .field-label {
+      font-size: 0.7rem;
       font-weight: 800;
-      color: #ffffff;
-    }
-    .trivia-image-box {
-      margin: 0.75rem auto;
-      background-color: #ffffff;
-      padding: 0.75rem;
-      border-radius: 10px;
-      display: inline-block;
-    }
-    .trivia-image {
-      max-height: 140px;
-      max-width: 100%;
-      object-fit: contain;
+      color: #64748b;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      margin-bottom: 0.25rem;
       display: block;
     }
-    .error-msg {
-      color: #ef4444;
-      font-size: 0.9rem;
-      font-weight: 600;
-      display: none;
+    .text-input {
+      width: 100%;
+      background: #0d121f;
+      border: 1.5px solid #334155;
+      color: #fff;
+      padding: 0.85rem 1rem;
+      border-radius: 12px;
+      font-size: 1rem;
+      font-weight: 700;
+      outline: none;
+      box-sizing: border-box;
     }
-    .player-podium {
-      display: flex;
-      justify-content: center;
-      align-items: flex-end;
-      gap: 0.5rem;
-      margin: 1rem auto 1.25rem;
-      max-width: 320px;
-      height: 160px;
+    .text-input:focus {
+      border-color: var(--cyan);
+      box-shadow: 0 0 12px rgba(0, 229, 255, 0.25);
     }
-    .p-slot {
-      flex: 1;
+
+    .room-pill-banner {
+      background: rgba(0, 229, 255, 0.08);
+      border: 1px dashed var(--cyan);
+      border-radius: 12px;
+      padding: 0.6rem 0.9rem;
       display: flex;
-      flex-direction: column;
+      justify-content: space-between;
       align-items: center;
     }
-    .p-slot.first { order: 2; }
-    .p-slot.second { order: 1; }
-    .p-slot.third { order: 3; }
-    .p-icon { font-size: 1.4rem; }
-    .p-name {
-      font-size: 0.8rem;
-      font-weight: 700;
-      color: #f8fafc;
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
-      max-width: 80px;
+    .room-pill-val {
+      font-weight: 900;
+      color: var(--cyan);
+      font-size: 1.05rem;
     }
+
+    .avatar-picker-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 0.5rem;
+    }
+    .avatar-item {
+      background: #0d121f;
+      border: 2px solid #243048;
+      border-radius: 14px;
+      font-size: 1.5rem;
+      padding: 0.5rem 0;
+      cursor: pointer;
+      text-align: center;
+      transition: transform 0.15s cubic-bezier(0.34, 1.56, 0.64, 1);
+    }
+    .avatar-item:active { transform: scale(0.9); }
+    .avatar-item.active {
+      border-color: var(--cyan);
+      background: rgba(0, 229, 255, 0.15);
+      transform: scale(1.05);
+      box-shadow: 0 0 14px rgba(0, 229, 255, 0.3);
+    }
+
+    .btn-main {
+      width: 100%;
+      background: linear-gradient(135deg, #00e5ff, #0077b6);
+      color: #030712;
+      border: none;
+      padding: 1rem;
+      border-radius: 14px;
+      font-size: 1.1rem;
+      font-weight: 900;
+      cursor: pointer;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      box-shadow: 0 6px 20px rgba(0, 229, 255, 0.35);
+      margin-top: 0.5rem;
+    }
+    .btn-main:active { transform: scale(0.98); }
+
+    /* HUD TOP BAR */
+    .top-hud {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding-bottom: 0.6rem;
+    }
+    .hud-chip {
+      background: #141b2d;
+      border: 1px solid var(--border);
+      padding: 0.35rem 0.8rem;
+      border-radius: 9999px;
+      font-weight: 800;
+      font-size: 0.8rem;
+      color: #94a3b8;
+      display: flex;
+      align-items: center;
+      gap: 0.4rem;
+    }
+    .timer-val {
+      font-size: 1.8rem;
+      font-weight: 900;
+      color: #facc15;
+      line-height: 1;
+    }
+
+    /* SMOOTH FLUID TIMER BAR */
+    .timer-track {
+      width: 100%;
+      height: 8px;
+      background: #141b2d;
+      border-radius: 9999px;
+      overflow: hidden;
+      border: 1px solid var(--border);
+      margin: 0.4rem 0 0.8rem 0;
+    }
+    .timer-fill {
+      height: 100%;
+      width: 100%;
+      background: linear-gradient(90deg, #0077b6, var(--cyan));
+      border-radius: 9999px;
+      transition: width 1s linear;
+    }
+
+    /* ACTIVE QUESTION */
+    .question-headline {
+      background: #141b2d;
+      border: 1.5px solid var(--border);
+      border-radius: 18px;
+      padding: 1.1rem;
+      text-align: center;
+      margin-bottom: 0.75rem;
+      box-shadow: 0 8px 24px rgba(0,0,0,0.4);
+    }
+    .question-headline p {
+      margin: 0;
+      font-size: 1.15rem;
+      font-weight: 800;
+      line-height: 1.35;
+      color: #f8fafc;
+    }
+
+    /* KAHOOT-STYLE FULL SCREEN TOUCHPAD BUTTONS */
+    .party-buttons-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 0.65rem;
+      flex: 1;
+      min-height: 260px;
+      margin-bottom: 0.6rem;
+    }
+    .pad-btn {
+      border: none;
+      border-radius: 16px;
+      padding: 1rem 0.75rem;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      color: #fff;
+      cursor: pointer;
+      box-shadow: 0 6px 16px rgba(0, 0, 0, 0.4);
+      position: relative;
+      transition: transform 0.1s ease-out, filter 0.2s;
+    }
+    .pad-btn:active { transform: scale(0.96); }
+    .pad-btn.pad-0 { background: linear-gradient(145deg, #e63946, #b91c1c); } /* Red */
+    .pad-btn.pad-1 { background: linear-gradient(145deg, #1d3557, #0f172a); border: 2px solid #38bdf8; } /* Blue */
+    .pad-btn.pad-2 { background: linear-gradient(145deg, #f4a261, #d97706); color: #0f172a; } /* Yellow */
+    .pad-btn.pad-3 { background: linear-gradient(145deg, #2a9d8f, #0f766e); } /* Green */
+
+    .pad-symbol {
+      font-size: 1.6rem;
+      font-weight: 900;
+      line-height: 1;
+      align-self: flex-start;
+      opacity: 0.85;
+    }
+    .pad-text {
+      font-size: 0.95rem;
+      font-weight: 800;
+      line-height: 1.25;
+      text-align: left;
+    }
+
+    .pad-btn.selected {
+      border: 3px solid #ffffff !important;
+      box-shadow: 0 0 20px #ffffff;
+      transform: scale(1.02);
+      z-index: 2;
+    }
+    .pad-btn.dimmed {
+      opacity: 0.35;
+      filter: grayscale(0.5);
+    }
+
+    /* LOCKED IN BANNER */
+    .lock-toast {
+      background: rgba(16, 185, 129, 0.15);
+      border: 1px solid #10b981;
+      color: #6ee7b7;
+      text-align: center;
+      padding: 0.65rem;
+      border-radius: 12px;
+      font-weight: 800;
+      font-size: 0.85rem;
+      animation: pop 0.2s ease-out;
+    }
+    @keyframes pop { 0% { transform: scale(0.9); } 100% { transform: scale(1); } }
+
+    /* RESULTS VIEW CARD */
+    .results-hero-card {
+      background: #141b2d;
+      border-radius: 20px;
+      border: 1.5px solid var(--border);
+      padding: 1.5rem 1.2rem;
+      text-align: center;
+      margin: auto 0;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.6);
+    }
+    .results-title {
+      font-size: 1.8rem;
+      font-weight: 900;
+      margin: 0 0 0.4rem 0;
+    }
+    .correct-title { color: #10b981; }
+    .incorrect-title { color: #ef4444; }
+    .timeout-title { color: #f59e0b; }
+
+    .score-gain-pill {
+      font-size: 1.35rem;
+      font-weight: 900;
+      color: #facc15;
+      margin-bottom: 0.85rem;
+    }
+    .key-reveal-pill {
+      background: rgba(16, 185, 129, 0.12);
+      border: 1px solid #10b981;
+      border-radius: 12px;
+      padding: 0.75rem 1rem;
+      margin: 0.75rem 0;
+    }
+    .key-reveal-pill span {
+      display: block;
+      font-size: 0.7rem;
+      font-weight: 800;
+      color: #6ee7b7;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+    .key-reveal-pill strong {
+      font-size: 1.25rem;
+      color: #fff;
+    }
+
+    .meta-badges-row {
+      display: flex;
+      justify-content: space-around;
+      margin-top: 1rem;
+      padding-top: 0.85rem;
+      border-top: 1px solid var(--border);
+    }
+    .meta-metric span {
+      display: block;
+      font-size: 0.65rem;
+      color: #94a3b8;
+      font-weight: 800;
+      text-transform: uppercase;
+    }
+    .meta-metric strong {
+      font-size: 1.15rem;
+      color: #f8fafc;
+      font-weight: 900;
+    }
+
+    /* PODIUM */
+    .podium-wrap {
+      display: flex;
+      align-items: flex-end;
+      justify-content: center;
+      gap: 0.5rem;
+      height: 140px;
+      margin: 1.5rem auto 1rem;
+    }
+    .podium-box { flex: 1; display: flex; flex-direction: column; align-items: center; }
+    .podium-box.first { order: 2; }
+    .podium-box.second { order: 1; }
+    .podium-box.third { order: 3; }
     .p-step {
       width: 100%;
       border-radius: 8px 8px 0 0;
@@ -292,206 +394,216 @@
       justify-content: center;
       align-items: center;
       font-weight: 900;
-      color: #0f172a;
+      color: #000;
     }
-    .p-slot.first .p-step { height: 80px; background: linear-gradient(180deg, #facc15, #ca8a04); }
-    .p-slot.second .p-step { height: 60px; background: linear-gradient(180deg, #cbd5e1, #64748b); }
-    .p-slot.third .p-step { height: 40px; background: linear-gradient(180deg, #fdba74, #c2410c); }
-    select.filter-select {
-      background-color: #1e293b;
-      color: #38bdf8;
-      border: 1px solid #475569;
-      padding: 0.4rem 0.6rem;
-      border-radius: 6px;
-      font-size: 0.85rem;
-      width: 100%;
-      margin-top: 0.4rem;
-    }
+    .first .p-step { height: 75px; background: linear-gradient(180deg, #facc15, #ca8a04); }
+    .second .p-step { height: 55px; background: linear-gradient(180deg, #cbd5e1, #64748b); }
+    .third .p-step { height: 40px; background: linear-gradient(180deg, #fdba74, #c2410c); }
+
+    .hidden { display: none !important; }
   </style>
 </head>
 <body>
-  <div class="container">
-    <div id="join-screen">
-      <h1>Trivia Login</h1>
-      <p class="question-text">Pick your avatar and jump into the arena</p>
-      <p id="auth-error" class="error-msg"></p>
 
-      <form id="auth-form" class="auth-card">
-        <div class="locked-room-box">
-          <span class="locked-room-label">Joining Room:</span>
-          <span class="locked-room-val" id="display-assigned-room">Room 1</span>
+  <div class="app-viewport">
+
+    <!-- 1. LOGIN SCREEN -->
+    <div id="join-screen" class="login-container">
+      <div>
+        <h1 class="brand-title">TRIVIA ARENA</h1>
+        <p class="brand-subtitle">Jump in & take the crown</p>
+      </div>
+
+      <div class="glass-card">
+        <div class="room-pill-banner" style="margin-bottom: 1rem;">
+          <span style="font-size: 0.75rem; font-weight: 800; color: #94a3b8;">ROOM:</span>
+          <span class="room-pill-val" id="display-assigned-room">Fremont Main</span>
         </div>
 
+        <form id="auth-form" style="display: flex; flex-direction: column; gap: 0.85rem;">
+          <div>
+            <span class="field-label">Choose Avatar</span>
+            <div class="avatar-picker-grid" id="avatar-selector">
+              <div class="avatar-item active" data-avatar="🚀">🚀</div>
+              <div class="avatar-item" data-avatar="⚡">⚡</div>
+              <div class="avatar-item" data-avatar="👑">👑</div>
+              <div class="avatar-item" data-avatar="🍕">🍕</div>
+              <div class="avatar-item" data-avatar="🎯">🎯</div>
+              <div class="avatar-item" data-avatar="🏎️">🏎️</div>
+              <div class="avatar-item" data-avatar="🍿">🍿</div>
+              <div class="avatar-item" data-avatar="🦖">🦖</div>
+            </div>
+          </div>
+
+          <div>
+            <span class="field-label">Player Name</span>
+            <input type="text" id="username-input" class="text-input" placeholder="Your name..." maxlength="15" autocomplete="off" required>
+          </div>
+
+          <div>
+            <span class="field-label">4-Digit PIN (Saves Your Stats)</span>
+            <input type="password" id="pin-input" class="text-input" placeholder="****" maxlength="4" pattern="[0-9]*" inputmode="numeric" required>
+          </div>
+
+          <button type="submit" id="btn-login" class="btn-main">Lock In & Play</button>
+          <div id="auth-error" style="color: #ef4444; font-size: 0.85rem; font-weight: 700; text-align: center;"></div>
+        </form>
+      </div>
+    </div>
+
+    <!-- 2. LOBBY WAITING SCREEN -->
+    <div id="lobby-screen" class="hidden" style="margin: auto 0; text-align: center;">
+      <div class="hud-chip" style="margin: 0 auto 0.75rem; width: fit-content;" id="display-room-tag">ROOM: Fremont Main</div>
+      <h2 style="font-size: 1.6rem; margin: 0 0 0.25rem 0;">Ready, <span id="display-player-avatar">🚀</span> <span id="display-player-name" style="color: var(--cyan);"></span>!</h2>
+      <p style="color: #94a3b8; font-size: 0.85rem; margin-bottom: 1.25rem;">Keep your eyes on the TV screen</p>
+
+      <div class="glass-card" style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem; text-align: center; margin-bottom: 1rem;">
         <div>
-          <label>Choose Avatar</label>
-          <div class="avatar-grid" id="avatar-selector">
-            <button type="button" class="avatar-btn selected" data-avatar="🚀">🚀</button>
-            <button type="button" class="avatar-btn" data-avatar="🎯">🎯</button>
-            <button type="button" class="avatar-btn" data-avatar="⚡">⚡</button>
-            <button type="button" class="avatar-btn" data-avatar="🍕">🍕</button>
-            <button type="button" class="avatar-btn" data-avatar="🤠">🤠</button>
-            <button type="button" class="avatar-btn" data-avatar="🏎️">🏎️</button>
-            <button type="button" class="avatar-btn" data-avatar="🦊">🦊</button>
-            <button type="button" class="avatar-btn" data-avatar="👑">👑</button>
+          <span class="field-label">Single High</span>
+          <strong id="stat-high-score" style="font-size: 1.3rem; color: var(--cyan);">0</strong>
+        </div>
+        <div>
+          <span class="field-label">Career XP</span>
+          <strong id="stat-career-score" style="font-size: 1.3rem; color: #10b981;">0</strong>
+        </div>
+      </div>
+
+      <!-- Hall of Fame Filter -->
+      <div class="glass-card" style="text-align: left; padding: 1rem;">
+        <span class="field-label">Browse Hall of Fame</span>
+        <div style="display: flex; gap: 0.5rem; margin-bottom: 0.5rem;">
+          <select id="lobby-room-select" class="text-input" style="font-size: 0.8rem; padding: 0.5rem;">
+            <option value="all">All Rooms</option>
+            <option value="ROOM1">Fremont Main</option>
+            <option value="ROOM2">Fremont HS</option>
+            <option value="ROOM3">Fremont MS</option>
+            <option value="ROOM4">Tiffin</option>
+            <option value="ROOM5">Sandusky</option>
+            <option value="ROOM6">Northwood</option>
+          </select>
+          <select id="lobby-category-select" class="text-input" style="font-size: 0.8rem; padding: 0.5rem;">
+            <option value="all" selected>All Categories</option>
+            <option value="bible">Bible</option>
+            <option value="food">Snacks & Food</option>
+            <option value="superhero">Superheroes</option>
+            <option value="sports">Sports</option>
+            <option value="factorcap">Fact or Cap</option>
+            <option value="disney">Disney</option>
+            <option value="movie">Movies</option>
+            <option value="music">Pop Culture</option>
+          </select>
+        </div>
+
+        <div style="display: flex; gap: 0.35rem; margin-bottom: 0.5rem;">
+          <button id="btn-lobby-high" class="hud-chip" style="cursor: pointer; flex: 1; justify-content: center; background: #00e5ff; color: #000;">High Scores</button>
+          <button id="btn-lobby-career" class="hud-chip" style="cursor: pointer; flex: 1; justify-content: center;">Career XP</button>
+        </div>
+
+        <ul id="lobby-hall-list" style="list-style: none; padding: 0; margin: 0; max-height: 180px; overflow-y: auto; display: flex; flex-direction: column; gap: 0.35rem; font-size: 0.85rem;"></ul>
+      </div>
+
+      <button id="btn-logout" style="background: none; border: 1px solid #334155; color: #64748b; padding: 0.5rem 1rem; border-radius: 9999px; font-size: 0.75rem; font-weight: 700; margin-top: 1rem;">Log Out</button>
+    </div>
+
+    <!-- 3. IN-GAME QUESTION VIEW -->
+    <div id="game-screen" class="hidden" style="display: flex; flex-direction: column; height: 100%;">
+      <div>
+        <div class="top-hud">
+          <div id="category-badge" class="hud-chip">Category</div>
+          <div class="timer-val" id="timer">15</div>
+        </div>
+        <div class="timer-track">
+          <div id="phone-timer-bar" class="timer-fill"></div>
+        </div>
+      </div>
+
+      <div class="question-headline">
+        <div id="player-image-container" class="hidden" style="margin-bottom: 0.5rem;">
+          <img id="player-question-image" src="" style="max-height: 100px; max-width: 100%; border-radius: 8px;">
+        </div>
+        <p id="question-text">Question Prompt</p>
+      </div>
+
+      <!-- TOUCHPAD RESPONSIVE PARTY BUTTONS -->
+      <div id="options-container" class="party-buttons-grid"></div>
+
+      <div id="status-message" class="lock-toast hidden">✓ Locked In! Waiting for room...</div>
+    </div>
+
+    <!-- 4. MILESTONE STANDINGS VIEW -->
+    <div id="milestone-screen" class="hidden" style="margin: auto 0; text-align: center;">
+      <h2 style="color: var(--cyan); margin: 0;">Checkpoint!</h2>
+      <p id="milestone-text" style="color: #facc15; font-weight: 800; margin-top: 0.2rem;">After 10 Questions</p>
+      <div class="glass-card" style="margin: 1rem 0;">
+        <ul id="milestone-leaderboard-list" style="list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 0.45rem; font-size: 0.95rem; font-weight: 700;"></ul>
+      </div>
+      <p style="color: #64748b; font-size: 0.8rem;">Resuming match automatically...</p>
+    </div>
+
+    <!-- 5. ROUND RESULT HERO CARD -->
+    <div id="results-screen" class="hidden" style="display: flex; flex-direction: column; justify-content: center; height: 100%;">
+      <div class="results-hero-card">
+        <h2 id="results-heading" class="results-title">Round Ended</h2>
+        <div id="result-feedback" style="font-weight: 900; font-size: 1.15rem; margin-bottom: 0.5rem;"></div>
+        
+        <div id="reaction-time-pill" class="hud-chip" style="margin: 0 auto 0.6rem; width: fit-content;"></div>
+        <div id="streak-banner" class="hud-chip" style="margin: 0 auto 0.6rem; width: fit-content; background: #f59e0b; color: #000; font-weight: 900;"></div>
+
+        <div class="key-reveal-pill" id="answer-reveal-wrapper">
+          <span>Correct Answer</span>
+          <strong id="player-correct-answer">---</strong>
+        </div>
+
+        <div class="meta-badges-row">
+          <div class="meta-metric">
+            <span>Rank</span>
+            <strong id="player-rank-display">#--</strong>
+          </div>
+          <div class="meta-metric">
+            <span>Shift</span>
+            <strong id="player-delta-display">• 0</strong>
           </div>
         </div>
+      </div>
 
-        <div>
-          <label for="username-input">Username</label>
-          <input type="text" id="username-input" placeholder="e.g. Maverick" maxlength="20" required>
-        </div>
-        <div>
-          <label for="pin-input">4-Digit PIN</label>
-          <input type="password" id="pin-input" placeholder="e.g. 1234" maxlength="6" required>
-        </div>
-        <button type="submit" id="btn-login" style="background-color: #10b981; margin-top: 0.5rem;">Enter Arena</button>
-      </form>
-    </div>
+      <div id="player-podium-area" class="podium-wrap hidden"></div>
 
-    <!-- Lobby Screen -->
-    <div id="lobby-screen" class="hidden">
-      <div class="room-tag" id="display-room-tag">ROOM: Room 1</div>
-      <h1>Ready, <span id="display-player-avatar">🚀</span> <span id="display-player-name" style="color: #38bdf8;"></span>!</h1>
-
-      <div class="stats-card">
-        <div class="stat-item">
-          <h3>Single High Score</h3>
-          <p id="stat-high-score">0</p>
-        </div>
-        <div class="stat-item">
-          <h3>Career Points</h3>
-          <p id="stat-career-score">0</p>
+      <!-- Postgame Controls -->
+      <div id="post-game-view-toggle" class="hidden" style="margin-top: 1rem;">
+        <div style="display: flex; gap: 0.5rem; justify-content: center;">
+          <button id="btn-view-match" class="hud-chip" style="background: var(--cyan); color: #000; cursor: pointer;">This Match</button>
+          <button id="btn-view-alltime" class="hud-chip" style="cursor: pointer;">All-Time Records</button>
         </div>
       </div>
 
-      <!-- Pre-Game Hall of Fame Explorer with Room Scope -->
-      <div style="background-color: #0f172a; border: 1px solid #334155; padding: 1rem; border-radius: 12px; margin: 1rem 0;">
-        <h3 style="margin: 0 0 0.25rem 0; font-size: 1rem; color: #f8fafc;">All-Time Hall of Fame</h3>
-        <p style="margin: 0; font-size: 0.75rem; color: #94a3b8;">Browse scores for any room or all rooms</p>
+      <div id="current-match-container" style="margin-top: 1rem;">
+        <ul id="leaderboard-list" style="list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 0.4rem; max-height: 200px; overflow-y: auto;"></ul>
+      </div>
 
-        <!-- Room Scope Selector -->
-        <select id="lobby-room-select" class="filter-select" style="border-color:#f59e0b; color:#f59e0b; font-weight:700;">
-          <option value="all">All Rooms Combined (Global)</option>
-          <option value="ROOM1">Fremont Main</option>
-          <option value="ROOM2">Fremont HS</option>
-          <option value="ROOM3">Fremont MS</option>
-          <option value="ROOM4">Tiffin</option>
-          <option value="ROOM5">Sandusky</option>
-          <option value="ROOM6">Northwood</option>
-        </select>
-
-        <select id="lobby-category-select" class="filter-select">
-          <option value="all" selected>All Categories (Overall)</option>
-          <option value="bible">Bible Trivia</option>
-          <option value="food">Snacks & Fast Food</option>
-          <option value="superhero">Superheroes & Sci-Fi</option>
-          <option value="sports">Sports & Records</option>
-          <option value="factorcap">Fact or Cap</option>
-          <option value="disney">Disney & Pixar</option>
-          <option value="movie">Movie Quotes</option>
-          <option value="music">Pop Culture & Music</option>
-        </select>
-
-        <div class="tab-bar">
-          <button id="btn-lobby-high" class="tab-btn active">High Scores</button>
-          <button id="btn-lobby-career" class="tab-btn">Career XP</button>
+      <div id="alltime-container" class="hidden glass-card" style="margin-top: 1rem; text-align: left;">
+        <div style="display: flex; gap: 0.4rem; margin-bottom: 0.5rem;">
+          <select id="postgame-room-select" class="text-input" style="font-size: 0.8rem; padding: 0.4rem;">
+            <option value="all">All Rooms</option>
+            <option value="ROOM1">Fremont Main</option>
+            <option value="ROOM2">Fremont HS</option>
+            <option value="ROOM3">Fremont MS</option>
+            <option value="ROOM4">Tiffin</option>
+            <option value="ROOM5">Sandusky</option>
+            <option value="ROOM6">Northwood</option>
+          </select>
+          <select id="postgame-category-select" class="text-input" style="font-size: 0.8rem; padding: 0.4rem;">
+            <option value="all" selected>All Categories</option>
+            <option value="bible">Bible</option>
+            <option value="food">Snacks & Food</option>
+            <option value="superhero">Superheroes</option>
+            <option value="sports">Sports</option>
+            <option value="factorcap">Fact or Cap</option>
+            <option value="disney">Disney</option>
+            <option value="movie">Movies</option>
+            <option value="music">Pop Culture</option>
+          </select>
         </div>
-
-        <div class="hall-panel">
-          <ul id="lobby-hall-list" class="leaderboard"><li>Loading...</li></ul>
-        </div>
-      </div>
-
-      <p class="question-text">Waiting for host to launch the round...</p>
-      <button id="btn-logout" style="background: none; border: 1px solid #475569; color: #94a3b8; padding: 0.4rem 1rem; border-radius: 6px; font-size: 0.85rem; cursor: pointer;">Log Out</button>
-    </div>
-
-    <!-- Active Question Screen -->
-    <div id="game-screen" class="hidden">
-      <div id="category-badge" class="badge">Category</div>
-      <div id="timer" class="timer">15</div>
-
-      <div id="player-image-container" class="trivia-image-box hidden">
-        <img id="player-question-image" class="trivia-image" src="" alt="Trivia Visual">
-      </div>
-
-      <p id="question-text" class="question-text">Question text goes here</p>
-      <div id="options-container" class="options-grid"></div>
-      <p id="status-message" class="badge hidden">Answer Submitted</p>
-    </div>
-
-    <!-- Milestone Screen -->
-    <div id="milestone-screen" class="hidden">
-      <h1 style="color: #38bdf8;">Checkpoint Standings!</h1>
-      <p id="milestone-text" class="question-text" style="color: #f59e0b; font-weight: 700;">After 10 Questions</p>
-      <h2>Current Match Leaderboard</h2>
-      <ul id="milestone-leaderboard-list" class="leaderboard"></ul>
-      <p style="color: #94a3b8; font-size: 0.85rem; margin-top: 1rem;">Next question starts shortly...</p>
-    </div>
-
-    <!-- Round End Screen -->
-    <div id="results-screen" class="hidden">
-      <h1 id="results-heading">Round Results</h1>
-      <p id="result-feedback" class="question-text" style="margin-bottom: 0.25rem; font-weight: 700;"></p>
-
-      <div id="reaction-time-pill" class="reaction-pill hidden"></div>
-      <div id="streak-banner" class="streak-banner hidden"></div>
-
-      <div id="rank-indicator" class="rank-badge-box">
-        <span>Game Rank:</span>
-        <span id="player-rank-display" style="color:#38bdf8; font-size:1.3rem;">#--</span>
-        <span id="player-delta-display" style="font-size:0.85rem; margin-left:0.25rem;"></span>
-      </div>
-
-      <div id="player-podium-area" class="player-podium hidden"></div>
-
-      <div class="player-answer-reveal" id="answer-reveal-wrapper">
-        <div class="player-answer-label">Correct Answer</div>
-        <div id="player-correct-answer" class="player-answer-text">---</div>
-      </div>
-
-      <div id="post-game-view-toggle" class="tab-bar hidden">
-        <button id="btn-view-match" class="tab-btn active">This Match</button>
-        <button id="btn-view-alltime" class="tab-btn">All-Time Leaderboards</button>
-      </div>
-
-      <div id="current-match-container">
-        <h2>Current Match Standings</h2>
-        <ul id="leaderboard-list" class="leaderboard"></ul>
-      </div>
-
-      <!-- Post-Game Cross-Room Leaderboards -->
-      <div id="alltime-container" class="hidden" style="margin-top: 1rem;">
-        <select id="postgame-room-select" class="filter-select" style="border-color:#f59e0b; color:#f59e0b; font-weight:700;">
-          <option value="all">All Rooms Combined (Global)</option>
-          <option value="ROOM1">Fremont Main</option>
-          <option value="ROOM2">Fremont HS</option>
-          <option value="ROOM3">Fremont MS</option>
-          <option value="ROOM4">Tiffin</option>
-          <option value="ROOM5">Sandusky</option>
-          <option value="ROOM6">Northwood</option>
-        </select>
-
-        <select id="postgame-category-select" class="filter-select">
-          <option value="all" selected>All Categories (Overall)</option>
-          <option value="bible">Bible Trivia</option>
-          <option value="food">Snacks & Fast Food</option>
-          <option value="superhero">Superheroes & Sci-Fi</option>
-          <option value="sports">Sports & Records</option>
-          <option value="factorcap">Fact or Cap</option>
-          <option value="disney">Disney & Pixar</option>
-          <option value="movie">Movie Quotes</option>
-          <option value="music">Pop Culture & Music</option>
-        </select>
-
-        <div class="tab-bar">
-          <button id="btn-postgame-high" class="tab-btn active">High Scores</button>
-          <button id="btn-postgame-career" class="tab-btn">Career XP</button>
-        </div>
-
-        <div class="hall-panel">
-          <ul id="postgame-hall-list" class="leaderboard"><li>Loading...</li></ul>
-        </div>
+        <ul id="postgame-hall-list" style="list-style: none; padding: 0; margin: 0; max-height: 180px; overflow-y: auto; display: flex; flex-direction: column; gap: 0.35rem; font-size: 0.85rem;"></ul>
       </div>
     </div>
   </div>
@@ -530,16 +642,17 @@
       clearBodyFlashes();
       void document.body.offsetWidth;
       document.body.classList.add(`flash-${type}`);
-      setTimeout(clearBodyFlashes, 1300);
+      setTimeout(clearBodyFlashes, 900);
     }
 
-    const avatarBtns = document.querySelectorAll('.avatar-btn');
-    avatarBtns.forEach(btn => {
-      btn.addEventListener('click', () => {
-        avatarBtns.forEach(b => b.classList.remove('selected'));
-        btn.classList.add('selected');
-        chosenAvatar = btn.dataset.avatar;
-        haptic(25);
+    // Avatar selector logic
+    const avatarItems = document.querySelectorAll('.avatar-item');
+    avatarItems.forEach(item => {
+      item.addEventListener('click', () => {
+        avatarItems.forEach(i => i.classList.remove('active'));
+        item.classList.add('active');
+        chosenAvatar = item.dataset.avatar;
+        haptic(20);
       });
     });
 
@@ -562,6 +675,7 @@
 
     const categoryBadge = document.getElementById('category-badge');
     const timerDisplay = document.getElementById('timer');
+    const phoneTimerBar = document.getElementById('phone-timer-bar');
     const questionText = document.getElementById('question-text');
     const playerImageContainer = document.getElementById('player-image-container');
     const playerQuestionImage = document.getElementById('player-question-image');
@@ -595,18 +709,12 @@
     const alltimeContainer = document.getElementById('alltime-container');
     const postgameRoomSelect = document.getElementById('postgame-room-select');
     const postgameCategorySelect = document.getElementById('postgame-category-select');
-    const btnPostgameHigh = document.getElementById('btn-postgame-high');
-    const btnPostgameCareer = document.getElementById('btn-postgame-career');
     const postgameHallList = document.getElementById('postgame-hall-list');
-    let postgameHallMode = 'high';
 
-    if (assignedRoomCode && lobbyRoomSelect) {
-      lobbyRoomSelect.value = assignedRoomCode;
-    }
-    if (assignedRoomCode && postgameRoomSelect) {
-      postgameRoomSelect.value = assignedRoomCode;
-    }
+    if (assignedRoomCode && lobbyRoomSelect) lobbyRoomSelect.value = assignedRoomCode;
+    if (assignedRoomCode && postgameRoomSelect) postgameRoomSelect.value = assignedRoomCode;
 
+    // Auto-login from storage
     const savedUser = localStorage.getItem('trivia_user');
     const savedPin = localStorage.getItem('trivia_pin');
     const savedAvatar = localStorage.getItem('trivia_avatar') || '🚀';
@@ -650,8 +758,8 @@
       displayPlayerName.textContent = data.username;
       displayPlayerAvatar.textContent = data.avatar || '🚀';
       displayRoomTag.textContent = `ROOM: ${displayName}`;
-      statHighScore.textContent = Number(data.highScore).toLocaleString() + ' pts';
-      statCareerScore.textContent = Number(data.careerScore).toLocaleString() + ' pts';
+      statHighScore.textContent = Number(data.highScore).toLocaleString();
+      statCareerScore.textContent = Number(data.careerScore).toLocaleString();
 
       joinScreen.classList.add('hidden');
       lobbyScreen.classList.remove('hidden');
@@ -687,12 +795,13 @@
       lobbyHallList.innerHTML = '';
       const list = lobbyHallMode === 'high' ? data.highScores : data.careerScores;
       if (!list || list.length === 0) {
-        lobbyHallList.innerHTML = '<li>No records logged for this room/category yet.</li>';
+        lobbyHallList.innerHTML = '<li style="color:#64748b;">No records found.</li>';
         return;
       }
       list.forEach((p, idx) => {
         const li = document.createElement('li');
-        li.innerHTML = `<span>#${idx + 1} ${p.avatar || '🚀'} ${p.username}</span><strong style="color:#38bdf8;">${Number(p.score).toLocaleString()} pts</strong>`;
+        li.style.cssText = 'display:flex; justify-content:space-between; padding:0.4rem 0.6rem; background:#0d121f; border-radius:8px;';
+        li.innerHTML = `<span>#${idx + 1} ${p.avatar || '🚀'} ${p.username}</span><strong style="color:var(--cyan);">${Number(p.score).toLocaleString()}</strong>`;
         lobbyHallList.appendChild(li);
       });
     }
@@ -701,17 +810,24 @@
     lobbyCategorySelect.addEventListener('change', loadLobbyLeaderboards);
 
     btnLobbyHigh.addEventListener('click', () => {
-      btnLobbyHigh.classList.add('active');
-      btnLobbyCareer.classList.remove('active');
+      btnLobbyHigh.style.background = '#00e5ff';
+      btnLobbyHigh.style.color = '#000';
+      btnLobbyCareer.style.background = '#141b2d';
+      btnLobbyCareer.style.color = '#94a3b8';
       lobbyHallMode = 'high';
       loadLobbyLeaderboards();
     });
+
     btnLobbyCareer.addEventListener('click', () => {
-      btnLobbyCareer.classList.add('active');
-      btnLobbyHigh.classList.remove('active');
+      btnLobbyCareer.style.background = '#00e5ff';
+      btnLobbyCareer.style.color = '#000';
+      btnLobbyHigh.style.background = '#141b2d';
+      btnLobbyHigh.style.color = '#94a3b8';
       lobbyHallMode = 'career';
       loadLobbyLeaderboards();
     });
+
+    const PAD_SYMBOLS = ['▲', '◆', '●', '■'];
 
     socket.on('game:new_question', (data) => {
       clearBodyFlashes();
@@ -730,6 +846,7 @@
 
       categoryBadge.textContent = `${data.category} (${data.questionNumber}/${data.totalQuestions})`;
       timerDisplay.textContent = data.timeLeft;
+      if (phoneTimerBar) phoneTimerBar.style.width = '100%';
       questionText.textContent = data.question;
       statusMessage.classList.add('hidden');
 
@@ -744,13 +861,23 @@
       optionsContainer.innerHTML = '';
       data.options.forEach((opt, index) => {
         const btn = document.createElement('button');
-        btn.textContent = opt;
+        btn.className = `pad-btn pad-${index}`;
+        btn.innerHTML = `
+          <span class="pad-symbol">${PAD_SYMBOLS[index]}</span>
+          <span class="pad-text">${opt}</span>
+        `;
+
         btn.addEventListener('click', () => {
           if (selectedAnswer !== null) return;
           selectedAnswer = index;
-          haptic(50);
+          haptic(45);
           btn.classList.add('selected');
-          Array.from(optionsContainer.children).forEach(b => b.disabled = true);
+
+          Array.from(optionsContainer.children).forEach(b => {
+            b.disabled = true;
+            if (b !== btn) b.classList.add('dimmed');
+          });
+
           statusMessage.classList.remove('hidden');
           socket.emit('player:submit_answer', index);
         });
@@ -760,8 +887,12 @@
 
     socket.on('game:timer_tick', (data) => {
       const timeLeft = typeof data === 'object' ? data.timeLeft : data;
+      const duration = typeof data === 'object' ? data.duration : 15;
       timerDisplay.textContent = timeLeft;
 
+      if (phoneTimerBar) {
+        phoneTimerBar.style.width = `${Math.max(0, (timeLeft / duration) * 100)}%`;
+      }
       if (timeLeft <= 3 && timeLeft > 0 && selectedAnswer === null) {
         haptic(30);
       }
@@ -772,28 +903,29 @@
       milestoneScreen.classList.add('hidden');
       resultsScreen.classList.remove('hidden');
 
-      resultsHeading.textContent = "Round Results";
       playerCorrectAnswer.textContent = data.correctAnswerText;
       if (data.myRank) playerRankDisplay.textContent = `#${data.myRank}`;
 
       if (data.myReactionTime !== null && data.myReactionTime !== undefined) {
-        reactionTimePill.textContent = `⏱ Locked in: ${data.myReactionTime}s`;
+        reactionTimePill.textContent = `⚡ Locked in: ${data.myReactionTime}s`;
         reactionTimePill.classList.remove('hidden');
       } else {
         reactionTimePill.classList.add('hidden');
       }
 
       if (data.myRankDelta > 0) {
-        playerDeltaDisplay.innerHTML = `<span style="color:#6ee7b7; font-weight:800;">▲ +${data.myRankDelta}</span>`;
+        playerDeltaDisplay.innerHTML = `<span style="color:#10b981; font-weight:900;">▲ +${data.myRankDelta}</span>`;
       } else if (data.myRankDelta < 0) {
-        playerDeltaDisplay.innerHTML = `<span style="color:#fca5a5; font-weight:800;">▼ ${data.myRankDelta}</span>`;
+        playerDeltaDisplay.innerHTML = `<span style="color:#ef4444; font-weight:900;">▼ ${data.myRankDelta}</span>`;
       } else {
-        playerDeltaDisplay.innerHTML = `<span style="color:#94a3b8; font-weight:800;">• 0</span>`;
+        playerDeltaDisplay.innerHTML = `<span style="color:#64748b; font-weight:900;">• 0</span>`;
       }
 
       if (selectedAnswer === data.correctAnswer) {
         let multText = data.streakMultiplier > 1 ? ` (${data.streakMultiplier}x Boost!)` : '';
-        resultFeedback.textContent = `Correct! +${data.myPointsEarned} pts${multText}`;
+        resultsHeading.textContent = "CORRECT!";
+        resultsHeading.className = "results-title correct-title";
+        resultFeedback.textContent = `+${data.myPointsEarned} pts${multText}`;
         resultFeedback.style.color = "#10b981";
         triggerScreenFlash('correct');
         haptic([60, 80, 120]);
@@ -805,13 +937,17 @@
           streakBanner.classList.add('hidden');
         }
       } else if (selectedAnswer === null) {
-        resultFeedback.textContent = "Time's up! +0 pts (Streak reset)";
+        resultsHeading.textContent = "TIME'S UP";
+        resultsHeading.className = "results-title timeout-title";
+        resultFeedback.textContent = "+0 pts (Streak lost)";
         resultFeedback.style.color = "#f59e0b";
         streakBanner.classList.add('hidden');
         triggerScreenFlash('timeout');
         haptic([80, 60, 80]);
       } else {
-        resultFeedback.textContent = "Incorrect! +0 pts (Streak reset)";
+        resultsHeading.textContent = "INCORRECT";
+        resultsHeading.className = "results-title incorrect-title";
+        resultFeedback.textContent = "+0 pts (Streak lost)";
         resultFeedback.style.color = "#ef4444";
         streakBanner.classList.add('hidden');
         triggerScreenFlash('incorrect');
@@ -827,7 +963,7 @@
       gameScreen.classList.add('hidden');
       milestoneScreen.classList.remove('hidden');
 
-      milestoneText.textContent = `After ${data.questionNumber} Questions (Current Game Only)`;
+      milestoneText.textContent = `After ${data.questionNumber} Questions`;
       renderLeaderboard(data.leaderboard, milestoneLeaderboardList);
     });
 
@@ -838,6 +974,8 @@
       resultsScreen.classList.remove('hidden');
 
       resultsHeading.textContent = "Match Complete!";
+      resultsHeading.className = "results-title";
+      resultsHeading.style.color = "var(--cyan)";
       answerRevealWrapper.classList.add('hidden');
       reactionTimePill.classList.add('hidden');
       streakBanner.classList.add('hidden');
@@ -848,11 +986,11 @@
 
       if (myRank) {
         playerRankDisplay.textContent = `#${myRank}`;
-        resultFeedback.textContent = `Match Finished! You placed #${myRank}`;
+        resultFeedback.textContent = `Finished in #${myRank} place!`;
       } else {
-        resultFeedback.textContent = "Match Finished! Final Standings:";
+        resultFeedback.textContent = "Final Standings:";
       }
-      resultFeedback.style.color = "#38bdf8";
+      resultFeedback.style.color = "#facc15";
 
       renderPlayerPodium(leaderboard);
       renderLeaderboard(leaderboard, leaderboardList);
@@ -860,21 +998,25 @@
       if (myRank && myRank <= 3) {
         haptic([90, 60, 90, 60, 250]);
         if (typeof confetti === 'function') {
-          confetti({ particleCount: 90, spread: 75, origin: { y: 0.7 } });
+          confetti({ particleCount: 90, spread: 75, origin: { y: 0.6 } });
         }
       }
     });
 
     btnViewMatch.addEventListener('click', () => {
-      btnViewMatch.classList.add('active');
-      btnViewAlltime.classList.remove('active');
+      btnViewMatch.style.background = 'var(--cyan)';
+      btnViewMatch.style.color = '#000';
+      btnViewAlltime.style.background = '#141b2d';
+      btnViewAlltime.style.color = '#94a3b8';
       currentMatchContainer.classList.remove('hidden');
       alltimeContainer.classList.add('hidden');
     });
 
     btnViewAlltime.addEventListener('click', () => {
-      btnViewAlltime.classList.add('active');
-      btnViewMatch.classList.remove('active');
+      btnViewAlltime.style.background = 'var(--cyan)';
+      btnViewAlltime.style.color = '#000';
+      btnViewMatch.style.background = '#141b2d';
+      btnViewMatch.style.color = '#94a3b8';
       currentMatchContainer.classList.add('hidden');
       alltimeContainer.classList.remove('hidden');
       loadPostgameLeaderboards();
@@ -886,41 +1028,17 @@
       try {
         const res = await fetch(`/api/leaderboards?room=${roomScope}&category=${cat}`);
         const data = await res.json();
-        renderPostgameHallList(data);
-      } catch (e) {
-        postgameHallList.innerHTML = '<li>Unable to load scores.</li>';
-      }
+        postgameHallList.innerHTML = '';
+        (data.highScores || []).forEach((p, idx) => {
+          const li = document.createElement('li');
+          li.style.cssText = 'display:flex; justify-content:space-between; padding:0.4rem 0.6rem; background:#0d121f; border-radius:8px;';
+          li.innerHTML = `<span>#${idx + 1} ${p.avatar || '🚀'} ${p.username}</span><strong style="color:var(--cyan);">${Number(p.score).toLocaleString()}</strong>`;
+          postgameHallList.appendChild(li);
+        });
+      } catch (e) {}
     }
-
-    function renderPostgameHallList(data) {
-      postgameHallList.innerHTML = '';
-      const list = postgameHallMode === 'high' ? data.highScores : data.careerScores;
-      if (!list || list.length === 0) {
-        postgameHallList.innerHTML = '<li>No records logged for this room/category.</li>';
-        return;
-      }
-      list.forEach((p, idx) => {
-        const li = document.createElement('li');
-        li.innerHTML = `<span>#${idx + 1} ${p.avatar || '🚀'} ${p.username}</span><strong style="color:#38bdf8;">${Number(p.score).toLocaleString()} pts</strong>`;
-        postgameHallList.appendChild(li);
-      });
-    }
-
     postgameRoomSelect.addEventListener('change', loadPostgameLeaderboards);
     postgameCategorySelect.addEventListener('change', loadPostgameLeaderboards);
-
-    btnPostgameHigh.addEventListener('click', () => {
-      btnPostgameHigh.classList.add('active');
-      btnPostgameCareer.classList.remove('active');
-      postgameHallMode = 'high';
-      loadPostgameLeaderboards();
-    });
-    btnPostgameCareer.addEventListener('click', () => {
-      btnPostgameCareer.classList.add('active');
-      btnPostgameHigh.classList.remove('active');
-      postgameHallMode = 'career';
-      loadPostgameLeaderboards();
-    });
 
     function renderPlayerPodium(players) {
       if (!players || players.length === 0) return;
@@ -932,9 +1050,9 @@
       const p3 = players[2] || null;
 
       let html = '';
-      if (p2) html += `<div class="p-slot second"><span class="p-icon">${p2.avatar || '🥈'}</span><span class="p-name">${p2.name}</span><div class="p-step">2</div></div>`;
-      if (p1) html += `<div class="p-slot first"><span class="p-icon">${p1.avatar || '👑'}</span><span class="p-name">${p1.name}</span><div class="p-step">1</div></div>`;
-      if (p3) html += `<div class="p-slot third"><span class="p-icon">${p3.avatar || '🥉'}</span><span class="p-name">${p3.name}</span><div class="p-step">3</div></div>`;
+      if (p2) html += `<div class="podium-box second"><span style="font-size:1.4rem;">${p2.avatar || '🥈'}</span><span class="p-name">${p2.name}</span><div class="p-step">2</div></div>`;
+      if (p1) html += `<div class="podium-box first"><span style="font-size:1.6rem;">${p1.avatar || '👑'}</span><span class="p-name">${p1.name}</span><div class="p-step">1</div></div>`;
+      if (p3) html += `<div class="podium-box third"><span style="font-size:1.4rem;">${p3.avatar || '🥉'}</span><span class="p-name">${p3.name}</span><div class="p-step">3</div></div>`;
 
       playerPodiumArea.innerHTML = html;
     }
@@ -944,9 +1062,19 @@
       players.forEach((p, idx) => {
         const li = document.createElement('li');
         const isMe = p.id === socket.id;
-        li.style.border = isMe ? '2px solid #38bdf8' : 'none';
-        const streakTag = p.streak >= 2 ? `<span style="color:#f59e0b; margin-left:0.4rem; font-size:0.8rem;">🔥 ${p.streak}</span>` : '';
-        li.innerHTML = `<span>#${idx + 1} ${p.avatar || '🚀'} ${p.name} ${isMe ? '(You)' : ''}${streakTag}</span><strong>${p.score} pts</strong>`;
+        li.style.cssText = `
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+          padding: 0.65rem 0.85rem;
+          border-radius: 10px;
+          background: ${isMe ? 'rgba(0, 229, 255, 0.15)' : '#0d121f'};
+          border: ${isMe ? '1.5px solid var(--cyan)' : '1px solid var(--border)'};
+          font-weight: 700;
+          font-size: 0.9rem;
+        `;
+        const streakTag = p.streak >= 2 ? `<span style="color:#f59e0b; margin-left:0.35rem; font-size:0.75rem;">🔥 ${p.streak}</span>` : '';
+        li.innerHTML = `<span>#${idx + 1} ${p.avatar || '🚀'} ${p.name} ${isMe ? '(You)' : ''}${streakTag}</span><strong style="color:var(--cyan);">${p.score} pts</strong>`;
         targetElement.appendChild(li);
       });
     }
