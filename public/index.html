@@ -383,6 +383,11 @@
         <select id="lobby-category-select" class="filter-select">
           <option value="all" selected>All Categories (Overall)</option>
           <option value="bible">Bible Trivia</option>
+          <option value="food">Snacks & Fast Food</option>
+          <option value="superhero">Superheroes & Sci-Fi</option>
+          <option value="sports">Sports & Records</option>
+          <option value="factorcap">Fact or Cap</option>
+          <option value="disney">Disney & Pixar</option>
           <option value="movie">Movie Quotes</option>
           <option value="music">Pop Culture & Music</option>
         </select>
@@ -470,6 +475,11 @@
         <select id="postgame-category-select" class="filter-select">
           <option value="all" selected>All Categories (Overall)</option>
           <option value="bible">Bible Trivia</option>
+          <option value="food">Snacks & Fast Food</option>
+          <option value="superhero">Superheroes & Sci-Fi</option>
+          <option value="sports">Sports & Records</option>
+          <option value="factorcap">Fact or Cap</option>
+          <option value="disney">Disney & Pixar</option>
           <option value="movie">Movie Quotes</option>
           <option value="music">Pop Culture & Music</option>
         </select>
@@ -518,7 +528,6 @@
 
     function triggerScreenFlash(type) {
       clearBodyFlashes();
-      // Force reflow so rapid successive answers re-trigger the animation
       void document.body.offsetWidth;
       document.body.classList.add(`flash-${type}`);
       setTimeout(clearBodyFlashes, 1300);
@@ -744,7 +753,7 @@
         btn.addEventListener('click', () => {
           if (selectedAnswer !== null) return;
           selectedAnswer = index;
-          haptic(50); // Crisp tap confirmation
+          haptic(50);
           btn.classList.add('selected');
           Array.from(optionsContainer.children).forEach(b => b.disabled = true);
           statusMessage.classList.remove('hidden');
@@ -758,7 +767,6 @@
       const timeLeft = typeof data === 'object' ? data.timeLeft : data;
       timerDisplay.textContent = timeLeft;
 
-      // Subtle warning haptic pulse on final 3 countdown seconds if not yet answered
       if (timeLeft <= 3 && timeLeft > 0 && selectedAnswer === null) {
         haptic(30);
       }
@@ -788,13 +796,12 @@
         playerDeltaDisplay.innerHTML = `<span style="color:#94a3b8; font-weight:800;">• 0</span>`;
       }
 
-      // Full-screen color flash & haptic dispatch
       if (selectedAnswer === data.correctAnswer) {
         let multText = data.streakMultiplier > 1 ? ` (${data.streakMultiplier}x Boost!)` : '';
         resultFeedback.textContent = `Correct! +${data.myPointsEarned} pts${multText}`;
         resultFeedback.style.color = "#10b981";
         triggerScreenFlash('correct');
-        haptic([60, 80, 120]); // Double celebratory vibration
+        haptic([60, 80, 120]);
 
         if (data.streakLabel) {
           streakBanner.textContent = `${data.streakLabel} • ${data.myStreak} Streak!`;
@@ -807,13 +814,13 @@
         resultFeedback.style.color = "#f59e0b";
         streakBanner.classList.add('hidden');
         triggerScreenFlash('timeout');
-        haptic([80, 60, 80]); // Dual stutter buzz
+        haptic([80, 60, 80]);
       } else {
         resultFeedback.textContent = "Incorrect! +0 pts (Streak reset)";
         resultFeedback.style.color = "#ef4444";
         streakBanner.classList.add('hidden');
         triggerScreenFlash('incorrect');
-        haptic(220); // Long buzz
+        haptic(220);
       }
 
       renderLeaderboard(data.leaderboard, leaderboardList);
