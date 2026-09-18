@@ -86,7 +86,6 @@
 
     #host-main-wrapper { display: none; width: 100%; min-height: 100vh; }
     
-    /* PRE-GAME STAGE CONTAINER */
     .lobby-stage-container {
       max-width: 1200px;
       margin: 0 auto;
@@ -102,9 +101,7 @@
     }
 
     @media (max-width: 900px) {
-      .lobby-broadcast-grid {
-        grid-template-columns: 1fr;
-      }
+      .lobby-broadcast-grid { grid-template-columns: 1fr; }
     }
 
     .lobby-stage-card {
@@ -168,11 +165,6 @@
       font-size: 0.9rem;
       font-weight: 800;
       box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
-      animation: chipPop 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
-    }
-    @keyframes chipPop {
-      from { transform: scale(0.8); opacity: 0; }
-      to { transform: scale(1); opacity: 1; }
     }
     .btn-kick-chip {
       background: #7f1d1d;
@@ -211,11 +203,7 @@
       font-size: 0.95rem;
       outline: none;
     }
-    .deck-group select:focus {
-      border-color: var(--cyan);
-    }
 
-    /* ZERO-SCROLL TV BROADCAST VIEWPORTS */
     .tv-broadcast-screen {
       width: 100vw;
       height: 100vh;
@@ -263,6 +251,21 @@
     }
     .toggle-pill.off { color: #64748b; border-color: #334155; background: rgba(15, 23, 42, 0.6); }
 
+    /* RED BUTTON: RESET ALL LEADERBOARDS */
+    .btn-reset-leaderboards {
+      background: linear-gradient(135deg, #7f1d1d, #b91c1c);
+      color: #fecaca;
+      border: 1.5px solid #ef4444;
+      font-size: 0.85rem;
+      font-weight: 900;
+      padding: 0.45rem 1rem;
+      border-radius: 9999px;
+      cursor: pointer;
+      box-shadow: 0 4px 12px rgba(239, 68, 68, 0.3);
+      transition: transform 0.1s;
+    }
+    .btn-reset-leaderboards:hover { background: #dc2626; color: #fff; }
+
     .btn-stop-broadcast {
       background: linear-gradient(135deg, #b91c1c, #dc2626);
       color: #ffffff;
@@ -277,7 +280,6 @@
       gap: 0.4rem;
       box-shadow: 0 4px 12px rgba(220, 38, 38, 0.35);
     }
-    .btn-stop-broadcast:hover { background: #ef4444; }
 
     .timer-meter-wrapper {
       width: 100%;
@@ -307,7 +309,6 @@
       to { box-shadow: 0 0 20px #ef4444; }
     }
 
-    /* REFINED READABLE TV QUESTION BOX */
     .tv-question-box {
       background: var(--panel-bg);
       border: 2px solid var(--border-subtle);
@@ -341,7 +342,6 @@
     }
     .trivia-image { max-height: 125px; max-width: 100%; object-fit: contain; display: block; }
 
-    /* MATCHING TV OPTIONS GRID WITH CORRECT-REVEAL PULSE */
     .tv-options-grid {
       display: grid;
       grid-template-columns: 1fr 1fr;
@@ -382,8 +382,6 @@
       line-height: 1.25;
       color: #f8fafc;
     }
-
-    /* WINNING REVEAL CARD EFFECT */
     .tv-option-btn.correct-reveal {
       background: linear-gradient(135deg, rgba(6, 78, 59, 0.95), rgba(4, 120, 87, 0.85)) !important;
       border: 3px solid var(--green) !important;
@@ -400,7 +398,6 @@
       filter: grayscale(0.5);
     }
 
-    /* RESULTS SCREEN */
     .tv-results-split {
       display: grid;
       grid-template-columns: 1.15fr 0.85fr;
@@ -443,12 +440,10 @@
     .spotlight-card.speed {
       border: 1.5px solid var(--green);
       background: linear-gradient(135deg, rgba(16, 185, 129, 0.15), rgba(15, 23, 42, 0.9));
-      box-shadow: 0 0 16px rgba(16, 185, 129, 0.2);
     }
     .spotlight-card.snail {
       border: 1.5px solid var(--amber);
       background: linear-gradient(135deg, rgba(245, 158, 11, 0.15), rgba(15, 23, 42, 0.9));
-      box-shadow: 0 0 16px rgba(245, 158, 11, 0.2);
     }
     .spotlight-icon { font-size: 1.9rem; }
     .spotlight-title { font-size: 0.75rem; font-weight: 900; text-transform: uppercase; margin-bottom: 0.15rem; letter-spacing: 0.05em; }
@@ -474,7 +469,6 @@
       display: flex;
       flex-direction: column;
       justify-content: center;
-      box-shadow: 0 6px 20px rgba(0,0,0,0.4);
     }
     .chart-header {
       font-size: 0.8rem;
@@ -503,7 +497,7 @@
       color: #ffffff;
       min-width: 8px;
     }
-    .chart-fill.correct-bar { background: linear-gradient(90deg, #059669, #10b981); box-shadow: 0 0 10px rgba(16, 185, 129, 0.5); }
+    .chart-fill.correct-bar { background: linear-gradient(90deg, #059669, #10b981); }
     .chart-fill.incorrect-bar { background: linear-gradient(90deg, #475569, #64748b); }
 
     .results-qr-card {
@@ -516,7 +510,6 @@
       align-items: center;
       justify-content: center;
       text-align: center;
-      box-shadow: 0 8px 24px rgba(0,0,0,0.5), 0 0 16px var(--cyan-glow);
     }
     .results-qr-title {
       font-size: 0.8rem;
@@ -539,7 +532,6 @@
       height: 175px !important;
     }
 
-    /* AUTO-SCROLLING LEADERBOARD WITH FLAME STREAKS */
     .autoscroll-leaderboard-wrapper {
       flex: 1;
       height: 100%;
@@ -549,7 +541,6 @@
       overflow: hidden !important;
       position: relative;
       padding: 0.6rem 0;
-      box-shadow: 0 8px 25px rgba(0,0,0,0.4);
     }
     .autoscroll-list {
       list-style: none;
@@ -571,7 +562,6 @@
       font-weight: 800;
       border: 1px solid rgba(255, 255, 255, 0.06);
     }
-
     .tv-streak-tag {
       background: rgba(245, 158, 11, 0.15);
       color: #f59e0b;
@@ -585,7 +575,6 @@
       align-items: center;
       gap: 2px;
     }
-
     .delta-badge {
       font-size: 0.75rem;
       font-weight: 900;
@@ -605,7 +594,7 @@
       justify-content: center;
       align-items: flex-end;
       gap: 1.75rem;
-      height: 240px;
+      height: 230px;
       max-width: 700px;
       margin: 0 auto;
     }
@@ -630,7 +619,34 @@
     .second .podium-step { height: 95px; background: linear-gradient(180deg, #cbd5e1, #64748b); border: 2px solid #f1f5f9; border-bottom: none; }
     .third .podium-step { height: 65px; background: linear-gradient(180deg, #fdba74, #c2410c); border: 2px solid #fed7aa; border-bottom: none; }
 
-    /* SUBMISSION TRAY */
+    /* 1. END-OF-GAME SUPERLATIVES CARDS */
+    .superlatives-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 1rem;
+      max-width: 800px;
+      margin: 0.75rem auto 0;
+      width: 100%;
+    }
+    .award-card {
+      background: var(--panel-bg);
+      border: 1.5px solid var(--border-subtle);
+      border-radius: 14px;
+      padding: 0.85rem 1rem;
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      text-align: left;
+    }
+    .award-card.gunslinger { border-color: rgba(56, 189, 248, 0.4); background: linear-gradient(135deg, rgba(56,189,248,0.1), var(--panel-bg)); }
+    .award-card.clutch { border-color: rgba(245, 158, 11, 0.4); background: linear-gradient(135deg, rgba(245,158,11,0.1), var(--panel-bg)); }
+    .award-card.comeback { border-color: rgba(16, 185, 129, 0.4); background: linear-gradient(135deg, rgba(16,185,129,0.1), var(--panel-bg)); }
+
+    .award-icon { font-size: 1.8rem; }
+    .award-title { font-size: 0.7rem; font-weight: 900; text-transform: uppercase; letter-spacing: 0.05em; color: #94a3b8; }
+    .award-name { font-size: 1rem; font-weight: 900; color: #ffffff; }
+    .award-stat { font-size: 0.75rem; font-weight: 800; color: var(--cyan); }
+
     .submission-tray {
       background: var(--panel-bg);
       border: 1.5px solid var(--border-subtle);
@@ -688,6 +704,8 @@
       <div class="top-bar-controls">
         <div class="room-badge" id="host-room-badge">ROOM: Fremont Main</div>
         <div class="top-toggles">
+          <!-- 1-CLICK LEADERBOARD RESET BUTTON -->
+          <button id="btn-reset-leaderboards" class="btn-reset-leaderboards">⚠️ Reset Leaderboards</button>
           <button id="btn-toggle-sound" class="toggle-pill">🔊 Sound: ON</button>
           <button id="btn-toggle-autopilot" class="toggle-pill">⚡ Auto-Pilot: ON</button>
         </div>
@@ -862,7 +880,6 @@
         <p id="host-question" class="tv-question-text">Question Prompt</p>
       </div>
 
-      <!-- TV OPTIONS GRID (IDENTICAL TO PLAYER BADGES) -->
       <div id="host-options" class="tv-options-grid"></div>
 
       <div class="submission-tray">
@@ -880,7 +897,6 @@
       </div>
 
       <div class="tv-results-split">
-        <!-- LEFT COLUMN: CORRECT ANSWER, PODIUM SPOTLIGHTS, VOTE CHART & DEDICATED QR -->
         <div class="tv-results-left">
           <div class="answer-reveal-box">
             <div class="answer-reveal-label">Correct Answer</div>
@@ -923,7 +939,6 @@
           </div>
         </div>
 
-        <!-- RIGHT COLUMN: STANDINGS WITH AUTO-SCROLLING LEADERBOARD -->
         <div class="tv-results-right">
           <div style="font-size: 0.9rem; font-weight: 900; color: #94a3b8; text-transform: uppercase; margin-bottom: 0.6rem; letter-spacing: 0.05em;">Live Standings</div>
           <div class="autoscroll-leaderboard-wrapper" id="results-scroll-container">
@@ -955,7 +970,7 @@
       </div>
     </div>
 
-    <!-- 4. ZERO-SCROLL TV SCREEN: MATCH GAME OVER & PODIUM -->
+    <!-- 4. ZERO-SCROLL TV SCREEN: MATCH OVER & PODIUM WITH SUPERLATIVES -->
     <div id="host-game-over" class="tv-broadcast-screen hidden">
       <div style="text-align: center;">
         <h1 style="color: var(--gold); font-size: 2.5rem; font-weight: 900; margin: 0; text-shadow: 0 0 20px rgba(250, 204, 21, 0.4);">👑 Champion Crowned!</h1>
@@ -964,16 +979,36 @@
 
       <div id="podium-area" class="podium-container"></div>
 
-      <div id="toughest-question-card" class="hidden" style="background:var(--panel-bg); border:1.5px solid var(--amber); border-radius:14px; padding:0.85rem 1.4rem; max-width:680px; margin:0 auto; width:100%; box-shadow:0 6px 20px rgba(0,0,0,0.5);">
-        <div style="display:flex; justify-content:space-between; align-items:center;">
-          <span style="font-size:0.8rem; font-weight:900; color:var(--amber); text-transform:uppercase; letter-spacing:0.05em;">🧠 Toughest Question</span>
-          <span id="toughest-accuracy" style="font-size:0.85rem; font-weight:900; color:var(--red);">0% Correct</span>
+      <!-- END-OF-GAME SUPERLATIVES CARDS -->
+      <div id="superlatives-area" class="superlatives-grid">
+        <div class="award-card gunslinger">
+          <div class="award-icon">🎯</div>
+          <div>
+            <div class="award-title">The Gunslinger</div>
+            <div class="award-name" id="award-gunslinger-name">--</div>
+            <div class="award-stat" id="award-gunslinger-stat">Fastest avg response</div>
+          </div>
         </div>
-        <p id="toughest-text" style="font-size:1rem; font-weight:800; margin:0.3rem 0; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">Question</p>
-        <div style="font-size:0.85rem; color:#94a3b8;">Correct: <strong id="toughest-answer" style="color:var(--green);">---</strong></div>
+        <div class="award-card clutch">
+          <div class="award-icon">🔥</div>
+          <div>
+            <div class="award-title">Clutch Player</div>
+            <div class="award-name" id="award-clutch-name">--</div>
+            <div class="award-stat" id="award-clutch-stat">Late game scorer</div>
+          </div>
+        </div>
+        <div class="award-card comeback">
+          <div class="award-icon">🚀</div>
+          <div>
+            <div class="award-title">Comeback Kid</div>
+            <div class="award-name" id="award-comeback-name">--</div>
+            <div class="award-stat" id="award-comeback-stat">Biggest rank climb</div>
+          </div>
+        </div>
       </div>
 
-      <div id="auto-start-banner" class="hidden" style="background: rgba(16, 185, 129, 0.18); border: 2px solid var(--green); color: #6ee7b7; padding: 0.75rem 1.4rem; border-radius: 12px; margin: 0 auto; max-width: 540px; font-weight: 900; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 0 16px rgba(16, 185, 129, 0.3);">
+      <!-- AUTO-PLAY NEXT MATCH COUNTDOWN -->
+      <div id="auto-start-banner" class="hidden" style="background: rgba(16, 185, 129, 0.18); border: 2px solid var(--green); color: #6ee7b7; padding: 0.65rem 1.4rem; border-radius: 12px; margin: 0.5rem auto 0; max-width: 540px; font-weight: 900; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 0 16px rgba(16, 185, 129, 0.3);">
         <span>⏳ Next Match (<span id="auto-next-cat-label" style="color:#fff;">BIBLE</span>) starts in <strong id="auto-start-timer" style="color:var(--gold); font-size:1.2rem;">10</strong>s...</span>
         <button onclick="cancelAutoStart()" style="background:#dc2626; color:#fff; border:none; padding:5px 10px; border-radius:6px; cursor:pointer; font-weight:800;">Cancel</button>
       </div>
@@ -1098,6 +1133,19 @@
       btnToggleAutoPilot.classList.toggle('off', !isAutoPilot);
     });
 
+    // 1-CLICK RESET ALL LEADERBOARDS LISTENER
+    const btnResetLeaderboards = document.getElementById('btn-reset-leaderboards');
+    btnResetLeaderboards.addEventListener('click', () => {
+      if (confirm('DANGER: Reset ALL player scores, career XP, and leaderboards to 0 across all rooms?')) {
+        socket.emit('host:reset_leaderboards');
+      }
+    });
+
+    socket.on('host:action_feedback', (msg) => {
+      alert(msg);
+      loadHallOfFame();
+    });
+
     let activeScrollIntervals = [];
 
     function stopAllAutoScroll() {
@@ -1167,7 +1215,7 @@
       const joinUrl = `${window.location.origin}/?room=${roomCode}`;
 
       qrcodeContainer.innerHTML = '';
-      new QRCode(qrcodeContainer, { text: joinUrl, width: 240, height: 240, colorDark: "#38bdf8", colorLight: "#070b14" });
+      new QRCode(qrcodeContainer, { text: joinUrl, width: 220, height: 220, colorDark: "#38bdf8", colorLight: "#070b14" });
 
       resultsQrcodeContainer.innerHTML = '';
       new QRCode(resultsQrcodeContainer, { text: joinUrl, width: 175, height: 175, colorDark: "#000000", colorLight: "#ffffff" });
@@ -1496,7 +1544,6 @@
     });
 
     socket.on('game:round_ended', (data) => {
-      // 1. HIGHLIGHT CORRECT OPTION & DIM OTHERS ON TV
       if (typeof data.correctAnswer === 'number') {
         const optBtns = hostOptions.querySelectorAll('.tv-option-btn');
         optBtns.forEach((btn, idx) => {
@@ -1537,7 +1584,6 @@
         if (p.rankDelta > 0) deltaHtml = `<span class="delta-badge delta-up">▲ +${p.rankDelta}</span>`;
         else if (p.rankDelta < 0) deltaHtml = `<span class="delta-badge delta-down">▼ ${p.rankDelta}</span>`;
 
-        // 2. FLAME BADGE FOR STREAKS ON TV LEADERBOARD
         let flameHtml = '';
         if (p.streak && p.streak >= 2) {
           flameHtml = `<span class="tv-streak-tag">🔥 ${p.streak}</span>`;
@@ -1605,16 +1651,27 @@
       const leaderboard = Array.isArray(data) ? data : data.leaderboard;
       renderPodium(leaderboard);
 
-      const toughestCard = document.getElementById('toughest-question-card');
-      if (matchQuestionStats.length > 0) {
-        matchQuestionStats.sort((a, b) => a.accuracy - b.accuracy);
-        const hardest = matchQuestionStats[0];
-        document.getElementById('toughest-accuracy').textContent = `${hardest.accuracy}% Correct`;
-        document.getElementById('toughest-text').textContent = hardest.question;
-        document.getElementById('toughest-answer').textContent = hardest.answer;
-        toughestCard.classList.remove('hidden');
+      // POPULATE POST-GAME SUPERLATIVES
+      const sups = data.superlatives || {};
+      if (sups.gunslinger) {
+        document.getElementById('award-gunslinger-name').textContent = `${sups.gunslinger.avatar || '🎯'} ${sups.gunslinger.name}`;
+        document.getElementById('award-gunslinger-stat').textContent = sups.gunslinger.stat;
       } else {
-        toughestCard.classList.add('hidden');
+        document.getElementById('award-gunslinger-name').textContent = 'None';
+      }
+
+      if (sups.clutch) {
+        document.getElementById('award-clutch-name').textContent = `${sups.clutch.avatar || '🔥'} ${sups.clutch.name}`;
+        document.getElementById('award-clutch-stat').textContent = sups.clutch.stat;
+      } else {
+        document.getElementById('award-clutch-name').textContent = 'None';
+      }
+
+      if (sups.comeback) {
+        document.getElementById('award-comeback-name').textContent = `${sups.comeback.avatar || '🚀'} ${sups.comeback.name}`;
+        document.getElementById('award-comeback-stat').textContent = sups.comeback.stat;
+      } else {
+        document.getElementById('award-comeback-name').textContent = 'None';
       }
 
       if (typeof confetti === 'function') {
