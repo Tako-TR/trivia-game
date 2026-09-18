@@ -176,8 +176,6 @@
     }
     .badge-icon { font-size: 1.5rem; }
 
-    }
-
     .tab-bar {
       display: flex;
       justify-content: center;
@@ -464,17 +462,6 @@
   </style>
 </head>
 <body>
-
-  <!-- FREE POP WINNER MODAL POPUP -->
-  <div id="pop-win-modal" class="hidden">
-    <div class="pop-modal-card">
-      <h2>🥤 FREE POP WINNER!</h2>
-      <p>Go show a leader this screen to earn your free pop!</p>
-      <div class="pop-timestamp-box" id="pop-timestamp-text">Claimed Today</div>
-      <button class="pop-close-btn" onclick="closePopModal()">Awesome, Thanks!</button>
-    </div>
-  </div>
-
   <div class="container">
     <div id="join-screen">
       <h1>Trivia Login</h1>
@@ -775,10 +762,6 @@
         displayBadge.textContent = equippedBadge ? `${equippedBadge} ` : '';
       }
     }
-
-    window.closePopModal = function() {
-      document.getElementById('pop-win-modal').classList.add('hidden');
-    };
 
     const joinScreen = document.getElementById('join-screen');
     const lobbyScreen = document.getElementById('lobby-screen');
@@ -1093,13 +1076,6 @@
         resultFeedback.textContent = "Match Finished! Final Standings:";
       }
       resultFeedback.style.color = "#38bdf8";
-
-      // SHOW DAILY FREE POP WINNER MODAL POPUP
-      if (data.wonDailyPop) {
-        const todayFormatted = new Date().toLocaleDateString(undefined, { weekday: 'short', month: 'short', day: 'numeric', year: 'numeric' });
-        document.getElementById('pop-timestamp-text').textContent = `Claimed Today (${todayFormatted})`;
-        document.getElementById('pop-win-modal').classList.remove('hidden');
-      }
 
       const sups = data.superlatives || {};
       let wonAward = '';
