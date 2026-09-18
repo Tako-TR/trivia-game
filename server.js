@@ -58,11 +58,6 @@ async function initDb() {
         games_played INT DEFAULT 0,
         PRIMARY KEY (username, category)
       );
-
-      CREATE TABLE IF NOT EXISTS daily_pop_reward (
-        reward_date VARCHAR(10) PRIMARY KEY,
-        winner_username VARCHAR(30) NOT NULL
-      );
     `);
     console.log('Database initialized successfully.');
   } catch (err) {
@@ -624,11 +619,6 @@ io.on('connection', (socket) => {
       roomName: room.name,
       players: getLobbyPlayers(room)
     });
-  });
-
-  // HOST TOGGLE FOR FREE POP
-  socket.on('host:toggle_freepop', (enabled) => {
-    isFreePopEnabled = !!enabled;
   });
 
   socket.on('player:auth', async ({ username, pin, roomCode }) => {
@@ -1202,35 +1192,6 @@ function calculateSuperlatives(room, standings) {
   return { gunslinger, clutch, comeback };
 }
 
-async function checkDailyPopClaimed(todayStr) {
-  if (pool) {
-    try {
-      const res = await pool.query('SELECT winner_username FROM daily_pop_reward WHERE reward_date = $1;', [todayStr]);
-      return res.rows.length > 0;
-    } catch (e) {
-      return false;
-    }
-  } else {
-    if (dailyPopWinnerCache.date === todayStr && dailyPopWinnerCache.winner) {
-      return true;
-    }
-    return false;
-  }
-}
-
-async function claimDailyPop(todayStr, username) {
-  if (pool) {
-    try {
-      await pool.query(
-        'INSERT INTO daily_pop_reward (reward_date, winner_username) VALUES ($1, $2) ON CONFLICT (reward_date) DO NOTHING;',
-        [todayStr, username]
-      );
-    } catch (e) {}
-  } else {
-    dailyPopWinnerCache = { date: todayStr, winner: username };
-  }
-}
-
 async function evaluateAchievements(p, matchRank, totalPlayers, room) {
   const newUnlocks = [];
   let existingUnlocks = [];
@@ -1271,9 +1232,6 @@ async function evaluateAchievements(p, matchRank, totalPlayers, room) {
     if (matchRank === 1) unlock('neck_neck');
     if (matchRank <= 3) unlock('wave_rider');
     if (matchRank === 1) unlock('gold_digger');
-
-      }
-    }
   }
 
   let currentCareerXP = p.score;
@@ -1313,14 +1271,11 @@ async function evaluateAchievements(p, matchRank, totalPlayers, room) {
       memoryPlayers[p.username].achievements = updatedUnlocks;
     }
   }
-
-  return wonDailyPop;
 }
 
 async function finishGameAndSaveStats(room) {
   const standings = getCurrentGameStandings(room);
   const superlatives = calculateSuperlatives(room, standings);
-  let dailyPopWinnerSocketId = null;
 
   for (let idx = 0; idx < standings.length; idx++) {
     const sItem = standings[idx];
@@ -1394,10 +1349,7 @@ async function finishGameAndSaveStats(room) {
         }
       }
 
-      const wonPop = await evaluateAchievements(p, matchRank, totalPlayers, room);
-      if (wonPop) {
-        dailyPopWinnerSocketId = sItem.id;
-      }
+      await evaluateAchievements(p, matchRank, totalPlayers, room);
     }
   }
 
@@ -1413,15 +1365,13 @@ async function finishGameAndSaveStats(room) {
     const socket = io.sockets.sockets.get(sockId);
     if (socket) {
       const rankIndex = standings.findIndex((item) => item.id === sockId);
-      const isDailyPopWinner = sockId === dailyPopWinnerSocketId;
       socket.emit('game:over', {
         roomCode: room.code,
         roomName: room.name,
         category: room.currentGameCategory,
         leaderboard: standings,
         superlatives: superlatives,
-        myRank: rankIndex !== -1 ? rankIndex + 1 : null,
-        wonDailyPop: isDailyPopWinner
+        myRank: rankIndex !== -1 ? rankIndex + 1 : null
       });
     }
   });
