@@ -223,6 +223,30 @@
       text-align: left;
     }
 
+    /* HEADER-DOCKED QR CARD (NON-OBSTRUCTIVE) */
+    .header-qr-dock {
+      display: flex;
+      align-items: center;
+      gap: 0.65rem;
+      background: rgba(30, 41, 59, 0.85);
+      border: 1px solid #38bdf8;
+      border-radius: 10px;
+      padding: 4px 8px;
+    }
+    .header-qr-dock .dock-label {
+      font-size: 0.65rem;
+      font-weight: 800;
+      color: #38bdf8;
+      text-transform: uppercase;
+      line-height: 1.1;
+      text-align: right;
+    }
+    #docked-qrcode img, #docked-qrcode canvas {
+      display: block;
+      width: 58px !important;
+      height: 58px !important;
+    }
+
     /* TV 2-COLUMN RESULTS VIEW */
     .tv-results-split {
       display: grid;
@@ -356,25 +380,6 @@
     .delta-up { background-color: #064e3b; color: #6ee7b7; }
     .delta-down { background-color: #7f1d1d; color: #fca5a5; }
     .delta-same { background-color: #1e293b; color: #64748b; }
-
-    /* FLOATING CORNER QR BADGE (ENLARGED FOR TV) */
-    .floating-qr-badge {
-      position: fixed;
-      bottom: 20px;
-      right: 20px;
-      background: rgba(15, 23, 42, 0.95);
-      border: 2px solid #38bdf8;
-      border-radius: 14px;
-      padding: 10px;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      box-shadow: 0 12px 30px rgba(0,0,0,0.7);
-      z-index: 999;
-      backdrop-filter: blur(6px);
-    }
-    .floating-qr-label { font-size: 0.75rem; font-weight: 800; color: #38bdf8; text-transform: uppercase; margin-bottom: 6px; letter-spacing: 0.05em; }
-    #corner-qrcode img, #corner-qrcode canvas { display: block; width: 115px !important; height: 115px !important; }
 
     /* PODIUM STYLING */
     .podium-container {
@@ -609,10 +614,20 @@
     <div id="host-game" class="tv-broadcast-screen hidden">
       <div>
         <div style="display: flex; justify-content: space-between; align-items: center;">
-          <span id="host-category" style="background: #1e293b; border: 1px solid #38bdf8; color: #38bdf8; font-weight: 800; padding: 4px 12px; border-radius: 9999px; font-size: 0.85rem;">Category</span>
-          <span id="host-timer" style="font-size: 1.8rem; font-weight: 900; color: #facc15;">15</span>
-          <button class="btn-stop-broadcast stop-game-btn">⏹ End Match</button>
+          <div style="display: flex; align-items: center; gap: 0.75rem;">
+            <span id="host-category" style="background: #1e293b; border: 1px solid #38bdf8; color: #38bdf8; font-weight: 800; padding: 4px 12px; border-radius: 9999px; font-size: 0.85rem;">Category</span>
+            <button class="btn-stop-broadcast stop-game-btn">⏹ End Match</button>
+          </div>
+
+          <span id="host-timer" style="font-size: 2rem; font-weight: 900; color: #facc15;">15</span>
+
+          <!-- DOCKED HEADER QR CODE (DOES NOT COVER SCREEN) -->
+          <div class="header-qr-dock">
+            <div class="dock-label">Scan to<br>Join</div>
+            <div id="docked-qrcode"></div>
+          </div>
         </div>
+
         <div class="timer-meter-wrapper">
           <div id="timer-bar" class="timer-meter-bar"></div>
         </div>
@@ -738,12 +753,6 @@
         <button id="btn-export-recap" style="background-color: #10b981; color:#fff; font-weight:700; border:none; padding:0.6rem 1.25rem; border-radius:8px; cursor:pointer;">📥 Export Match Recap (CSV)</button>
         <button id="btn-restart" style="background-color: #3b82f6; color:#fff; font-weight:800; border:none; padding:0.6rem 1.5rem; border-radius:8px; cursor:pointer;">Return to Lobby</button>
       </div>
-    </div>
-
-    <!-- CORNER QR CODE FOR LATE ARRIVALS -->
-    <div id="floating-qr-container" class="floating-qr-badge hidden">
-      <div class="floating-qr-label">Scan to Join Mid-Game</div>
-      <div id="corner-qrcode"></div>
     </div>
   </div>
 
@@ -916,18 +925,17 @@
     const hostRoomBadge = document.getElementById('host-room-badge');
     const qrRoomLabel = document.getElementById('qr-room-label');
     const qrcodeContainer = document.getElementById("qrcode");
-    const cornerQrcodeContainer = document.getElementById("corner-qrcode");
-    const floatingQrContainer = document.getElementById("floating-qr-container");
+    const dockedQrcodeContainer = document.getElementById("docked-qrcode");
     const timerBar = document.getElementById('timer-bar');
 
-    // LARGER QR CODES FOR EASY SCANNING ACROSS THE ROOM
     function renderQRCode(roomCode) {
       qrcodeContainer.innerHTML = '';
       const joinUrl = `${window.location.origin}/?room=${roomCode}`;
       new QRCode(qrcodeContainer, { text: joinUrl, width: 240, height: 240, colorDark: "#38bdf8", colorLight: "#0f172a" });
 
-      cornerQrcodeContainer.innerHTML = '';
-      new QRCode(cornerQrcodeContainer, { text: joinUrl, width: 115, height: 115, colorDark: "#38bdf8", colorLight: "#0f172a" });
+      // Docked in active header
+      dockedQrcodeContainer.innerHTML = '';
+      new QRCode(dockedQrcodeContainer, { text: joinUrl, width: 58, height: 58, colorDark: "#38bdf8", colorLight: "#0f172a" });
 
       const displayName = ROOM_NAMES[roomCode] || roomCode;
       qrRoomLabel.textContent = displayName;
@@ -1105,7 +1113,6 @@
       stopAllAutoScroll();
       hostGameOver.classList.add('hidden');
       hostLobbyView.classList.remove('hidden');
-      floatingQrContainer.classList.add('hidden');
       fetchLobbyPresets();
     });
 
@@ -1181,7 +1188,6 @@
       hostMilestone.classList.add('hidden');
       hostGameOver.classList.add('hidden');
       hostGame.classList.remove('hidden');
-      floatingQrContainer.classList.remove('hidden');
 
       document.getElementById('host-category').textContent = `${data.category} (${data.questionNumber}/${data.totalQuestions})`;
       hostTimer.textContent = data.timeLeft;
@@ -1245,7 +1251,6 @@
       hostGame.classList.add('hidden');
       hostMilestone.classList.add('hidden');
       hostRoundEnd.classList.remove('hidden');
-      floatingQrContainer.classList.add('hidden');
 
       playRevealSound();
       hostCorrectAnswer.textContent = data.correctAnswerText;
@@ -1263,6 +1268,7 @@
 
       renderDistributionChart(data);
 
+      // Render & Start Auto-Scrolling Standings on TV
       hostLeaderboard.innerHTML = '';
       data.leaderboard.forEach((p, idx) => {
         const li = document.createElement('li');
@@ -1324,7 +1330,6 @@
       hostMilestone.classList.add('hidden');
       hostRoundEnd.classList.add('hidden');
       hostGameOver.classList.remove('hidden');
-      floatingQrContainer.classList.add('hidden');
 
       lastCompletedMatchData = data;
       playVictorySound();
