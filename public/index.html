@@ -8,6 +8,36 @@
   <script src="/socket.io/socket.io.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.2/dist/confetti.browser.min.js"></script>
   <style>
+    /* FULL-SCREEN RESULT FLASH ANIMATIONS */
+    body {
+      transition: background-color 0.2s ease-out;
+    }
+    body.flash-correct {
+      animation: flashGreen 1.2s ease-out;
+    }
+    body.flash-incorrect {
+      animation: flashRed 1.2s ease-out;
+    }
+    body.flash-timeout {
+      animation: flashAmber 1.2s ease-out;
+    }
+
+    @keyframes flashGreen {
+      0% { background-color: #064e3b; }
+      15% { background-color: #047857; }
+      100% { background-color: #0f172a; }
+    }
+    @keyframes flashRed {
+      0% { background-color: #7f1d1d; }
+      15% { background-color: #b91c1c; }
+      100% { background-color: #0f172a; }
+    }
+    @keyframes flashAmber {
+      0% { background-color: #78350f; }
+      15% { background-color: #b45309; }
+      100% { background-color: #0f172a; }
+    }
+
     .auth-card {
       background-color: #0f172a;
       border: 1px solid #334155;
@@ -482,6 +512,18 @@
       }
     }
 
+    function clearBodyFlashes() {
+      document.body.classList.remove('flash-correct', 'flash-incorrect', 'flash-timeout');
+    }
+
+    function triggerScreenFlash(type) {
+      clearBodyFlashes();
+      // Force reflow so rapid successive answers re-trigger the animation
+      void document.body.offsetWidth;
+      document.body.classList.add(`flash-${type}`);
+      setTimeout(clearBodyFlashes, 1300);
+    }
+
     const avatarBtns = document.querySelectorAll('.avatar-btn');
     avatarBtns.forEach(btn => {
       btn.addEventListener('click', () => {
@@ -549,7 +591,6 @@
     const postgameHallList = document.getElementById('postgame-hall-list');
     let postgameHallMode = 'high';
 
-    // Default the room view to the current room the player joined
     if (assignedRoomCode && lobbyRoomSelect) {
       lobbyRoomSelect.value = assignedRoomCode;
     }
@@ -669,6 +710,7 @@
     });
 
     socket.on('game:new_question', (data) => {
+      clearBodyFlashes();
       selectedAnswer = null;
       lobbyScreen.classList.add('hidden');
       milestoneScreen.classList.add('hidden');
@@ -702,7 +744,7 @@
         btn.addEventListener('click', () => {
           if (selectedAnswer !== null) return;
           selectedAnswer = index;
-          haptic(40);
+          haptic(50); // Crisp tap confirmation
           btn.classList.add('selected');
           Array.from(optionsContainer.children).forEach(b => b.disabled = true);
           statusMessage.classList.remove('hidden');
@@ -715,6 +757,11 @@
     socket.on('game:timer_tick', (data) => {
       const timeLeft = typeof data === 'object' ? data.timeLeft : data;
       timerDisplay.textContent = timeLeft;
+
+      // Subtle warning haptic pulse on final 3 countdown seconds if not yet answered
+      if (timeLeft <= 3 && timeLeft > 0 && selectedAnswer === null) {
+        haptic(30);
+      }
     });
 
     socket.on('game:round_ended', (data) => {
@@ -741,11 +788,13 @@
         playerDeltaDisplay.innerHTML = `<span style="color:#94a3b8; font-weight:800;">• 0</span>`;
       }
 
+      // Full-screen color flash & haptic dispatch
       if (selectedAnswer === data.correctAnswer) {
         let multText = data.streakMultiplier > 1 ? ` (${data.streakMultiplier}x Boost!)` : '';
         resultFeedback.textContent = `Correct! +${data.myPointsEarned} pts${multText}`;
         resultFeedback.style.color = "#10b981";
-        haptic([50, 60, 100]);
+        triggerScreenFlash('correct');
+        haptic([60, 80, 120]); // Double celebratory vibration
 
         if (data.streakLabel) {
           streakBanner.textContent = `${data.streakLabel} • ${data.myStreak} Streak!`;
@@ -757,18 +806,21 @@
         resultFeedback.textContent = "Time's up! +0 pts (Streak reset)";
         resultFeedback.style.color = "#f59e0b";
         streakBanner.classList.add('hidden');
-        haptic([80, 50, 80]);
+        triggerScreenFlash('timeout');
+        haptic([80, 60, 80]); // Dual stutter buzz
       } else {
         resultFeedback.textContent = "Incorrect! +0 pts (Streak reset)";
         resultFeedback.style.color = "#ef4444";
         streakBanner.classList.add('hidden');
-        haptic(180);
+        triggerScreenFlash('incorrect');
+        haptic(220); // Long buzz
       }
 
       renderLeaderboard(data.leaderboard, leaderboardList);
     });
 
     socket.on('game:milestone_leaderboard', (data) => {
+      clearBodyFlashes();
       resultsScreen.classList.add('hidden');
       gameScreen.classList.add('hidden');
       milestoneScreen.classList.remove('hidden');
@@ -778,6 +830,7 @@
     });
 
     socket.on('game:over', (data) => {
+      clearBodyFlashes();
       gameScreen.classList.add('hidden');
       milestoneScreen.classList.add('hidden');
       resultsScreen.classList.remove('hidden');
