@@ -168,13 +168,58 @@
     }
     .achievement-badge-item.equipped {
       border-color: var(--cyan);
-      box-shadow: 0 0 10px var(--cyan-glow);
+      box-shadow: 0 0 10px var(--cyan);
     }
     .achievement-badge-item.locked {
       opacity: 0.35;
       filter: grayscale(1);
     }
     .badge-icon { font-size: 1.5rem; }
+
+    /* FREE POP WINNER MODAL POPUP */
+    #pop-win-modal {
+      position: fixed;
+      top: 0; left: 0; width: 100%; height: 100%;
+      background: rgba(3, 7, 18, 0.95);
+      z-index: 99999;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      padding: 1.5rem;
+    }
+    .pop-modal-card {
+      background: linear-gradient(135deg, #065f46, #047857);
+      border: 3px solid #10b981;
+      border-radius: 20px;
+      padding: 2rem;
+      text-align: center;
+      box-shadow: 0 0 50px rgba(16, 185, 129, 0.6);
+      max-width: 420px;
+      width: 100%;
+    }
+    .pop-modal-card h2 { color: #facc15; font-size: 2rem; margin-top: 0; margin-bottom: 0.5rem; font-weight: 900; }
+    .pop-modal-card p { color: #ffffff; font-size: 1.15rem; font-weight: 800; line-height: 1.4; margin-bottom: 1.5rem; }
+    .pop-timestamp-box {
+      background: rgba(0, 0, 0, 0.35);
+      border: 1px dashed rgba(255, 255, 255, 0.4);
+      padding: 0.6rem;
+      border-radius: 8px;
+      font-size: 0.85rem;
+      font-weight: 700;
+      color: #6ee7b7;
+      margin-bottom: 1.25rem;
+    }
+    .pop-close-btn {
+      background: #facc15;
+      color: #064e3b;
+      border: none;
+      padding: 0.85rem 1.5rem;
+      border-radius: 10px;
+      font-weight: 900;
+      font-size: 1rem;
+      cursor: pointer;
+      width: 100%;
+    }
 
     .tab-bar {
       display: flex;
@@ -462,6 +507,17 @@
   </style>
 </head>
 <body>
+
+  <!-- FREE POP WINNER MODAL POPUP -->
+  <div id="pop-win-modal" class="hidden">
+    <div class="pop-modal-card">
+      <h2>🥤 FREE POP WINNER!</h2>
+      <p>Go show a leader this screen to earn your free pop!</p>
+      <div class="pop-timestamp-box" id="pop-timestamp-text">Claimed Today</div>
+      <button class="pop-close-btn" onclick="closePopModal()">Awesome, Thanks!</button>
+    </div>
+  </div>
+
   <div class="container">
     <div id="join-screen">
       <h1>Trivia Login</h1>
@@ -502,7 +558,6 @@
         </div>
       </div>
 
-      <!-- ACHIEVEMENTS SHELF & BADGE SELECTOR -->
       <div class="achievements-section">
         <div style="display:flex; justify-content:space-between; align-items:center;">
           <h3 style="margin:0; font-size:1rem; color:#f8fafc;">🏆 Achievements Shelf</h3>
@@ -763,6 +818,10 @@
         displayBadge.textContent = equippedBadge ? `${equippedBadge} ` : '';
       }
     }
+
+    window.closePopModal = function() {
+      document.getElementById('pop-win-modal').classList.add('hidden');
+    };
 
     const joinScreen = document.getElementById('join-screen');
     const lobbyScreen = document.getElementById('lobby-screen');
@@ -1077,6 +1136,13 @@
         resultFeedback.textContent = "Match Finished! Final Standings:";
       }
       resultFeedback.style.color = "#38bdf8";
+
+      // SHOW DAILY FREE POP WINNER MODAL POPUP
+      if (data.wonDailyPop) {
+        const todayFormatted = new Date().toLocaleDateString(undefined, { weekday: 'short', month: 'short', day: 'numeric', year: 'numeric' });
+        document.getElementById('pop-timestamp-text').textContent = `Claimed Today (${todayFormatted})`;
+        document.getElementById('pop-win-modal').classList.remove('hidden');
+      }
 
       const sups = data.superlatives || {};
       let wonAward = '';
