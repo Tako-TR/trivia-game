@@ -558,7 +558,7 @@
   { "category": "Movie Quotes: Hard", "question": "Which movie features the quote, 'Mrs. Robinson, you're trying to seduce me. Aren't you?'?", "options": ["The Graduate", "The Apartment", "Carnal Knowledge", "Bob & Carol & Ted & Alice"], "answer": 0 },
   { "category": "Movie Quotes: Hard", "question": "What film features the quote, 'Made it, Ma! Top of the world!'?", "options": ["White Heat", "The Public Enemy", "Angels with Dirty Faces", "Little Caesar"], "answer": 0 },
   { "category": "Movie Quotes: Hard", "question": "Which movie features the quote, 'Striker, you can't be serious.' 'I am serious, and don't call me Shirley.'?", "options": ["Airplane!", "The Naked Gun", "Hot Shots!", "Police Academy"], "answer": 0 },
-  { "category": "Movie Quotes: Hard", "question": "What film features the quote, 'A census taker once tried to test me. I ate his liver with some fava beans and a nice Chianti.'?", "options": ["The Silence of the Lambs", "Se7en", "Hannibal", "Red Dragon"], "answer": 0 }
+  { "category": "Movie Quotes: Hard", "question": "What film features the quote, 'A census taker once tried to test me. I ate his liver with some fava beans and a nice Chianti.'?", "options": ["The Silence of the Lambs", "Se7en", "Hannibal", "Red Dragon"], "answer": 0 },
 
   {"category": "Snacks & Fast Food: Easy", "question": "Which fast-food chain is famous for the advertising slogan 'Have It Your Way'?", "options": ["McDonald's", "Burger King", "Wendy's", "Sonic"], "answer": 1},
   {"category": "Snacks & Fast Food: Easy", "question": "What candy brand tells you to 'Taste the Rainbow'?", "options": ["M&M's", "Skittles", "Starburst", "Nerds"], "answer": 1},
