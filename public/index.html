@@ -38,7 +38,6 @@
       overflow-x: hidden;
     }
 
-    /* FULL-SCREEN RESULT FLASH ANIMATIONS */
     body.flash-correct { animation: flashG 0.9s ease-out; }
     body.flash-incorrect { animation: flashR 0.9s ease-out; }
     body.flash-timeout { animation: flashA 0.9s ease-out; }
@@ -103,28 +102,38 @@
       letter-spacing: 0.05em;
     }
 
+    /* AVATAR SELECTOR WITH UNLOCK BADGES */
     .avatar-grid {
-      display: flex;
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
       gap: 0.5rem;
-      justify-content: space-between;
       margin-top: 0.25rem;
     }
     .avatar-btn {
       background-color: #1e293b;
       border: 2px solid #334155;
-      border-radius: 10px;
-      font-size: 1.35rem;
-      padding: 0.4rem 0;
-      flex: 1;
+      border-radius: 12px;
+      padding: 0.5rem 0.2rem;
       cursor: pointer;
       text-align: center;
       transition: all 0.15s;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
     }
+    .avatar-btn .av-icon { font-size: 1.45rem; }
+    .avatar-btn .av-req { font-size: 0.6rem; font-weight: 800; color: #94a3b8; margin-top: 2px; }
     .avatar-btn.selected {
       border-color: #38bdf8;
       background-color: rgba(56, 189, 248, 0.2);
-      transform: scale(1.1);
+      transform: scale(1.05);
     }
+    .avatar-btn.locked {
+      opacity: 0.45;
+      cursor: not-allowed;
+      border-color: #1e293b;
+    }
+    .avatar-btn.locked .av-req { color: #f59e0b; }
 
     .room-tag {
       background-color: #1e293b;
@@ -240,7 +249,6 @@
       margin-top: 0.25rem;
     }
 
-    /* 3. TACTILE OPTION BUTTON WITH IMMEDIATE LOCK INDICATOR */
     .option-btn {
       background-color: #1e293b;
       border: 2px solid #334155;
@@ -405,6 +413,19 @@
     .p-slot.first .p-step { height: 65px; background: linear-gradient(180deg, #facc15, #ca8a04); }
     .p-slot.second .p-step { height: 48px; background: linear-gradient(180deg, #cbd5e1, #64748b); }
     .p-slot.third .p-step { height: 32px; background: linear-gradient(180deg, #fdba74, #c2410c); }
+
+    /* MOBILE SUPERLATIVE NOTICES */
+    .mobile-superlative-box {
+      background: rgba(56, 189, 248, 0.1);
+      border: 1px solid var(--cyan);
+      padding: 0.6rem;
+      border-radius: 10px;
+      margin: 0.4rem 0;
+      font-size: 0.85rem;
+      font-weight: 800;
+      color: var(--cyan);
+    }
+
     select.filter-select {
       background-color: #1e293b;
       color: #38bdf8;
@@ -450,16 +471,40 @@
         </div>
 
         <div>
-          <label>Choose Avatar</label>
+          <label>Choose Avatar (Career XP Unlocks)</label>
           <div class="avatar-grid" id="avatar-selector">
-            <button type="button" class="avatar-btn selected" data-avatar="🚀">🚀</button>
-            <button type="button" class="avatar-btn" data-avatar="🎯">🎯</button>
-            <button type="button" class="avatar-btn" data-avatar="⚡">⚡</button>
-            <button type="button" class="avatar-btn" data-avatar="🍕">🍕</button>
-            <button type="button" class="avatar-btn" data-avatar="🤠">🤠</button>
-            <button type="button" class="avatar-btn" data-avatar="🏎️">🏎️</button>
-            <button type="button" class="avatar-btn" data-avatar="🦊">🦊</button>
-            <button type="button" class="avatar-btn" data-avatar="👑">👑</button>
+            <div class="avatar-btn selected" data-avatar="🚀" data-req="0">
+              <span class="av-icon">🚀</span>
+              <span class="av-req">FREE</span>
+            </div>
+            <div class="avatar-btn" data-avatar="🎯" data-req="0">
+              <span class="av-icon">🎯</span>
+              <span class="av-req">FREE</span>
+            </div>
+            <div class="avatar-btn" data-avatar="⚡" data-req="500">
+              <span class="av-icon">⚡</span>
+              <span class="av-req">500 XP</span>
+            </div>
+            <div class="avatar-btn" data-avatar="🍕" data-req="1500">
+              <span class="av-icon">🍕</span>
+              <span class="av-req">1.5k XP</span>
+            </div>
+            <div class="avatar-btn" data-avatar="🤠" data-req="3000">
+              <span class="av-icon">🤠</span>
+              <span class="av-req">3k XP</span>
+            </div>
+            <div class="avatar-btn" data-avatar="🏎️" data-req="6000">
+              <span class="av-icon">🏎️</span>
+              <span class="av-req">6k XP</span>
+            </div>
+            <div class="avatar-btn" data-avatar="🦊" data-req="10000">
+              <span class="av-icon">🦊</span>
+              <span class="av-req">10k XP</span>
+            </div>
+            <div class="avatar-btn" data-avatar="👑" data-req="20000">
+              <span class="av-icon">👑</span>
+              <span class="av-req">20k XP</span>
+            </div>
           </div>
         </div>
 
@@ -491,7 +536,6 @@
         </div>
       </div>
 
-      <!-- Pre-Game Hall of Fame Explorer with Room Scope -->
       <div style="background-color: #0f172a; border: 1px solid #334155; padding: 1rem; border-radius: 12px; margin: 1rem 0;">
         <h3 style="margin: 0 0 0.25rem 0; font-size: 1rem; color: #f8fafc;">All-Time Hall of Fame</h3>
         <p style="margin: 0; font-size: 0.75rem; color: #94a3b8;">Browse scores for any room or all rooms</p>
@@ -576,6 +620,9 @@
 
       <div id="player-podium-area" class="player-podium hidden"></div>
 
+      <!-- PERSONAL SUPERLATIVE NOTICE -->
+      <div id="mobile-award-notice" class="mobile-superlative-box hidden"></div>
+
       <div class="player-answer-reveal" id="answer-reveal-wrapper">
         <div class="player-answer-label">Correct Answer</div>
         <div id="player-correct-answer" class="player-answer-text">---</div>
@@ -637,9 +684,21 @@
       'ROOM6': 'Northwood'
     };
 
+    const AVATAR_LEVELS = {
+      '🚀': 0,
+      '🎯': 0,
+      '⚡': 500,
+      '🍕': 1500,
+      '🤠': 3000,
+      '🏎️': 6000,
+      '🦊': 10000,
+      '👑': 20000
+    };
+
     const socket = io();
     let selectedAnswer = null;
     let chosenAvatar = '🚀';
+    let userCareerXP = 0;
 
     const urlParams = new URLSearchParams(window.location.search);
     const assignedRoomCode = (urlParams.get('room') || 'ROOM1').trim().toUpperCase();
@@ -664,9 +723,27 @@
       setTimeout(clearBodyFlashes, 1000);
     }
 
+    function refreshAvatarGrid(careerXP) {
+      userCareerXP = careerXP;
+      const avatarBtns = document.querySelectorAll('.avatar-btn');
+      avatarBtns.forEach(btn => {
+        const req = parseInt(btn.dataset.req, 10);
+        if (careerXP < req) {
+          btn.classList.add('locked');
+          btn.title = `Requires ${req} Career XP`;
+        } else {
+          btn.classList.remove('locked');
+        }
+      });
+    }
+
     const avatarBtns = document.querySelectorAll('.avatar-btn');
     avatarBtns.forEach(btn => {
       btn.addEventListener('click', () => {
+        if (btn.classList.contains('locked')) {
+          haptic([80, 40, 80]);
+          return alert(`Locked! Earn ${btn.dataset.req} Career XP to unlock ${btn.dataset.avatar}`);
+        }
         avatarBtns.forEach(b => b.classList.remove('selected'));
         btn.classList.add('selected');
         chosenAvatar = btn.dataset.avatar;
@@ -708,6 +785,7 @@
     const playerPodiumArea = document.getElementById('player-podium-area');
     const leaderboardList = document.getElementById('leaderboard-list');
     const resultsHeading = document.getElementById('results-heading');
+    const mobileAwardNotice = document.getElementById('mobile-award-notice');
 
     const milestoneText = document.getElementById('milestone-text');
     const milestoneLeaderboardList = document.getElementById('milestone-leaderboard-list');
@@ -731,12 +809,8 @@
     const postgameHallList = document.getElementById('postgame-hall-list');
     let postgameHallMode = 'high';
 
-    if (assignedRoomCode && lobbyRoomSelect) {
-      lobbyRoomSelect.value = assignedRoomCode;
-    }
-    if (assignedRoomCode && postgameRoomSelect) {
-      postgameRoomSelect.value = assignedRoomCode;
-    }
+    if (assignedRoomCode && lobbyRoomSelect) lobbyRoomSelect.value = assignedRoomCode;
+    if (assignedRoomCode && postgameRoomSelect) postgameRoomSelect.value = assignedRoomCode;
 
     const savedUser = localStorage.getItem('trivia_user');
     const savedPin = localStorage.getItem('trivia_pin');
@@ -776,6 +850,8 @@
       localStorage.setItem('trivia_user', data.username);
       localStorage.setItem('trivia_pin', pinInput.value.trim() || savedPin);
       localStorage.setItem('trivia_avatar', data.avatar || chosenAvatar);
+
+      refreshAvatarGrid(data.careerScore);
 
       const displayName = data.roomName || ROOM_NAMES[data.roomCode] || data.roomCode;
       displayPlayerName.textContent = data.username;
@@ -851,6 +927,7 @@
       milestoneScreen.classList.add('hidden');
       resultsScreen.classList.add('hidden');
       playerPodiumArea.classList.add('hidden');
+      mobileAwardNotice.classList.add('hidden');
       answerRevealWrapper.classList.remove('hidden');
       postGameViewToggle.classList.add('hidden');
       currentMatchContainer.classList.remove('hidden');
@@ -880,15 +957,9 @@
         btn.addEventListener('click', () => {
           if (selectedAnswer !== null) return;
           selectedAnswer = index;
-          haptic([40, 30]); // Tactile double buzz
-          
-          // 3. INSTANT COLOR & DIM FEEDBACK ON MOBILE
+          haptic(50);
           btn.classList.add('selected');
-          Array.from(optionsContainer.children).forEach(b => {
-            b.disabled = true;
-            if (b !== btn) b.style.opacity = '0.35';
-          });
-
+          Array.from(optionsContainer.children).forEach(b => b.disabled = true);
           statusMessage.classList.remove('hidden');
           socket.emit('player:submit_answer', index);
         });
@@ -900,9 +971,8 @@
       const timeLeft = typeof data === 'object' ? data.timeLeft : data;
       timerDisplay.textContent = timeLeft;
 
-      // 5. URGENT COUNTDOWN HAPTIC PACING CUE (3... 2... 1...)
       if (timeLeft <= 3 && timeLeft > 0 && selectedAnswer === null) {
-        haptic(45);
+        haptic(35);
       }
     });
 
@@ -984,6 +1054,7 @@
 
       const leaderboard = Array.isArray(data) ? data : data.leaderboard;
       const myRank = data.myRank;
+      const myUsername = (localStorage.getItem('trivia_user') || '').toLowerCase();
 
       if (myRank) {
         playerRankDisplay.textContent = `#${myRank}`;
@@ -992,6 +1063,24 @@
         resultFeedback.textContent = "Match Finished! Final Standings:";
       }
       resultFeedback.style.color = "#38bdf8";
+
+      // SHOW PERSONAL SUPERLATIVE BADGE IF WON
+      const sups = data.superlatives || {};
+      let wonAward = '';
+      if (sups.gunslinger && sups.gunslinger.name.toLowerCase() === myUsername) {
+        wonAward = `🎯 Award Won: The Gunslinger (${sups.gunslinger.stat})`;
+      } else if (sups.clutch && sups.clutch.name.toLowerCase() === myUsername) {
+        wonAward = `🔥 Award Won: The Clutch Player (${sups.clutch.stat})`;
+      } else if (sups.comeback && sups.comeback.name.toLowerCase() === myUsername) {
+        wonAward = `🚀 Award Won: The Comeback Kid (${sups.comeback.stat})`;
+      }
+
+      if (wonAward) {
+        mobileAwardNotice.textContent = wonAward;
+        mobileAwardNotice.classList.remove('hidden');
+      } else {
+        mobileAwardNotice.classList.add('hidden');
+      }
 
       renderPlayerPodium(leaderboard);
       renderLeaderboard(leaderboard, leaderboardList);
