@@ -21,6 +21,10 @@ const memoryPlayers = {};
 const memoryRoomScores = {};
 const memoryCategoryScores = {};
 
+// Daily Fremont Pop state & Host Toggle
+let dailyPopWinnerCache = { date: '', winner: '' };
+let isFreePopEnabled = true;
+
 async function initDb() {
   if (!pool) {
     console.warn('DATABASE_URL not detected. Persistent stats running in memory only.');
@@ -31,7 +35,6 @@ async function initDb() {
       CREATE TABLE IF NOT EXISTS players (
         username VARCHAR(30) PRIMARY KEY,
         pin VARCHAR(10) NOT NULL,
-        avatar VARCHAR(10) DEFAULT '🚀',
         badge VARCHAR(10) DEFAULT '',
         high_score INT DEFAULT 0,
         career_score INT DEFAULT 0,
@@ -39,7 +42,6 @@ async function initDb() {
         achievements TEXT[] DEFAULT ARRAY[]::TEXT[],
         updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
       );
-      ALTER TABLE players ADD COLUMN IF NOT EXISTS avatar VARCHAR(10) DEFAULT '🚀';
       ALTER TABLE players ADD COLUMN IF NOT EXISTS badge VARCHAR(10) DEFAULT '';
       ALTER TABLE players ADD COLUMN IF NOT EXISTS achievements TEXT[] DEFAULT ARRAY[]::TEXT[];
 
@@ -59,6 +61,11 @@ async function initDb() {
         career_score INT DEFAULT 0,
         games_played INT DEFAULT 0,
         PRIMARY KEY (username, category)
+      );
+
+      CREATE TABLE IF NOT EXISTS daily_pop_reward (
+        reward_date VARCHAR(10) PRIMARY KEY,
+        winner_username VARCHAR(30) NOT NULL
       );
     `);
     console.log('Database initialized successfully.');
@@ -177,6 +184,20 @@ app.post('/api/questions/list', (req, res) => {
   const { password } = req.body;
   if (password !== ADMIN_PASSWORD) return res.status(401).json({ success: false, message: 'Invalid admin passcode.' });
   return res.json({ success: true, questions: masterQuestions });
+});
+
+// MANUAL RESET FOR DAILY FREPOP REWARD VIA MANAGER TAB
+app.post('/api/freepop/reset', async (req, res) => {
+  const { password } = req.body;
+  if (password !== ADMIN_PASSWORD) return res.status(401).json({ success: false, message: 'Invalid admin passcode.' });
+  
+  dailyPopWinnerCache = { date: '', winner: '' };
+  if (pool) {
+    try {
+      await pool.query('TRUNCATE TABLE daily_pop_reward;');
+    } catch (e) {}
+  }
+  return res.json({ success: true, message: 'Daily Free Pop reward status has been manually reset.' });
 });
 
 app.post('/api/questions/add', (req, res) => {
@@ -325,7 +346,7 @@ app.post('/api/players/list', async (req, res) => {
   }
 
   try {
-    const result = await pool.query('SELECT username, avatar, badge, high_score, career_score, games_played, achievements, updated_at FROM players ORDER BY career_score DESC;');
+    const result = await pool.query('SELECT username, badge, high_score, career_score, games_played, achievements, updated_at FROM players ORDER BY career_score DESC;');
     res.json({ success: true, players: result.rows });
   } catch (err) {
     res.status(500).json({ success: false, message: err.message });
@@ -621,6 +642,11 @@ io.on('connection', (socket) => {
       roomName: room.name,
       players: getLobbyPlayers(room)
     });
+  });
+
+  // HOST TOGGLE FOR FREE POP
+  socket.on('host:toggle_freepop', (enabled) => {
+    isFreePopEnabled = !!enabled;
   });
 
   socket.on('player:auth', async ({ username, pin, roomCode }) => {
@@ -1194,6 +1220,35 @@ function calculateSuperlatives(room, standings) {
   return { gunslinger, clutch, comeback };
 }
 
+async function checkDailyPopClaimed(todayStr) {
+  if (pool) {
+    try {
+      const res = await pool.query('SELECT winner_username FROM daily_pop_reward WHERE reward_date = $1;', [todayStr]);
+      return res.rows.length > 0;
+    } catch (e) {
+      return false;
+    }
+  } else {
+    if (dailyPopWinnerCache.date === todayStr && dailyPopWinnerCache.winner) {
+      return true;
+    }
+    return false;
+  }
+}
+
+async function claimDailyPop(todayStr, username) {
+  if (pool) {
+    try {
+      await pool.query(
+        'INSERT INTO daily_pop_reward (reward_date, winner_username) VALUES ($1, $2) ON CONFLICT (reward_date) DO NOTHING;',
+        [todayStr, username]
+      );
+    } catch (e) {}
+  } else {
+    dailyPopWinnerCache = { date: todayStr, winner: username };
+  }
+}
+
 async function evaluateAchievements(p, matchRank, totalPlayers, room) {
   const newUnlocks = [];
   let existingUnlocks = [];
@@ -1213,7 +1268,6 @@ async function evaluateAchievements(p, matchRank, totalPlayers, room) {
     }
   }
 
-  // SOLO-FRIENDLY FEATS (Can be earned alone)
   if (p.correctAnswersCount === room.activeQuestions.length && room.activeQuestions.length > 0) unlock('flawless');
   if (p.reactionTimes.some(t => t < 1.0)) unlock('lightning');
   if (p.answerTimeLeft <= 1 && p.currentAnswer !== null) unlock('lucky');
@@ -1228,7 +1282,7 @@ async function evaluateAchievements(p, matchRank, totalPlayers, room) {
   if (p.streak >= 10) unlock('magma');
   if (p.streak >= 5) unlock('double_trouble');
 
-  // MULTIPLAYER-ONLY FEATS (Require 3+ players in the room to trigger)
+  let wonDailyPop = false;
   if (totalPlayers >= 3) {
     if (matchRank <= 3 && p.finalQuestionsPoints > 0) unlock('elevator');
     if (matchRank === 1) unlock('ice');
@@ -1236,6 +1290,16 @@ async function evaluateAchievements(p, matchRank, totalPlayers, room) {
     if (matchRank === 1) unlock('neck_neck');
     if (matchRank <= 3) unlock('wave_rider');
     if (matchRank === 1) unlock('gold_digger');
+
+    // Check if Feature is Enabled and Room 1 First Winner of Day
+    if (isFreePopEnabled && room.code === 'ROOM1' && matchRank === 1) {
+      const todayStr = new Date().toISOString().slice(0, 10);
+      const alreadyClaimed = await checkDailyPopClaimed(todayStr);
+      if (!alreadyClaimed) {
+        await claimDailyPop(todayStr, p.username);
+        wonDailyPop = true;
+      }
+    }
   }
 
   let currentCareerXP = p.score;
@@ -1275,11 +1339,14 @@ async function evaluateAchievements(p, matchRank, totalPlayers, room) {
       memoryPlayers[p.username].achievements = updatedUnlocks;
     }
   }
+
+  return wonDailyPop;
 }
 
 async function finishGameAndSaveStats(room) {
   const standings = getCurrentGameStandings(room);
   const superlatives = calculateSuperlatives(room, standings);
+  let dailyPopWinnerSocketId = null;
 
   for (let idx = 0; idx < standings.length; idx++) {
     const sItem = standings[idx];
@@ -1353,7 +1420,10 @@ async function finishGameAndSaveStats(room) {
         }
       }
 
-      await evaluateAchievements(p, matchRank, totalPlayers, room);
+      const wonPop = await evaluateAchievements(p, matchRank, totalPlayers, room);
+      if (wonPop) {
+        dailyPopWinnerSocketId = sItem.id;
+      }
     }
   }
 
@@ -1369,13 +1439,15 @@ async function finishGameAndSaveStats(room) {
     const socket = io.sockets.sockets.get(sockId);
     if (socket) {
       const rankIndex = standings.findIndex((item) => item.id === sockId);
+      const isDailyPopWinner = sockId === dailyPopWinnerSocketId;
       socket.emit('game:over', {
         roomCode: room.code,
         roomName: room.name,
         category: room.currentGameCategory,
         leaderboard: standings,
         superlatives: superlatives,
-        myRank: rankIndex !== -1 ? rankIndex + 1 : null
+        myRank: rankIndex !== -1 ? rankIndex + 1 : null,
+        wonDailyPop: isDailyPopWinner
       });
     }
   });
