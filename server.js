@@ -376,7 +376,6 @@ app.post('/api/players/action', async (req, res) => {
   }
 });
 
-// BULK ACTIONS: RESETS HIGH SCORES & BOARDS WHILE PRESERVING CAREER XP
 app.post('/api/players/bulk', async (req, res) => {
   const { password, action } = req.body;
   if (password !== ADMIN_PASSWORD) return res.status(401).json({ success: false, message: 'Invalid admin passcode.' });
@@ -579,12 +578,12 @@ function getStreakLabel(streak) {
 const AVATAR_LEVELS = {
   '🚀': 0,
   '🎯': 0,
-  '⚡': 500,
-  '🍕': 1500,
-  '🤠': 3000,
-  '🏎️': 6000,
-  '🦊': 10000,
-  '👑': 20000
+  '⚡': 10000,
+  '🍕': 30000,
+  '🤠': 75000,
+  '🏎️': 175000,
+  '🦊': 400000,
+  '👑': 1000000
 };
 
 io.on('connection', (socket) => {
@@ -744,7 +743,6 @@ io.on('connection', (socket) => {
     if (room) disconnectPlayerByUsername(room, targetUsername, 'You were removed by the host.');
   });
 
-  // PRESERVES CAREER XP ON RESET
   socket.on('host:reset_leaderboards', async () => {
     try {
       if (pool) {
