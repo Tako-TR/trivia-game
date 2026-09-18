@@ -102,7 +102,6 @@
       letter-spacing: 0.05em;
     }
 
-    /* AVATAR SELECTOR WITH UNLOCK BADGES */
     .avatar-grid {
       display: grid;
       grid-template-columns: repeat(4, 1fr);
@@ -201,7 +200,6 @@
       text-align: left;
     }
 
-    /* IN-GAME QUESTION VIEW */
     #game-screen {
       display: flex;
       flex-direction: column;
@@ -284,7 +282,6 @@
       cursor: not-allowed;
     }
 
-    /* RESULTS SCREEN */
     #results-screen {
       display: flex;
       flex-direction: column;
@@ -414,7 +411,6 @@
     .p-slot.second .p-step { height: 48px; background: linear-gradient(180deg, #cbd5e1, #64748b); }
     .p-slot.third .p-step { height: 32px; background: linear-gradient(180deg, #fdba74, #c2410c); }
 
-    /* MOBILE SUPERLATIVE NOTICES */
     .mobile-superlative-box {
       background: rgba(56, 189, 248, 0.1);
       border: 1px solid var(--cyan);
@@ -481,29 +477,29 @@
               <span class="av-icon">🎯</span>
               <span class="av-req">FREE</span>
             </div>
-            <div class="avatar-btn" data-avatar="⚡" data-req="500">
+            <div class="avatar-btn" data-avatar="⚡" data-req="10000">
               <span class="av-icon">⚡</span>
-              <span class="av-req">500 XP</span>
-            </div>
-            <div class="avatar-btn" data-avatar="🍕" data-req="1500">
-              <span class="av-icon">🍕</span>
-              <span class="av-req">1.5k XP</span>
-            </div>
-            <div class="avatar-btn" data-avatar="🤠" data-req="3000">
-              <span class="av-icon">🤠</span>
-              <span class="av-req">3k XP</span>
-            </div>
-            <div class="avatar-btn" data-avatar="🏎️" data-req="6000">
-              <span class="av-icon">🏎️</span>
-              <span class="av-req">6k XP</span>
-            </div>
-            <div class="avatar-btn" data-avatar="🦊" data-req="10000">
-              <span class="av-icon">🦊</span>
               <span class="av-req">10k XP</span>
             </div>
-            <div class="avatar-btn" data-avatar="👑" data-req="20000">
+            <div class="avatar-btn" data-avatar="🍕" data-req="30000">
+              <span class="av-icon">🍕</span>
+              <span class="av-req">30k XP</span>
+            </div>
+            <div class="avatar-btn" data-avatar="🤠" data-req="75000">
+              <span class="av-icon">🤠</span>
+              <span class="av-req">75k XP</span>
+            </div>
+            <div class="avatar-btn" data-avatar="🏎️" data-req="175000">
+              <span class="av-icon">🏎️</span>
+              <span class="av-req">175k XP</span>
+            </div>
+            <div class="avatar-btn" data-avatar="🦊" data-req="400000">
+              <span class="av-icon">🦊</span>
+              <span class="av-req">400k XP</span>
+            </div>
+            <div class="avatar-btn" data-avatar="👑" data-req="1000000">
               <span class="av-icon">👑</span>
-              <span class="av-req">20k XP</span>
+              <span class="av-req">1M XP</span>
             </div>
           </div>
         </div>
@@ -620,7 +616,6 @@
 
       <div id="player-podium-area" class="player-podium hidden"></div>
 
-      <!-- PERSONAL SUPERLATIVE NOTICE -->
       <div id="mobile-award-notice" class="mobile-superlative-box hidden"></div>
 
       <div class="player-answer-reveal" id="answer-reveal-wrapper">
@@ -638,7 +633,6 @@
         <ul id="leaderboard-list" class="leaderboard"></ul>
       </div>
 
-      <!-- Post-Game Cross-Room Leaderboards -->
       <div id="alltime-container" class="hidden" style="margin-top: 0.5rem;">
         <select id="postgame-room-select" class="filter-select" style="border-color:#f59e0b; color:#f59e0b; font-weight:700;">
           <option value="all">All Rooms Combined (Global)</option>
@@ -687,12 +681,12 @@
     const AVATAR_LEVELS = {
       '🚀': 0,
       '🎯': 0,
-      '⚡': 500,
-      '🍕': 1500,
-      '🤠': 3000,
-      '🏎️': 6000,
-      '🦊': 10000,
-      '👑': 20000
+      '⚡': 10000,
+      '🍕': 30000,
+      '🤠': 75000,
+      '🏎️': 175000,
+      '🦊': 400000,
+      '👑': 1000000
     };
 
     const socket = io();
@@ -1064,7 +1058,6 @@
       }
       resultFeedback.style.color = "#38bdf8";
 
-      // SHOW PERSONAL SUPERLATIVE BADGE IF WON
       const sups = data.superlatives || {};
       let wonAward = '';
       if (sups.gunslinger && sups.gunslinger.name.toLowerCase() === myUsername) {
