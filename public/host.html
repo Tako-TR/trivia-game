@@ -251,7 +251,6 @@
     }
     .toggle-pill.off { color: #64748b; border-color: #334155; background: rgba(15, 23, 42, 0.6); }
 
-    /* RED BUTTON: RESET ALL LEADERBOARDS */
     .btn-reset-leaderboards {
       background: linear-gradient(135deg, #7f1d1d, #b91c1c);
       color: #fecaca;
@@ -262,7 +261,6 @@
       border-radius: 9999px;
       cursor: pointer;
       box-shadow: 0 4px 12px rgba(239, 68, 68, 0.3);
-      transition: transform 0.1s;
     }
     .btn-reset-leaderboards:hover { background: #dc2626; color: #fff; }
 
@@ -588,7 +586,6 @@
     .delta-down { background-color: #7f1d1d; color: #fca5a5; border: 1px solid #ef4444; }
     .delta-same { background-color: #1e293b; color: #64748b; }
 
-    /* PODIUM STYLING */
     .podium-container {
       display: flex;
       justify-content: center;
@@ -619,7 +616,6 @@
     .second .podium-step { height: 95px; background: linear-gradient(180deg, #cbd5e1, #64748b); border: 2px solid #f1f5f9; border-bottom: none; }
     .third .podium-step { height: 65px; background: linear-gradient(180deg, #fdba74, #c2410c); border: 2px solid #fed7aa; border-bottom: none; }
 
-    /* 1. END-OF-GAME SUPERLATIVES CARDS */
     .superlatives-grid {
       display: grid;
       grid-template-columns: repeat(3, 1fr);
@@ -704,7 +700,6 @@
       <div class="top-bar-controls">
         <div class="room-badge" id="host-room-badge">ROOM: Fremont Main</div>
         <div class="top-toggles">
-          <!-- 1-CLICK LEADERBOARD RESET BUTTON -->
           <button id="btn-reset-leaderboards" class="btn-reset-leaderboards">⚠️ Reset Leaderboards</button>
           <button id="btn-toggle-sound" class="toggle-pill">🔊 Sound: ON</button>
           <button id="btn-toggle-autopilot" class="toggle-pill">⚡ Auto-Pilot: ON</button>
@@ -716,6 +711,7 @@
         <button id="tab-btn-hall" class="toggle-pill off" style="padding: 0.55rem 1.4rem; font-size: 0.95rem;">All-Time Hall of Fame</button>
       </div>
 
+      <!-- MAIN LOBBY CONTAINER -->
       <div id="host-lobby">
         <div class="lobby-broadcast-grid">
           
@@ -822,7 +818,7 @@
         </div>
       </div>
 
-      <!-- HALL OF FAME SUB-PANEL -->
+      <!-- HALL OF FAME SUB-PANEL (SEPARATE CONTAINER) -->
       <div id="host-hall-view" class="hidden" style="margin-top: 1rem;">
         <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:0.6rem; margin-bottom:1.25rem;">
           <div style="display:flex; gap:0.6rem; align-items:center; flex-wrap:wrap;">
@@ -1029,21 +1025,12 @@
         document.getElementById('login-overlay').style.display = 'none';
         document.getElementById('host-main-wrapper').style.display = 'block';
         sessionStorage.setItem('hostAuth', 'true');
+        initializeHostSession();
       } else {
         document.getElementById('login-error').textContent = 'Incorrect password.';
         document.getElementById('passcode-input').value = '';
       }
     }
-
-    window.addEventListener('DOMContentLoaded', () => {
-      if (sessionStorage.getItem('hostAuth') === 'true') {
-        document.getElementById('login-overlay').style.display = 'none';
-        document.getElementById('host-main-wrapper').style.display = 'block';
-      }
-      document.getElementById('passcode-input').addEventListener('keypress', (e) => {
-        if (e.key === 'Enter') checkPasscode();
-      });
-    });
 
     const ROOM_NAMES = {
       'ROOM1': 'Fremont Main',
@@ -1133,17 +1120,11 @@
       btnToggleAutoPilot.classList.toggle('off', !isAutoPilot);
     });
 
-    // 1-CLICK RESET ALL LEADERBOARDS LISTENER
     const btnResetLeaderboards = document.getElementById('btn-reset-leaderboards');
     btnResetLeaderboards.addEventListener('click', () => {
       if (confirm('DANGER: Reset ALL player scores, career XP, and leaderboards to 0 across all rooms?')) {
         socket.emit('host:reset_leaderboards');
       }
-    });
-
-    socket.on('host:action_feedback', (msg) => {
-      alert(msg);
-      loadHallOfFame();
     });
 
     let activeScrollIntervals = [];
@@ -1211,14 +1192,27 @@
     const resultsQrcodeContainer = document.getElementById("results-qrcode");
     const timerBar = document.getElementById('timer-bar');
 
+    // SAFE QR CODE GENERATION
     function renderQRCode(roomCode) {
       const joinUrl = `${window.location.origin}/?room=${roomCode}`;
 
-      qrcodeContainer.innerHTML = '';
-      new QRCode(qrcodeContainer, { text: joinUrl, width: 220, height: 220, colorDark: "#38bdf8", colorLight: "#070b14" });
+      if (qrcodeContainer) {
+        qrcodeContainer.innerHTML = '';
+        try {
+          new QRCode(qrcodeContainer, { text: joinUrl, width: 220, height: 220, colorDark: "#38bdf8", colorLight: "#070b14" });
+        } catch (e) {
+          console.warn('Lobby QR render delayed:', e);
+        }
+      }
 
-      resultsQrcodeContainer.innerHTML = '';
-      new QRCode(resultsQrcodeContainer, { text: joinUrl, width: 175, height: 175, colorDark: "#000000", colorLight: "#ffffff" });
+      if (resultsQrcodeContainer) {
+        resultsQrcodeContainer.innerHTML = '';
+        try {
+          new QRCode(resultsQrcodeContainer, { text: joinUrl, width: 175, height: 175, colorDark: "#000000", colorLight: "#ffffff" });
+        } catch (e) {
+          console.warn('Results QR render delayed:', e);
+        }
+      }
 
       const displayName = ROOM_NAMES[roomCode] || roomCode;
       qrRoomLabel.textContent = displayName;
@@ -1232,7 +1226,6 @@
       socket.emit('host:join_room', currentRoomCode);
     }
     hostRoomSelect.addEventListener('change', (e) => switchRoom(e.target.value));
-    switchRoom(currentRoomCode);
 
     const presetSelect = document.getElementById('preset-select');
     const standardCatRow = document.getElementById('standard-cat-row');
@@ -1254,7 +1247,6 @@
         }
       } catch (e) {}
     }
-    fetchLobbyPresets();
 
     presetSelect.addEventListener('change', () => {
       const isPreset = presetSelect.value !== 'none';
@@ -1262,6 +1254,7 @@
       standardDiffRow.style.opacity = isPreset ? '0.4' : '1';
     });
 
+    // HALL OF FAME INTERFACE HANDLERS
     const hostLobbyView = document.getElementById('host-lobby-view');
     const hostLobby = document.getElementById('host-lobby');
     const hostHallView = document.getElementById('host-hall-view');
@@ -1448,6 +1441,11 @@
         });
       }, 10000);
     }
+
+    socket.on('host:action_feedback', (msg) => {
+      alert(msg);
+      loadHallOfFame();
+    });
 
     socket.on('game:player_list', (players) => {
       document.getElementById('player-count').textContent = players.length;
@@ -1651,7 +1649,6 @@
       const leaderboard = Array.isArray(data) ? data : data.leaderboard;
       renderPodium(leaderboard);
 
-      // POPULATE POST-GAME SUPERLATIVES
       const sups = data.superlatives || {};
       if (sups.gunslinger) {
         document.getElementById('award-gunslinger-name').textContent = `${sups.gunslinger.avatar || '🎯'} ${sups.gunslinger.name}`;
@@ -1736,6 +1733,22 @@
         if (confirm('End match on display? Scores will be saved.')) {
           socket.emit('host:stop_game', currentRoomCode);
         }
+      });
+    });
+
+    function initializeHostSession() {
+      switchRoom(currentRoomCode);
+      fetchLobbyPresets();
+    }
+
+    window.addEventListener('DOMContentLoaded', () => {
+      if (sessionStorage.getItem('hostAuth') === 'true') {
+        document.getElementById('login-overlay').style.display = 'none';
+        document.getElementById('host-main-wrapper').style.display = 'block';
+        initializeHostSession();
+      }
+      document.getElementById('passcode-input').addEventListener('keypress', (e) => {
+        if (e.key === 'Enter') checkPasscode();
       });
     });
   </script>
