@@ -166,7 +166,7 @@ function isPlayerCurrentlyOnline(username) {
 }
 
 /* =========================================================
-   ADMIN API: QUESTIONS, BULK DELETE, PRESETS & PLAYERS
+   ADMIN API
 ========================================================= */
 
 app.post('/api/questions/list', (req, res) => {
@@ -338,29 +338,19 @@ app.post('/api/players/action', async (req, res) => {
   try {
     if (action === 'reset_scores') {
       if (pool) {
-        await pool.query('UPDATE players SET high_score = 0, career_score = 0, games_played = 0, updated_at = NOW() WHERE username = $1;', [cleanUser]);
-        await pool.query('UPDATE room_scores SET high_score = 0, career_score = 0, games_played = 0 WHERE username = $1;', [cleanUser]);
-        await pool.query('UPDATE category_scores SET high_score = 0, career_score = 0, games_played = 0 WHERE username = $1;', [cleanUser]);
+        await pool.query('UPDATE players SET high_score = 0, updated_at = NOW() WHERE username = $1;', [cleanUser]);
+        await pool.query('UPDATE room_scores SET high_score = 0 WHERE username = $1;', [cleanUser]);
+        await pool.query('UPDATE category_scores SET high_score = 0 WHERE username = $1;', [cleanUser]);
       } else if (memoryPlayers[cleanUser]) {
         memoryPlayers[cleanUser].high_score = 0;
-        memoryPlayers[cleanUser].career_score = 0;
-        memoryPlayers[cleanUser].games_played = 0;
         Object.keys(memoryRoomScores).forEach(k => {
-          if (k.startsWith(`${cleanUser}:`)) {
-            memoryRoomScores[k].high_score = 0;
-            memoryRoomScores[k].career_score = 0;
-            memoryRoomScores[k].games_played = 0;
-          }
+          if (k.startsWith(`${cleanUser}:`)) memoryRoomScores[k].high_score = 0;
         });
         Object.keys(memoryCategoryScores).forEach(k => {
-          if (k.startsWith(`${cleanUser}:`)) {
-            memoryCategoryScores[k].high_score = 0;
-            memoryCategoryScores[k].career_score = 0;
-            memoryCategoryScores[k].games_played = 0;
-          }
+          if (k.startsWith(`${cleanUser}:`)) memoryCategoryScores[k].high_score = 0;
         });
       }
-      return res.json({ success: true, message: `Scores reset for ${cleanUser}.` });
+      return res.json({ success: true, message: `High scores reset for ${cleanUser}. Career XP preserved.` });
     } else if (action === 'delete_ban') {
       if (pool) {
         await pool.query('DELETE FROM players WHERE username = $1;', [cleanUser]);
@@ -386,7 +376,7 @@ app.post('/api/players/action', async (req, res) => {
   }
 });
 
-// 1-CLICK RESET ALL LEADERBOARDS & STATS (HOST & MANAGE ENDPOINT)
+// BULK ACTIONS: RESETS HIGH SCORES & BOARDS WHILE PRESERVING CAREER XP
 app.post('/api/players/bulk', async (req, res) => {
   const { password, action } = req.body;
   if (password !== ADMIN_PASSWORD) return res.status(401).json({ success: false, message: 'Invalid admin passcode.' });
@@ -394,26 +384,20 @@ app.post('/api/players/bulk', async (req, res) => {
   try {
     if (action === 'reset_all_scores') {
       if (pool) {
-        await pool.query('UPDATE players SET high_score = 0, career_score = 0, games_played = 0, updated_at = NOW();');
-        await pool.query('UPDATE room_scores SET high_score = 0, career_score = 0, games_played = 0;');
-        await pool.query('UPDATE category_scores SET high_score = 0, career_score = 0, games_played = 0;');
+        await pool.query('UPDATE players SET high_score = 0, updated_at = NOW();');
+        await pool.query('UPDATE room_scores SET high_score = 0;');
+        await pool.query('UPDATE category_scores SET high_score = 0;');
       }
       Object.keys(memoryPlayers).forEach(u => {
         memoryPlayers[u].high_score = 0;
-        memoryPlayers[u].career_score = 0;
-        memoryPlayers[u].games_played = 0;
       });
       Object.keys(memoryRoomScores).forEach(k => {
         memoryRoomScores[k].high_score = 0;
-        memoryRoomScores[k].career_score = 0;
-        memoryRoomScores[k].games_played = 0;
       });
       Object.keys(memoryCategoryScores).forEach(k => {
         memoryCategoryScores[k].high_score = 0;
-        memoryCategoryScores[k].career_score = 0;
-        memoryCategoryScores[k].games_played = 0;
       });
-      return res.json({ success: true, message: 'All player leaderboards & scores have been reset to 0!' });
+      return res.json({ success: true, message: 'Leaderboards reset to 0! All player career XP and avatar unlocks have been preserved.' });
     } else if (action === 'wipe_all_players') {
       if (pool) {
         await pool.query('TRUNCATE TABLE category_scores;');
@@ -592,7 +576,6 @@ function getStreakLabel(streak) {
   return '';
 }
 
-// AVATAR XP REQUIREMENTS
 const AVATAR_LEVELS = {
   '🚀': 0,
   '🎯': 0,
@@ -657,7 +640,6 @@ io.on('connection', (socket) => {
         }
       }
 
-      // Check XP lock for avatar
       const requiredXP = AVATAR_LEVELS[requestedAvatar] || 0;
       let finalAvatar = requestedAvatar;
       if (playerProfile.career_score < requiredXP) {
@@ -762,29 +744,24 @@ io.on('connection', (socket) => {
     if (room) disconnectPlayerByUsername(room, targetUsername, 'You were removed by the host.');
   });
 
+  // PRESERVES CAREER XP ON RESET
   socket.on('host:reset_leaderboards', async () => {
     try {
       if (pool) {
-        await pool.query('UPDATE players SET high_score = 0, career_score = 0, games_played = 0, updated_at = NOW();');
-        await pool.query('UPDATE room_scores SET high_score = 0, career_score = 0, games_played = 0;');
-        await pool.query('UPDATE category_scores SET high_score = 0, career_score = 0, games_played = 0;');
+        await pool.query('UPDATE players SET high_score = 0, updated_at = NOW();');
+        await pool.query('UPDATE room_scores SET high_score = 0;');
+        await pool.query('UPDATE category_scores SET high_score = 0;');
       }
       Object.keys(memoryPlayers).forEach(u => {
         memoryPlayers[u].high_score = 0;
-        memoryPlayers[u].career_score = 0;
-        memoryPlayers[u].games_played = 0;
       });
       Object.keys(memoryRoomScores).forEach(k => {
         memoryRoomScores[k].high_score = 0;
-        memoryRoomScores[k].career_score = 0;
-        memoryRoomScores[k].games_played = 0;
       });
       Object.keys(memoryCategoryScores).forEach(k => {
         memoryCategoryScores[k].high_score = 0;
-        memoryCategoryScores[k].career_score = 0;
-        memoryCategoryScores[k].games_played = 0;
       });
-      socket.emit('host:action_feedback', 'Leaderboards and player stats have been reset!');
+      socket.emit('host:action_feedback', 'Leaderboard high scores reset! Career XP and avatar unlocks have been preserved.');
     } catch (e) {
       socket.emit('host:action_feedback', 'Error resetting leaderboards.');
     }
@@ -1122,12 +1099,10 @@ function endRound(room) {
   }
 }
 
-// COMPUTE POST-GAME SUPERLATIVE AWARDS
 function calculateSuperlatives(room, standings) {
   const players = Object.values(room.activeSockets);
   if (!players || players.length === 0) return {};
 
-  // 1. The Gunslinger (Fastest average reaction time)
   let gunslinger = null;
   let bestAvgTime = Infinity;
   players.forEach(p => {
@@ -1140,7 +1115,6 @@ function calculateSuperlatives(room, standings) {
     }
   });
 
-  // 2. The Clutch Player (Most points in the final 3 questions)
   let clutch = null;
   let maxClutchPts = 0;
   players.forEach(p => {
@@ -1150,7 +1124,6 @@ function calculateSuperlatives(room, standings) {
     }
   });
 
-  // 3. The Comeback Kid (Biggest rank jump from worst rank to final finish)
   let comeback = null;
   let maxComeback = 0;
   standings.forEach((p, finalIdx) => {
