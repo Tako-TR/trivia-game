@@ -3,46 +3,49 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="theme-color" content="#090d16">
   <title>Trivia Player</title>
   <link rel="stylesheet" href="style.css">
   <script src="/socket.io/socket.io.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.2/dist/confetti.browser.min.js"></script>
   <style>
-    /* FULL-SCREEN RESULT FLASH ANIMATIONS */
-    body {
-      transition: background-color 0.2s ease-out;
-      margin: 0;
-      padding: 0;
-      background-color: #0f172a;
-      color: #f8fafc;
-      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-      min-height: 100vh;
-    }
-    body.flash-correct {
-      animation: flashGreen 1.2s ease-out;
-    }
-    body.flash-incorrect {
-      animation: flashRed 1.2s ease-out;
-    }
-    body.flash-timeout {
-      animation: flashAmber 1.2s ease-out;
+    :root {
+      --bg: #090d16;
+      --card-bg: rgba(18, 26, 44, 0.9);
+      --border: rgba(56, 189, 248, 0.2);
+      --cyan: #38bdf8;
+      --green: #10b981;
+      --amber: #f59e0b;
+      --red: #ef4444;
+      --muted: #94a3b8;
     }
 
-    @keyframes flashGreen {
-      0% { background-color: #064e3b; }
-      15% { background-color: #047857; }
-      100% { background-color: #0f172a; }
+    * {
+      box-sizing: border-box !important;
+      -webkit-tap-highlight-color: transparent;
     }
-    @keyframes flashRed {
-      0% { background-color: #7f1d1d; }
-      15% { background-color: #b91c1c; }
-      100% { background-color: #0f172a; }
+
+    html, body {
+      margin: 0 !important;
+      padding: 0 !important;
+      background: var(--bg) !important;
+      color: #f8fafc !important;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif !important;
+      min-height: 100vh;
+      min-height: -webkit-fill-available;
+      overflow-x: hidden;
     }
-    @keyframes flashAmber {
-      0% { background-color: #78350f; }
-      15% { background-color: #b45309; }
-      100% { background-color: #0f172a; }
-    }
+
+    /* FULL-SCREEN RESULT FLASH ANIMATIONS */
+    body.flash-correct { animation: flashG 0.9s ease-out; }
+    body.flash-incorrect { animation: flashR 0.9s ease-out; }
+    body.flash-timeout { animation: flashA 0.9s ease-out; }
+
+    @keyframes flashG { 0% { background: #064e3b !important; } 100% { background: var(--bg) !important; } }
+    @keyframes flashR { 0% { background: #7f1d1d !important; } 100% { background: var(--bg) !important; } }
+    @keyframes flashA { 0% { background: #78350f !important; } 100% { background: var(--bg) !important; } }
 
     .container {
       max-width: 500px;
@@ -189,7 +192,7 @@
       text-align: left;
     }
 
-    /* IN-GAME QUESTION VIEW: PROPORTIONED & COMPACT */
+    /* IN-GAME QUESTION VIEW */
     #game-screen {
       display: flex;
       flex-direction: column;
@@ -236,6 +239,8 @@
       gap: 0.5rem;
       margin-top: 0.25rem;
     }
+
+    /* 3. TACTILE OPTION BUTTON WITH IMMEDIATE LOCK INDICATOR */
     .option-btn {
       background-color: #1e293b;
       border: 2px solid #334155;
@@ -249,7 +254,7 @@
       display: flex;
       align-items: center;
       gap: 0.75rem;
-      transition: background 0.15s, border-color 0.15s;
+      transition: all 0.15s ease-out;
     }
     .option-btn .opt-badge {
       color: #38bdf8;
@@ -257,16 +262,21 @@
       font-size: 1rem;
     }
     .option-btn.selected {
-      background-color: #0284c7;
-      border-color: #38bdf8;
-      color: #fff;
+      background-color: #064e3b !important;
+      border-color: #10b981 !important;
+      color: #ffffff !important;
+      box-shadow: 0 0 16px rgba(16, 185, 129, 0.45);
+      transform: scale(1.01);
+    }
+    .option-btn.selected .opt-badge {
+      color: #6ee7b7 !important;
     }
     .option-btn:disabled {
-      opacity: 0.5;
+      opacity: 0.45;
       cursor: not-allowed;
     }
 
-    /* RESULTS SCREEN - PROPER TOP ALIGNMENT */
+    /* RESULTS SCREEN */
     #results-screen {
       display: flex;
       flex-direction: column;
@@ -537,7 +547,7 @@
       </div>
 
       <div id="options-container" class="options-grid"></div>
-      <p id="status-message" class="badge hidden" style="margin-top:0.4rem; padding:0.5rem; text-align:center;">✓ Answer Submitted</p>
+      <p id="status-message" class="badge hidden" style="margin-top:0.4rem; padding:0.5rem; text-align:center;">✓ Answer Locked In!</p>
     </div>
 
     <!-- Milestone Screen -->
@@ -834,7 +844,6 @@
       loadLobbyLeaderboards();
     });
 
-    // ACTIVE QUESTION RENDERER WITH CLEAR, BALANCED BUTTONS
     socket.on('game:new_question', (data) => {
       clearBodyFlashes();
       selectedAnswer = null;
@@ -871,9 +880,15 @@
         btn.addEventListener('click', () => {
           if (selectedAnswer !== null) return;
           selectedAnswer = index;
-          haptic(50);
+          haptic([40, 30]); // Tactile double buzz
+          
+          // 3. INSTANT COLOR & DIM FEEDBACK ON MOBILE
           btn.classList.add('selected');
-          Array.from(optionsContainer.children).forEach(b => b.disabled = true);
+          Array.from(optionsContainer.children).forEach(b => {
+            b.disabled = true;
+            if (b !== btn) b.style.opacity = '0.35';
+          });
+
           statusMessage.classList.remove('hidden');
           socket.emit('player:submit_answer', index);
         });
@@ -885,8 +900,9 @@
       const timeLeft = typeof data === 'object' ? data.timeLeft : data;
       timerDisplay.textContent = timeLeft;
 
+      // 5. URGENT COUNTDOWN HAPTIC PACING CUE (3... 2... 1...)
       if (timeLeft <= 3 && timeLeft > 0 && selectedAnswer === null) {
-        haptic(30);
+        haptic(45);
       }
     });
 
