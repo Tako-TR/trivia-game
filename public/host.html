@@ -1454,8 +1454,9 @@
       players.forEach(p => {
         const li = document.createElement('li');
         li.className = 'roster-chip';
+        const badgeStr = p.badge ? `${p.badge} ` : '';
         li.innerHTML = `
-          <span>${p.avatar || '🚀'} ${p.name}</span>
+          <span>${badgeStr}${p.name}</span>
           <button class="btn-kick-chip" onclick="kickPlayer('${p.name}')">&times;</button>
         `;
         list.appendChild(li);
@@ -1513,7 +1514,8 @@
         const chip = document.createElement('div');
         chip.className = 'sub-chip';
         chip.id = `sub-chip-${p.name}`;
-        chip.textContent = `${p.avatar || '🚀'} ${p.name}`;
+        const badgeStr = p.badge ? `${p.badge} ` : '';
+        chip.textContent = `${badgeStr}${p.name}`;
         submissionChipsContainer.appendChild(chip);
       });
     });
@@ -1568,9 +1570,9 @@
 
       matchQuestionStats.push({ question: hostQuestion.textContent, answer: data.correctAnswerText, accuracy: accuracyPct });
 
-      speedName.textContent = data.fastestPlayer ? `${data.fastestPlayer.avatar || '⚡'} ${data.fastestPlayer.name}` : 'None';
+      speedName.textContent = data.fastestPlayer ? `${data.fastestPlayer.badge || ''}${data.fastestPlayer.name}` : 'None';
       speedTime.textContent = data.fastestPlayer ? `${data.fastestPlayer.time}s` : '--';
-      snailName.textContent = data.slowestPlayer ? `${data.slowestPlayer.avatar || '🐢'} ${data.slowestPlayer.name}` : 'None';
+      snailName.textContent = data.slowestPlayer ? `${data.slowestPlayer.badge || ''}${data.slowestPlayer.name}` : 'None';
       snailTime.textContent = data.slowestPlayer ? `${data.slowestPlayer.time}s` : '--';
 
       renderDistributionChart(data);
@@ -1587,7 +1589,8 @@
           flameHtml = `<span class="tv-streak-tag">🔥 ${p.streak}</span>`;
         }
 
-        li.innerHTML = `<span>#${idx + 1} ${p.avatar || '🚀'} ${p.name}${flameHtml} ${deltaHtml}</span><strong style="color:var(--cyan);">${p.score} pts</strong>`;
+        const badgeStr = p.badge ? `${p.badge} ` : '';
+        li.innerHTML = `<span>#${idx + 1} ${badgeStr}${p.name}${flameHtml} ${deltaHtml}</span><strong style="color:var(--cyan);">${p.score} pts</strong>`;
         hostLeaderboard.appendChild(li);
       });
 
@@ -1629,7 +1632,8 @@
       data.leaderboard.forEach((p, idx) => {
         const li = document.createElement('li');
         let flameHtml = p.streak >= 2 ? `<span class="tv-streak-tag">🔥 ${p.streak}</span>` : '';
-        li.innerHTML = `<span>#${idx + 1} ${p.avatar || '🚀'} ${p.name}${flameHtml}</span><strong style="color:var(--cyan);">${p.score} pts</strong>`;
+        const badgeStr = p.badge ? `${p.badge} ` : '';
+        li.innerHTML = `<span>#${idx + 1} ${badgeStr}${p.name}${flameHtml}</span><strong style="color:var(--cyan);">${p.score} pts</strong>`;
         hostMilestoneLeaderboard.appendChild(li);
       });
 
@@ -1651,21 +1655,21 @@
 
       const sups = data.superlatives || {};
       if (sups.gunslinger) {
-        document.getElementById('award-gunslinger-name').textContent = `${sups.gunslinger.avatar || '🎯'} ${sups.gunslinger.name}`;
+        document.getElementById('award-gunslinger-name').textContent = `${sups.gunslinger.badge || ''}${sups.gunslinger.name}`;
         document.getElementById('award-gunslinger-stat').textContent = sups.gunslinger.stat;
       } else {
         document.getElementById('award-gunslinger-name').textContent = 'None';
       }
 
       if (sups.clutch) {
-        document.getElementById('award-clutch-name').textContent = `${sups.clutch.avatar || '🔥'} ${sups.clutch.name}`;
+        document.getElementById('award-clutch-name').textContent = `${sups.clutch.badge || ''}${sups.clutch.name}`;
         document.getElementById('award-clutch-stat').textContent = sups.clutch.stat;
       } else {
         document.getElementById('award-clutch-name').textContent = 'None';
       }
 
       if (sups.comeback) {
-        document.getElementById('award-comeback-name').textContent = `${sups.comeback.avatar || '🚀'} ${sups.comeback.name}`;
+        document.getElementById('award-comeback-name').textContent = `${sups.comeback.badge || ''}${sups.comeback.name}`;
         document.getElementById('award-comeback-stat').textContent = sups.comeback.stat;
       } else {
         document.getElementById('award-comeback-name').textContent = 'None';
@@ -1683,7 +1687,7 @@
         return alert('No match data available to export.');
       }
       const rows = [
-        ['Rank', 'Avatar', 'Username', 'Score (PTS)', 'Final Streak', 'Room', 'Category', 'Timestamp']
+        ['Rank', 'Badge', 'Username', 'Score (PTS)', 'Final Streak', 'Room', 'Category', 'Timestamp']
       ];
       const roomCode = lastCompletedMatchData.roomCode || currentRoomCode;
       const roomDisplayName = ROOM_NAMES[roomCode] || lastCompletedMatchData.roomName || roomCode;
@@ -1693,7 +1697,7 @@
       lastCompletedMatchData.leaderboard.forEach((p, idx) => {
         rows.push([
           idx + 1,
-          `"${p.avatar || '🚀'}"`,
+          `"${p.badge || ''}"`,
           `"${p.name}"`,
           p.score,
           p.streak || 0,
@@ -1721,9 +1725,9 @@
       const p3 = players[2] || null;
 
       let html = '';
-      if (p2) html += `<div class="podium-slot second"><div class="podium-avatar">${p2.avatar || '🥈'}</div><div class="podium-name">${p2.name}</div><div class="podium-score">${p2.score} pts</div><div class="podium-step">2</div></div>`;
-      if (p1) html += `<div class="podium-slot first"><div class="podium-avatar">${p1.avatar || '👑'}</div><div class="podium-name">${p1.name}</div><div class="podium-score">${p1.score} pts</div><div class="podium-step">1</div></div>`;
-      if (p3) html += `<div class="podium-slot third"><div class="podium-avatar">${p3.avatar || '🥉'}</div><div class="podium-name">${p3.name}</div><div class="podium-score">${p3.score} pts</div><div class="podium-step">3</div></div>`;
+      if (p2) html += `<div class="podium-slot second"><div class="podium-avatar">${p2.badge || '🥈'}</div><div class="podium-name">${p2.name}</div><div class="podium-score">${p2.score} pts</div><div class="podium-step">2</div></div>`;
+      if (p1) html += `<div class="podium-slot first"><div class="podium-avatar">${p1.badge || '👑'}</div><div class="podium-name">${p1.name}</div><div class="podium-score">${p1.score} pts</div><div class="podium-step">1</div></div>`;
+      if (p3) html += `<div class="podium-slot third"><div class="podium-avatar">${p3.badge || '🥉'}</div><div class="podium-name">${p3.name}</div><div class="podium-score">${p3.score} pts</div><div class="podium-step">3</div></div>`;
       podiumArea.innerHTML = html;
     }
 
