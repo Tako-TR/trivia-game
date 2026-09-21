@@ -19,7 +19,6 @@
       --amber: #f59e0b;
       --red: #ef4444;
       --gold: #facc15;
-      --cat-accent: #38bdf8;
     }
 
     * { box-sizing: border-box; }
@@ -46,7 +45,6 @@
       100% { background-position: 100% 20%; }
     }
 
-    /* Screen Fade / Slide Transitions */
     .tv-broadcast-screen, .lobby-stage-container {
       animation: screenFadeIn 0.35s cubic-bezier(0.16, 1, 0.3, 1) forwards;
     }
@@ -902,8 +900,9 @@
               </div>
             </div>
 
-            <div style="margin-top: 1.25rem;">
-              <button id="btn-start" style="width:100%; background: linear-gradient(135deg, #059669, var(--green)); color: #fff; font-size: 1.15rem; font-weight: 900; border: none; padding: 1rem; border-radius: 12px; cursor: pointer; box-shadow: 0 6px 20px rgba(16, 185, 129, 0.4); text-transform: uppercase; letter-spacing: 0.05em;">▶ Launch Game on TV</button>
+            <div style="margin-top: 1.25rem; display:flex; flex-direction:column; gap:0.55rem;">
+              <button id="btn-start" style="width:100%; background: linear-gradient(135deg, #059669, var(--green)); color: #fff; font-size: 1.15rem; font-weight: 900; border: none; padding: 0.95rem; border-radius: 12px; cursor: pointer; box-shadow: 0 6px 20px rgba(16, 185, 129, 0.4); text-transform: uppercase; letter-spacing: 0.05em;">▶ Launch Game on TV</button>
+              <button id="btn-start-demo" style="width:100%; background: linear-gradient(135deg, #7c3aed, #a855f7); color: #fff; font-size: 0.95rem; font-weight: 900; border: none; padding: 0.75rem; border-radius: 12px; cursor: pointer; box-shadow: 0 4px 16px rgba(168, 85, 247, 0.4); letter-spacing: 0.04em;">🤖 Test Animations (Demo 5 Bots)</button>
               <div class="host-links">
                 <a href="/add.html" class="host-link-btn">+ Add Questions</a>
                 <a href="/manage.html" class="host-link-btn">⚙ Question Editor & Generator</a>
@@ -1450,6 +1449,7 @@
     const submissionChipsContainer = document.getElementById('submission-chips-container');
 
     const btnStart = document.getElementById('btn-start');
+    const btnStartDemo = document.getElementById('btn-start-demo');
     const btnRestart = document.getElementById('btn-restart');
     const btnExportRecap = document.getElementById('btn-export-recap');
     const categorySelect = document.getElementById('category-select');
@@ -1472,7 +1472,24 @@
         preset: presetSelect.value,
         category: activeMatchCategory,
         difficulty: difficultySelect.value,
-        count: questionCountSelect.value
+        count: questionCountSelect.value,
+        isDemo: false
+      });
+    });
+
+    btnStartDemo.addEventListener('click', () => {
+      cancelAutoStart();
+      matchQuestionStats = [];
+      initAudio();
+      activeMatchCategory = categorySelect.value;
+
+      socket.emit('host:start_game', {
+        roomCode: currentRoomCode,
+        preset: presetSelect.value,
+        category: activeMatchCategory,
+        difficulty: difficultySelect.value,
+        count: 5,
+        isDemo: true
       });
     });
 
@@ -1532,7 +1549,8 @@
           preset: 'none',
           category: nextCategory,
           difficulty: difficultySelect.value,
-          count: questionCountSelect.value
+          count: questionCountSelect.value,
+          isDemo: false
         });
       }, 10000);
     }
