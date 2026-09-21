@@ -151,7 +151,9 @@ function getOrCreateRoom(rawRoomCode) {
       isPaused: false,
       currentGameCategory: 'all',
       previousRankings: {},
-      usedQuestionIds: new Set()
+      usedQuestionIds: new Set(),
+      isDemoMode: false,
+      demoBotTimeouts: []
     };
   }
   return rooms[code];
@@ -615,6 +617,97 @@ const ACHIEVEMENTS_DEF = {
   'gold_digger': { name: 'Gold Digger', icon: '🥇', desc: 'Secure 1st place in 5 different matches' }
 };
 
+/* =========================================================
+   DEMO MODE & SIMULATED BOTS
+========================================================= */
+const DEMO_BOTS = [
+  { id: 'bot_alex', username: 'Alex', badge: '⚡', skill: 0.85 },
+  { id: 'bot_maya', username: 'Maya', badge: '🧠', skill: 0.75 },
+  { id: 'bot_jordan', username: 'Jordan', badge: '🎯', skill: 0.70 },
+  { id: 'bot_sam', username: 'Sam', badge: '🔥', skill: 0.60 },
+  { id: 'bot_riley', username: 'Riley', badge: '🤠', skill: 0.50 }
+];
+
+function clearDemoBotTimeouts(room) {
+  if (room && room.demoBotTimeouts) {
+    room.demoBotTimeouts.forEach(clearTimeout);
+    room.demoBotTimeouts = [];
+  }
+}
+
+function seedDemoBots(room) {
+  DEMO_BOTS.forEach(b => {
+    room.activeSockets[b.id] = {
+      username: b.username,
+      badge: b.badge,
+      score: 0,
+      currentAnswer: null,
+      answerTimeLeft: 0,
+      reactionSeconds: null,
+      roundPointsEarned: 0,
+      streak: 0,
+      reactionTimes: [],
+      lowestRankDuringGame: 1,
+      finalQuestionsPoints: 0,
+      correctAnswersCount: 0,
+      totalQuestionsAnswered: 0,
+      hardQuestionsCorrect: 0,
+      isBot: true,
+      skill: b.skill
+    };
+  });
+}
+
+function scheduleBotAnswers(room, correctIdx) {
+  clearDemoBotTimeouts(room);
+  if (!room.isDemoMode || !room.roundActive) return;
+
+  DEMO_BOTS.forEach((botDef) => {
+    const p = room.activeSockets[botDef.id];
+    if (!p) return;
+
+    // Reaction time staggered between 0.8s and 7.0s
+    const delay = Math.floor(Math.random() * 6200) + 800;
+
+    const t = setTimeout(() => {
+      if (!room.roundActive || p.currentAnswer !== null) return;
+
+      const answerTimeLeft = Math.max(1, room.timeLeft);
+      const elapsedSeconds = parseFloat((delay / 1000).toFixed(2));
+
+      const isCorrect = Math.random() < p.skill;
+      let chosenAnswer = correctIdx;
+      if (!isCorrect) {
+        const wrongAnswers = [0, 1, 2, 3].filter(idx => idx !== correctIdx);
+        chosenAnswer = wrongAnswers[Math.floor(Math.random() * wrongAnswers.length)];
+      }
+
+      p.currentAnswer = chosenAnswer;
+      p.answerTimeLeft = answerTimeLeft;
+      p.reactionSeconds = elapsedSeconds;
+      p.reactionTimes.push(elapsedSeconds);
+      p.totalQuestionsAnswered++;
+
+      const totalPlayers = Object.keys(room.activeSockets).length;
+      const answeredPlayers = Object.values(room.activeSockets).filter(pl => pl.currentAnswer !== null).length;
+
+      io.to(room.code).emit('game:submission_update', {
+        username: p.username,
+        badge: p.badge,
+        socketId: botDef.id,
+        submittedCount: answeredPlayers,
+        totalCount: totalPlayers
+      });
+
+      if (totalPlayers > 0 && answeredPlayers >= totalPlayers && room.timeLeft > 2) {
+        room.timeLeft = 2;
+      }
+    }, delay);
+
+    room.demoBotTimeouts.push(t);
+  });
+}
+
 io.on('connection', (socket) => {
   socket.on('host:join_room', (roomCode) => {
     const room = getOrCreateRoom(roomCode);
@@ -775,7 +868,7 @@ io.on('connection', (socket) => {
       socket.emit('player:answer_received', answerIndex);
 
       const totalPlayers = Object.keys(room.activeSockets).length;
-      const answeredPlayers = Object.values(room.activeSockets).filter(p => p.currentAnswer !== null).length;
+      const answeredPlayers = Object.values(room.activeSockets).filter(pl => pl.currentAnswer !== null).length;
 
       io.to(room.code).emit('game:submission_update', {
         username: p.username,
@@ -825,12 +918,17 @@ io.on('connection', (socket) => {
 
     clearInterval(room.questionTimer);
     clearTimeout(room.intermissionTimer);
+    clearDemoBotTimeouts(room);
 
-    room.previousRankings = {};
-    room.isPaused = false;
+    room.isDemoMode = !!config.isDemo;
 
+    // Reset humans
     Object.keys(room.activeSockets).forEach((id) => {
       const p = room.activeSockets[id];
+      if (p.isBot && !room.isDemoMode) {
+        delete room.activeSockets[id];
+        return;
+      }
       p.score = 0;
       p.currentAnswer = null;
       p.answerTimeLeft = 0;
@@ -844,6 +942,15 @@ io.on('connection', (socket) => {
       p.totalQuestionsAnswered = 0;
       p.hardQuestionsCorrect = 0;
     });
+
+    if (room.isDemoMode) {
+      seedDemoBots(room);
+    }
+
+    io.to(room.code).emit('game:player_list', getLobbyPlayers(room));
+
+    room.previousRankings = {};
+    room.isPaused = false;
 
     const chosenPreset = config.preset && config.preset !== 'none' ? gamePresets[config.preset] : null;
 
@@ -908,6 +1015,7 @@ io.on('connection', (socket) => {
 
     clearInterval(room.questionTimer);
     clearTimeout(room.intermissionTimer);
+    clearDemoBotTimeouts(room);
     room.roundActive = false;
     finishGameAndSaveStats(room);
   });
@@ -917,6 +1025,7 @@ io.on('connection', (socket) => {
     const room = rooms[targetRoomCode];
     if (room && room.roundActive) {
       clearInterval(room.questionTimer);
+      clearDemoBotTimeouts(room);
       endRound(room);
     }
   });
@@ -926,6 +1035,7 @@ io.on('connection', (socket) => {
     const room = rooms[targetRoomCode];
     if (room && room.roundActive) {
       clearInterval(room.questionTimer);
+      clearDemoBotTimeouts(room);
       startNextQuestion(room);
     }
   });
@@ -949,6 +1059,7 @@ io.on('connection', (socket) => {
         const answeredPlayers = Object.values(room.activeSockets).filter(p => p.currentAnswer !== null).length;
         if (totalPlayers > 0 && answeredPlayers >= totalPlayers) {
           clearInterval(room.questionTimer);
+          clearDemoBotTimeouts(room);
           endRound(room);
         }
       }
@@ -996,6 +1107,10 @@ function startNextQuestion(room) {
     connectedPlayers: connectedList
   });
 
+  if (room.isDemoMode) {
+    scheduleBotAnswers(room, currentQ.answer);
+  }
+
   clearInterval(room.questionTimer);
   room.questionTimer = setInterval(() => {
     if (room.isPaused) return;
@@ -1007,6 +1122,7 @@ function startNextQuestion(room) {
     });
     if (room.timeLeft <= 0) {
       clearInterval(room.questionTimer);
+      clearDemoBotTimeouts(room);
       endRound(room);
     }
   }, 1000);
@@ -1014,6 +1130,8 @@ function startNextQuestion(room) {
 
 function endRound(room) {
   room.roundActive = false;
+  clearDemoBotTimeouts(room);
+
   const currentQ = room.activeQuestions[room.currentQuestionIndex];
   const correctIdx = currentQ.answer;
   const isFinalThree = (room.activeQuestions.length - (room.currentQuestionIndex + 1)) < 3;
@@ -1199,6 +1317,7 @@ function calculateSuperlatives(room, standings) {
 }
 
 async function evaluateAchievements(p, matchRank, totalPlayers, room) {
+  if (p.isBot) return; // Bots don't save persistent achievements
   const newUnlocks = [];
   let existingUnlocks = [];
 
@@ -1286,7 +1405,7 @@ async function finishGameAndSaveStats(room) {
   for (let idx = 0; idx < standings.length; idx++) {
     const sItem = standings[idx];
     const p = room.activeSockets[sItem.id];
-    if (p && p.username) {
+    if (p && p.username && !p.isBot) {
       const matchRank = idx + 1;
       const totalPlayers = standings.length;
 
