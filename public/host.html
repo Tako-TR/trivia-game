@@ -53,7 +53,6 @@
       to { opacity: 1; transform: translateY(0) scale(1); }
     }
 
-    /* PASSWORD LOGIN OVERLAY */
     #login-overlay {
       position: fixed;
       top: 0; left: 0; width: 100%; height: 100%;
@@ -649,48 +648,72 @@
     .delta-down { background-color: #7f1d1d; color: #fca5a5; border: 1px solid #ef4444; }
     .delta-same { background-color: #1e293b; color: #64748b; }
 
+    /* SPLIT FINAL GAME OVER VIEWPORT */
+    .gameover-split-layout {
+      display: grid;
+      grid-template-columns: 1.25fr 0.95fr;
+      gap: 2rem;
+      height: calc(100vh - 130px);
+      overflow: hidden;
+      margin: 0.5rem 0;
+    }
+    .gameover-left-col {
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      height: 100%;
+      overflow: hidden;
+    }
+    .gameover-right-col {
+      display: flex;
+      flex-direction: column;
+      height: 100%;
+      overflow: hidden;
+    }
+
     .podium-container {
       display: flex;
       justify-content: center;
       align-items: flex-end;
-      gap: 1.75rem;
-      height: 230px;
-      max-width: 700px;
+      gap: 1.5rem;
+      height: 200px;
+      max-width: 620px;
       margin: 0 auto;
+      width: 100%;
     }
     .podium-slot { display: flex; flex-direction: column; align-items: center; flex: 1; }
     .podium-slot.first { order: 2; }
     .podium-slot.second { order: 1; }
     .podium-slot.third { order: 3; }
-    .podium-avatar { font-size: 2.5rem; margin-bottom: 0.35rem; }
-    .podium-name { font-size: 1.25rem; font-weight: 900; color: #f8fafc; }
-    .podium-score { font-size: 0.95rem; color: #94a3b8; font-weight: 700; margin-bottom: 0.5rem; }
+    .podium-avatar { font-size: 2.2rem; margin-bottom: 0.25rem; }
+    .podium-name { font-size: 1.15rem; font-weight: 900; color: #f8fafc; }
+    .podium-score { font-size: 0.9rem; color: #94a3b8; font-weight: 700; margin-bottom: 0.4rem; }
     .podium-step {
       width: 100%;
       border-radius: 14px 14px 0 0;
       display: flex;
       justify-content: center;
       align-items: center;
-      font-size: 2.2rem;
+      font-size: 2rem;
       font-weight: 900;
       color: #070b14;
     }
     .first .podium-step { 
-      height: 135px; 
+      height: 120px; 
       background: linear-gradient(180deg, #facc15, #ca8a04); 
       border: 2px solid #fef08a; 
       border-bottom: none; 
       box-shadow: 0 0 35px rgba(250, 204, 21, 0.55), inset 0 2px 0 rgba(255,255,255,0.4); 
     }
     .second .podium-step { 
-      height: 95px; 
+      height: 85px; 
       background: linear-gradient(180deg, #cbd5e1, #64748b); 
       border: 2px solid #f1f5f9; 
       border-bottom: none; 
       box-shadow: 0 0 20px rgba(203, 213, 225, 0.3);
     }
     .third .podium-step { 
-      height: 65px; 
+      height: 60px; 
       background: linear-gradient(180deg, #fdba74, #c2410c); 
       border: 2px solid #fed7aa; 
       border-bottom: none; 
@@ -700,20 +723,19 @@
     .superlatives-grid {
       display: grid;
       grid-template-columns: repeat(3, 1fr);
-      gap: 1rem;
-      max-width: 800px;
-      margin: 0.75rem auto 0;
+      gap: 0.85rem;
       width: 100%;
+      margin: 0.5rem auto 0;
     }
     .award-card {
       background: var(--panel-bg);
       backdrop-filter: blur(16px);
       border: 1.5px solid var(--border-subtle);
       border-radius: 14px;
-      padding: 0.85rem 1rem;
+      padding: 0.75rem 0.85rem;
       display: flex;
       align-items: center;
-      gap: 0.75rem;
+      gap: 0.65rem;
       text-align: left;
       box-shadow: 0 8px 24px rgba(0, 0, 0, 0.45);
     }
@@ -721,10 +743,10 @@
     .award-card.clutch { border-color: rgba(245, 158, 11, 0.5); background: linear-gradient(135deg, rgba(245,158,11,0.15), var(--panel-bg)); }
     .award-card.comeback { border-color: rgba(16, 185, 129, 0.5); background: linear-gradient(135deg, rgba(16,185,129,0.15), var(--panel-bg)); }
 
-    .award-icon { font-size: 1.8rem; }
-    .award-title { font-size: 0.7rem; font-weight: 900; text-transform: uppercase; letter-spacing: 0.05em; color: #94a3b8; }
-    .award-name { font-size: 1rem; font-weight: 900; color: #ffffff; }
-    .award-stat { font-size: 0.75rem; font-weight: 800; color: var(--cyan); }
+    .award-icon { font-size: 1.6rem; }
+    .award-title { font-size: 0.68rem; font-weight: 900; text-transform: uppercase; letter-spacing: 0.05em; color: #94a3b8; }
+    .award-name { font-size: 0.95rem; font-weight: 900; color: #ffffff; }
+    .award-stat { font-size: 0.72rem; font-weight: 800; color: var(--cyan); }
 
     .submission-tray {
       background: var(--panel-bg);
@@ -900,9 +922,14 @@
               </div>
             </div>
 
-            <div style="margin-top: 1.25rem; display:flex; flex-direction:column; gap:0.55rem;">
-              <button id="btn-start" style="width:100%; background: linear-gradient(135deg, #059669, var(--green)); color: #fff; font-size: 1.15rem; font-weight: 900; border: none; padding: 0.95rem; border-radius: 12px; cursor: pointer; box-shadow: 0 6px 20px rgba(16, 185, 129, 0.4); text-transform: uppercase; letter-spacing: 0.05em;">▶ Launch Game on TV</button>
-              <button id="btn-start-demo" style="width:100%; background: linear-gradient(135deg, #7c3aed, #a855f7); color: #fff; font-size: 0.95rem; font-weight: 900; border: none; padding: 0.75rem; border-radius: 12px; cursor: pointer; box-shadow: 0 4px 16px rgba(168, 85, 247, 0.4); letter-spacing: 0.04em;">🤖 Test Animations (Demo 5 Bots)</button>
+            <div style="margin-top: 1.25rem; display:flex; flex-direction:column; gap:0.5rem;">
+              <button id="btn-start" style="width:100%; background: linear-gradient(135deg, #059669, var(--green)); color: #fff; font-size: 1.15rem; font-weight: 900; border: none; padding: 0.9rem; border-radius: 12px; cursor: pointer; box-shadow: 0 6px 20px rgba(16, 185, 129, 0.4); text-transform: uppercase; letter-spacing: 0.05em;">▶ Launch Game on TV</button>
+              
+              <div style="display:grid; grid-template-columns: 1fr 1fr; gap:0.5rem;">
+                <button id="btn-start-demo-5" style="background: linear-gradient(135deg, #7c3aed, #a855f7); color: #fff; font-size: 0.85rem; font-weight: 900; border: none; padding: 0.65rem; border-radius: 10px; cursor: pointer; box-shadow: 0 4px 14px rgba(168, 85, 247, 0.35);">🤖 Demo 5 Bots</button>
+                <button id="btn-start-demo-50" style="background: linear-gradient(135deg, #0284c7, #38bdf8); color: #070b14; font-size: 0.85rem; font-weight: 900; border: none; padding: 0.65rem; border-radius: 10px; cursor: pointer; box-shadow: 0 4px 14px rgba(56, 189, 248, 0.4);">⚡ Mega Demo (50 Bots)</button>
+              </div>
+
               <div class="host-links">
                 <a href="/add.html" class="host-link-btn">+ Add Questions</a>
                 <a href="/manage.html" class="host-link-btn">⚙ Question Editor & Generator</a>
@@ -912,7 +939,7 @@
         </div>
       </div>
 
-      <!-- HALL OF FAME SUB-PANEL (SEPARATE CONTAINER) -->
+      <!-- HALL OF FAME SUB-PANEL -->
       <div id="host-hall-view" class="hidden" style="margin-top: 1rem;">
         <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:0.6rem; margin-bottom:1.25rem;">
           <div style="display:flex; gap:0.6rem; align-items:center; flex-wrap:wrap;">
@@ -948,7 +975,7 @@
       </div>
     </div>
 
-    <!-- 1. ZERO-SCROLL TV SCREEN: ACTIVE QUESTION VIEWPORT -->
+    <!-- 1. ACTIVE QUESTION VIEWPORT -->
     <div id="host-game" class="tv-broadcast-screen hidden">
       <div>
         <div style="display: flex; justify-content: space-between; align-items: center;">
@@ -978,7 +1005,7 @@
       </div>
     </div>
 
-    <!-- 2. ZERO-SCROLL TV SCREEN: 2-COLUMN ROUND RESULTS -->
+    <!-- 2. ROUND RESULTS SCREEN -->
     <div id="host-round-end" class="tv-broadcast-screen hidden">
       <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem;">
         <h2 style="margin: 0; font-size: 1.6rem; color: var(--cyan); font-weight: 900;">Round Results</h2>
@@ -1038,7 +1065,7 @@
       </div>
     </div>
 
-    <!-- 3. ZERO-SCROLL TV SCREEN: CHECKPOINT INTERMISSION -->
+    <!-- 3. CHECKPOINT INTERMISSION -->
     <div id="host-milestone" class="tv-broadcast-screen hidden">
       <div style="display: flex; justify-content: space-between; align-items: center;">
         <div style="flex: 1;"></div>
@@ -1060,52 +1087,67 @@
       </div>
     </div>
 
-    <!-- 4. ZERO-SCROLL TV SCREEN: MATCH OVER & PODIUM WITH SUPERLATIVES -->
+    <!-- 4. FINAL PODIUM & AUTO-SCROLLING COMPLETE ROSTER -->
     <div id="host-game-over" class="tv-broadcast-screen hidden">
-      <div style="text-align: center;">
-        <h1 style="color: var(--gold); font-size: 2.5rem; font-weight: 900; margin: 0; text-shadow: 0 0 25px rgba(250, 204, 21, 0.6);">👑 Champion Crowned!</h1>
-        <p style="color: #94a3b8; font-weight: 800; margin: 0.3rem 0; font-size: 1.1rem;">Final Match Podium</p>
-      </div>
-
-      <div id="podium-area" class="podium-container"></div>
-
-      <!-- END-OF-GAME SUPERLATIVES CARDS -->
-      <div id="superlatives-area" class="superlatives-grid">
-        <div class="award-card gunslinger">
-          <div class="award-icon">🎯</div>
-          <div>
-            <div class="award-title">The Gunslinger</div>
-            <div class="award-name" id="award-gunslinger-name">--</div>
-            <div class="award-stat" id="award-gunslinger-stat">Fastest avg response</div>
-          </div>
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.35rem;">
+        <div>
+          <h1 style="color: var(--gold); font-size: 2.2rem; font-weight: 900; margin: 0; text-shadow: 0 0 25px rgba(250, 204, 21, 0.6);">👑 Champion Crowned!</h1>
+          <p style="color: #94a3b8; font-weight: 800; margin: 0.2rem 0; font-size: 0.95rem;">Final Match Podium & Full Roster Standings</p>
         </div>
-        <div class="award-card clutch">
-          <div class="award-icon">🔥</div>
-          <div>
-            <div class="award-title">Clutch Player</div>
-            <div class="award-name" id="award-clutch-name">--</div>
-            <div class="award-stat" id="award-clutch-stat">Late game scorer</div>
-          </div>
-        </div>
-        <div class="award-card comeback">
-          <div class="award-icon">🚀</div>
-          <div>
-            <div class="award-title">Comeback Kid</div>
-            <div class="award-name" id="award-comeback-name">--</div>
-            <div class="award-stat" id="award-comeback-stat">Biggest rank climb</div>
-          </div>
+        <div style="display: flex; gap: 0.65rem;">
+          <button id="btn-export-recap" style="background: linear-gradient(135deg, #059669, var(--green)); color:#fff; font-weight:800; border:none; padding:0.6rem 1.2rem; border-radius:10px; cursor:pointer; box-shadow: 0 4px 14px rgba(16, 185, 129, 0.35);">📥 Export Match Recap (CSV)</button>
+          <button id="btn-restart" style="background: linear-gradient(135deg, #0284c7, #38bdf8); color:#070b14; font-weight:900; border:none; padding:0.6rem 1.4rem; border-radius:10px; cursor:pointer; box-shadow: 0 4px 14px rgba(56, 189, 248, 0.35);">Return to Lobby</button>
         </div>
       </div>
 
-      <!-- AUTO-PLAY NEXT MATCH COUNTDOWN -->
-      <div id="auto-start-banner" class="hidden" style="background: rgba(16, 185, 129, 0.22); backdrop-filter: blur(14px); border: 2px solid var(--green); color: #6ee7b7; padding: 0.65rem 1.4rem; border-radius: 12px; margin: 0.5rem auto 0; max-width: 540px; font-weight: 900; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 0 20px rgba(16, 185, 129, 0.45);">
-        <span>⏳ Next Match (<span id="auto-next-cat-label" style="color:#fff;">BIBLE</span>) starts in <strong id="auto-start-timer" style="color:var(--gold); font-size:1.2rem;">10</strong>s...</span>
-        <button onclick="cancelAutoStart()" style="background:#dc2626; color:#fff; border:none; padding:5px 10px; border-radius:6px; cursor:pointer; font-weight:800;">Cancel</button>
-      </div>
+      <div class="gameover-split-layout">
+        <!-- LEFT: PHYSICAL 3D PODIUM & SUPERLATIVES -->
+        <div class="gameover-left-col">
+          <div id="podium-area" class="podium-container"></div>
 
-      <div style="display: flex; justify-content: center; gap: 0.85rem; margin-top: 0.5rem;">
-        <button id="btn-export-recap" style="background: linear-gradient(135deg, #059669, var(--green)); color:#fff; font-weight:800; border:none; padding:0.75rem 1.4rem; border-radius:10px; cursor:pointer; box-shadow: 0 4px 14px rgba(16, 185, 129, 0.35);">📥 Export Match Recap (CSV)</button>
-        <button id="btn-restart" style="background: linear-gradient(135deg, #0284c7, #38bdf8); color:#070b14; font-weight:900; border:none; padding:0.75rem 1.8rem; border-radius:10px; cursor:pointer; box-shadow: 0 4px 14px rgba(56, 189, 248, 0.35);">Return to Lobby</button>
+          <div id="superlatives-area" class="superlatives-grid">
+            <div class="award-card gunslinger">
+              <div class="award-icon">🎯</div>
+              <div>
+                <div class="award-title">The Gunslinger</div>
+                <div class="award-name" id="award-gunslinger-name">--</div>
+                <div class="award-stat" id="award-gunslinger-stat">Fastest avg response</div>
+              </div>
+            </div>
+            <div class="award-card clutch">
+              <div class="award-icon">🔥</div>
+              <div>
+                <div class="award-title">Clutch Player</div>
+                <div class="award-name" id="award-clutch-name">--</div>
+                <div class="award-stat" id="award-clutch-stat">Late game scorer</div>
+              </div>
+            </div>
+            <div class="award-card comeback">
+              <div class="award-icon">🚀</div>
+              <div>
+                <div class="award-title">Comeback Kid</div>
+                <div class="award-name" id="award-comeback-name">--</div>
+                <div class="award-stat" id="award-comeback-stat">Biggest rank climb</div>
+              </div>
+            </div>
+          </div>
+
+          <div id="auto-start-banner" class="hidden" style="background: rgba(16, 185, 129, 0.22); backdrop-filter: blur(14px); border: 2px solid var(--green); color: #6ee7b7; padding: 0.65rem 1.4rem; border-radius: 12px; margin-top: 0.5rem; font-weight: 900; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 0 20px rgba(16, 185, 129, 0.45);">
+            <span>⏳ Next Match (<span id="auto-next-cat-label" style="color:#fff;">BIBLE</span>) starts in <strong id="auto-start-timer" style="color:var(--gold); font-size:1.2rem;">10</strong>s...</span>
+            <button onclick="cancelAutoStart()" style="background:#dc2626; color:#fff; border:none; padding:5px 10px; border-radius:6px; cursor:pointer; font-weight:800;">Cancel</button>
+          </div>
+        </div>
+
+        <!-- RIGHT: CONTINUOUS AUTO-SCROLLING FINAL STANDINGS FOR 50+ PLAYERS -->
+        <div class="gameover-right-col">
+          <div style="font-size: 0.9rem; font-weight: 900; color: #94a3b8; text-transform: uppercase; margin-bottom: 0.5rem; letter-spacing: 0.05em; display: flex; justify-content: space-between;">
+            <span>Final Room Standings</span>
+            <span id="final-total-players-label" style="color: var(--cyan);">0 Players</span>
+          </div>
+          <div class="autoscroll-leaderboard-wrapper" id="gameover-scroll-container">
+            <ul id="host-gameover-leaderboard" class="autoscroll-list"></ul>
+          </div>
+        </div>
       </div>
     </div>
   </div>
@@ -1229,7 +1271,6 @@
     }
 
     function startAutoScroll(containerEl, listEl, speed = 1) {
-      stopAllAutoScroll();
       if (!containerEl || !listEl) return;
 
       listEl.style.transform = 'translateY(0px)';
@@ -1250,7 +1291,7 @@
         currentScrollY += speed;
         listEl.style.transform = `translateY(-${currentScrollY}px)`;
 
-        if (currentScrollY >= (listHeight - containerHeight + 30)) {
+        if (currentScrollY >= (listHeight - containerHeight + 35)) {
           pauseCountdown = 80;
           currentScrollY = 0;
           listEl.style.transform = 'translateY(0px)';
@@ -1437,6 +1478,10 @@
     const resultsScrollContainer = document.getElementById('results-scroll-container');
     const milestoneScrollContainer = document.getElementById('milestone-scroll-container');
     const hostMilestoneLeaderboard = document.getElementById('host-milestone-leaderboard');
+    
+    const gameoverScrollContainer = document.getElementById('gameover-scroll-container');
+    const hostGameoverLeaderboard = document.getElementById('host-gameover-leaderboard');
+    const finalTotalPlayersLabel = document.getElementById('final-total-players-label');
     const podiumArea = document.getElementById('podium-area');
 
     const speedName = document.getElementById('speed-name');
@@ -1449,7 +1494,8 @@
     const submissionChipsContainer = document.getElementById('submission-chips-container');
 
     const btnStart = document.getElementById('btn-start');
-    const btnStartDemo = document.getElementById('btn-start-demo');
+    const btnStartDemo5 = document.getElementById('btn-start-demo-5');
+    const btnStartDemo50 = document.getElementById('btn-start-demo-50');
     const btnRestart = document.getElementById('btn-restart');
     const btnExportRecap = document.getElementById('btn-export-recap');
     const categorySelect = document.getElementById('category-select');
@@ -1461,6 +1507,18 @@
     const autoNextCatLabel = document.getElementById('auto-next-cat-label');
 
     btnStart.addEventListener('click', () => {
+      launchMatch(false, 0);
+    });
+
+    btnStartDemo5.addEventListener('click', () => {
+      launchMatch(true, 5);
+    });
+
+    btnStartDemo50.addEventListener('click', () => {
+      launchMatch(true, 50);
+    });
+
+    function launchMatch(isDemo = false, botCount = 0) {
       cancelAutoStart();
       matchQuestionStats = [];
       initAudio();
@@ -1469,29 +1527,14 @@
 
       socket.emit('host:start_game', {
         roomCode: currentRoomCode,
-        preset: presetSelect.value,
+        preset: isDemo ? 'none' : presetSelect.value,
         category: activeMatchCategory,
         difficulty: difficultySelect.value,
         count: questionCountSelect.value,
-        isDemo: false
+        isDemo: isDemo,
+        botCount: botCount
       });
-    });
-
-    btnStartDemo.addEventListener('click', () => {
-      cancelAutoStart();
-      matchQuestionStats = [];
-      initAudio();
-      activeMatchCategory = categorySelect.value;
-
-      socket.emit('host:start_game', {
-        roomCode: currentRoomCode,
-        preset: presetSelect.value,
-        category: activeMatchCategory,
-        difficulty: difficultySelect.value,
-        count: 5,
-        isDemo: true
-      });
-    });
+    }
 
     btnRestart.addEventListener('click', () => {
       cancelAutoStart();
@@ -1636,7 +1679,7 @@
       submissionChipsContainer.innerHTML = '';
       const list = data.connectedPlayers || [];
       submissionCounterLabel.textContent = `0 / ${list.length} Answered`;
-      list.forEach(p => {
+      list.slice(0, 30).forEach(p => {
         const chip = document.createElement('div');
         chip.className = 'sub-chip';
         chip.id = `sub-chip-${p.name}`;
@@ -1644,6 +1687,12 @@
         chip.textContent = `${badgeStr}${p.name}`;
         submissionChipsContainer.appendChild(chip);
       });
+      if (list.length > 30) {
+        const moreChip = document.createElement('div');
+        moreChip.className = 'sub-chip';
+        moreChip.textContent = `+${list.length - 30} more`;
+        submissionChipsContainer.appendChild(moreChip);
+      }
     });
 
     socket.on('game:submission_update', (data) => {
@@ -1720,7 +1769,7 @@
         hostLeaderboard.appendChild(li);
       });
 
-      startAutoScroll(resultsScrollContainer, hostLeaderboard, 1);
+      startAutoScroll(resultsScrollContainer, hostLeaderboard, 1.1);
     });
 
     function renderDistributionChart(data) {
@@ -1778,6 +1827,20 @@
 
       const leaderboard = Array.isArray(data) ? data : data.leaderboard;
       renderPodium(leaderboard);
+
+      // Render all players into scrolling full-roster view
+      finalTotalPlayersLabel.textContent = `${leaderboard.length} Players`;
+      hostGameoverLeaderboard.innerHTML = '';
+      leaderboard.forEach((p, idx) => {
+        const li = document.createElement('li');
+        let flameHtml = p.streak >= 2 ? `<span class="tv-streak-tag">🔥 ${p.streak}</span>` : '';
+        const badgeStr = p.badge ? `${p.badge} ` : '';
+        li.innerHTML = `<span>#${idx + 1} ${badgeStr}${p.name}${flameHtml}</span><strong style="color:var(--cyan);">${p.score} pts</strong>`;
+        hostGameoverLeaderboard.appendChild(li);
+      });
+
+      // Start auto-scroll on the final game over leaderboard
+      startAutoScroll(gameoverScrollContainer, hostGameoverLeaderboard, 1.15);
 
       const sups = data.superlatives || {};
       if (sups.gunslinger) {
