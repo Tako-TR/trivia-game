@@ -10,15 +10,16 @@
   <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.2/dist/confetti.browser.min.js"></script>
   <style>
     :root {
-      --bg-dark: #070b14;
-      --panel-bg: rgba(15, 23, 42, 0.92);
-      --border-subtle: rgba(56, 189, 248, 0.22);
+      --bg-dark: #050811;
+      --panel-bg: rgba(15, 23, 42, 0.78);
+      --border-subtle: rgba(56, 189, 248, 0.25);
       --cyan: #38bdf8;
-      --cyan-glow: rgba(56, 189, 248, 0.35);
+      --cyan-glow: rgba(56, 189, 248, 0.45);
       --green: #10b981;
       --amber: #f59e0b;
       --red: #ef4444;
       --gold: #facc15;
+      --cat-accent: #38bdf8;
     }
 
     * { box-sizing: border-box; }
@@ -27,12 +28,31 @@
       margin: 0;
       padding: 0;
       background-color: var(--bg-dark);
-      background-image: 
-        radial-gradient(circle at 15% 15%, rgba(56, 189, 248, 0.08) 0%, transparent 45%),
-        radial-gradient(circle at 85% 85%, rgba(16, 185, 129, 0.06) 0%, transparent 45%);
+      background: 
+        radial-gradient(circle at 18% 20%, rgba(56, 189, 248, 0.12) 0%, transparent 45%),
+        radial-gradient(circle at 82% 80%, rgba(16, 185, 129, 0.1) 0%, transparent 45%),
+        radial-gradient(circle at 50% 50%, rgba(14, 165, 233, 0.05) 0%, transparent 60%),
+        #050811;
+      background-size: 140% 140%;
+      animation: ambientShift 22s ease-in-out infinite alternate;
       color: #ffffff;
       font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", sans-serif;
       overflow-x: hidden;
+    }
+
+    @keyframes ambientShift {
+      0% { background-position: 0% 0%; }
+      50% { background-position: 50% 80%; }
+      100% { background-position: 100% 20%; }
+    }
+
+    /* Screen Fade / Slide Transitions */
+    .tv-broadcast-screen, .lobby-stage-container {
+      animation: screenFadeIn 0.35s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+    }
+    @keyframes screenFadeIn {
+      from { opacity: 0; transform: translateY(8px) scale(0.995); }
+      to { opacity: 1; transform: translateY(0) scale(1); }
     }
 
     /* PASSWORD LOGIN OVERLAY */
@@ -47,10 +67,12 @@
     }
     .login-box {
       background: var(--panel-bg);
+      backdrop-filter: blur(18px);
+      -webkit-backdrop-filter: blur(18px);
       border: 2px solid var(--cyan);
       padding: 2.5rem;
       border-radius: 20px;
-      box-shadow: 0 20px 40px rgba(0, 0, 0, 0.8), 0 0 20px var(--cyan-glow);
+      box-shadow: 0 20px 50px rgba(0, 0, 0, 0.85), 0 0 30px var(--cyan-glow);
       text-align: center;
       max-width: 400px;
       width: 90%;
@@ -69,7 +91,7 @@
       margin-bottom: 1rem;
       outline: none;
     }
-    .login-box input:focus { border-color: var(--cyan); box-shadow: 0 0 10px var(--cyan-glow); }
+    .login-box input:focus { border-color: var(--cyan); box-shadow: 0 0 12px var(--cyan-glow); }
     .login-box button {
       width: 100%;
       background: linear-gradient(135deg, #059669, var(--green));
@@ -80,7 +102,7 @@
       font-weight: 900;
       font-size: 1.05rem;
       cursor: pointer;
-      box-shadow: 0 4px 14px rgba(16, 185, 129, 0.4);
+      box-shadow: 0 4px 16px rgba(16, 185, 129, 0.45);
     }
     #login-error { color: var(--red); font-size: 0.85rem; font-weight: 800; margin-top: 0.75rem; min-height: 1.2rem; }
 
@@ -106,10 +128,12 @@
 
     .lobby-stage-card {
       background: var(--panel-bg);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
       border: 1.5px solid var(--border-subtle);
       border-radius: 20px;
       padding: 1.5rem;
-      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+      box-shadow: 0 15px 35px rgba(0, 0, 0, 0.6), inset 0 1px 0 rgba(255, 255, 255, 0.08);
       display: flex;
       flex-direction: column;
     }
@@ -119,11 +143,11 @@
       flex-direction: column;
       align-items: center;
       text-align: center;
-      background: radial-gradient(circle at center, rgba(56, 189, 248, 0.08) 0%, rgba(15, 23, 42, 0.6) 100%);
-      border: 1.5px solid rgba(56, 189, 248, 0.35);
+      background: radial-gradient(circle at center, rgba(56, 189, 248, 0.12) 0%, rgba(15, 23, 42, 0.75) 100%);
+      border: 1.5px solid rgba(56, 189, 248, 0.4);
       border-radius: 16px;
       padding: 1.5rem 1rem;
-      box-shadow: 0 0 25px rgba(56, 189, 248, 0.15);
+      box-shadow: 0 0 30px rgba(56, 189, 248, 0.18);
     }
     .join-hero-box h2 {
       margin: 0 0 0.3rem 0;
@@ -156,7 +180,8 @@
     }
     .roster-chip {
       background: rgba(30, 41, 59, 0.85);
-      border: 1px solid rgba(255, 255, 255, 0.1);
+      backdrop-filter: blur(8px);
+      border: 1px solid rgba(255, 255, 255, 0.12);
       border-radius: 9999px;
       padding: 0.35rem 0.85rem;
       display: inline-flex;
@@ -164,7 +189,12 @@
       gap: 0.5rem;
       font-size: 0.9rem;
       font-weight: 800;
-      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.35);
+      animation: popIn 0.25s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    }
+    @keyframes popIn {
+      from { transform: scale(0.85); opacity: 0; }
+      to { transform: scale(1); opacity: 1; }
     }
     .btn-kick-chip {
       background: #7f1d1d;
@@ -226,7 +256,7 @@
       gap: 0.75rem;
     }
     .room-badge {
-      background: rgba(56, 189, 248, 0.12);
+      background: rgba(56, 189, 248, 0.14);
       border: 1.5px solid var(--cyan);
       color: var(--cyan);
       padding: 0.4rem 1.1rem;
@@ -234,11 +264,12 @@
       font-weight: 900;
       font-size: 0.95rem;
       letter-spacing: 0.04em;
-      box-shadow: 0 0 12px var(--cyan-glow);
+      box-shadow: 0 0 16px var(--cyan-glow);
     }
     .top-toggles { display: flex; gap: 0.6rem; align-items: center; }
     .toggle-pill {
       background: rgba(30, 41, 59, 0.8);
+      backdrop-filter: blur(8px);
       border: 1px solid #475569;
       color: var(--cyan);
       font-size: 0.85rem;
@@ -281,34 +312,40 @@
 
     .timer-meter-wrapper {
       width: 100%;
-      height: 16px;
-      background: rgba(30, 41, 59, 0.7);
+      height: 18px;
+      background: rgba(15, 23, 42, 0.85);
       border-radius: 9999px;
       overflow: hidden;
       margin: 0.4rem 0 0.9rem 0;
-      border: 1.5px solid rgba(255, 255, 255, 0.1);
-      box-shadow: inset 0 2px 6px rgba(0,0,0,0.5);
+      border: 1.5px solid rgba(255, 255, 255, 0.12);
+      box-shadow: inset 0 2px 8px rgba(0,0,0,0.6);
+      position: relative;
     }
     .timer-meter-bar {
       height: 100%;
       width: 100%;
-      background: linear-gradient(90deg, #0284c7, #38bdf8);
+      background: linear-gradient(90deg, #0284c7, var(--cyan));
       border-radius: 9999px;
       transition: width 1s linear, background 0.4s ease-out;
-      box-shadow: 0 0 14px rgba(56, 189, 248, 0.5);
+      box-shadow: 0 0 18px rgba(56, 189, 248, 0.65);
     }
-    .timer-meter-bar.warning { background: linear-gradient(90deg, #d97706, #f59e0b); box-shadow: 0 0 14px rgba(245, 158, 11, 0.5); }
+    .timer-meter-bar.warning { 
+      background: linear-gradient(90deg, #d97706, #f59e0b); 
+      box-shadow: 0 0 20px rgba(245, 158, 11, 0.7); 
+    }
     .timer-meter-bar.danger {
       background: linear-gradient(90deg, #dc2626, #ef4444);
       animation: pulseDanger 0.45s infinite alternate;
     }
     @keyframes pulseDanger {
-      from { box-shadow: 0 0 6px #ef4444; }
-      to { box-shadow: 0 0 20px #ef4444; }
+      from { box-shadow: 0 0 8px #ef4444; }
+      to { box-shadow: 0 0 26px #ef4444, inset 0 0 8px #ffffff; }
     }
 
     .tv-question-box {
       background: var(--panel-bg);
+      backdrop-filter: blur(24px);
+      -webkit-backdrop-filter: blur(24px);
       border: 2px solid var(--border-subtle);
       border-radius: 20px;
       padding: 1.4rem 2.2rem;
@@ -318,7 +355,8 @@
       justify-content: center;
       min-height: 150px;
       margin-bottom: 0.9rem;
-      box-shadow: 0 12px 35px rgba(0,0,0,0.6);
+      box-shadow: 0 16px 40px rgba(0,0,0,0.7), 0 0 20px rgba(56, 189, 248, 0.12), inset 0 1px 0 rgba(255, 255, 255, 0.1);
+      transition: border-color 0.4s ease;
     }
     .tv-question-text {
       font-size: clamp(1.8rem, 3.2vw, 2.8rem);
@@ -328,15 +366,20 @@
       line-height: 1.35;
       text-align: center;
       letter-spacing: -0.01em;
-      text-shadow: 0 2px 10px rgba(0, 0, 0, 0.7);
+      text-shadow: 0 2px 14px rgba(0, 0, 0, 0.85);
     }
     .trivia-image-box {
       margin: 0.5rem auto 0.75rem;
       background-color: #fff;
       padding: 0.5rem;
-      border-radius: 12px;
+      border-radius: 14px;
       display: inline-block;
-      box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+      box-shadow: 0 6px 20px rgba(0,0,0,0.45), 0 0 15px rgba(255, 255, 255, 0.25);
+      animation: floatImage 4s ease-in-out infinite alternate;
+    }
+    @keyframes floatImage {
+      0% { transform: translateY(0) scale(1); }
+      100% { transform: translateY(-4px) scale(1.015); }
     }
     .trivia-image { max-height: 125px; max-width: 100%; object-fit: contain; display: block; }
 
@@ -349,7 +392,9 @@
       margin-bottom: 0.9rem;
     }
     .tv-option-btn {
-      background: rgba(22, 32, 50, 0.9);
+      background: rgba(22, 32, 50, 0.88);
+      backdrop-filter: blur(14px);
+      -webkit-backdrop-filter: blur(14px);
       border: 2px solid #334155;
       border-radius: 14px;
       padding: 0.95rem 1.4rem;
@@ -357,7 +402,7 @@
       align-items: center;
       gap: 1rem;
       text-align: left;
-      box-shadow: 0 4px 14px rgba(0, 0, 0, 0.35);
+      box-shadow: 0 6px 18px rgba(0, 0, 0, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.08);
       transition: all 0.25s ease-out;
     }
     .tv-opt-badge {
@@ -381,15 +426,16 @@
       color: #f8fafc;
     }
     .tv-option-btn.correct-reveal {
-      background: linear-gradient(135deg, rgba(6, 78, 59, 0.95), rgba(4, 120, 87, 0.85)) !important;
+      background: linear-gradient(135deg, rgba(6, 78, 59, 0.96), rgba(4, 120, 87, 0.9)) !important;
       border: 3px solid var(--green) !important;
-      box-shadow: 0 0 24px rgba(16, 185, 129, 0.6) !important;
+      box-shadow: 0 0 30px rgba(16, 185, 129, 0.75), inset 0 0 10px rgba(255, 255, 255, 0.25) !important;
       transform: scale(1.02);
     }
     .tv-option-btn.correct-reveal .tv-opt-badge {
       background: #ffffff !important;
       color: #065f46 !important;
       border-color: #ffffff !important;
+      box-shadow: 0 0 12px rgba(255, 255, 255, 0.5);
     }
     .tv-option-btn.dimmed {
       opacity: 0.35;
@@ -411,12 +457,13 @@
     }
 
     .answer-reveal-box {
-      background: linear-gradient(135deg, rgba(6, 78, 59, 0.9), rgba(4, 120, 87, 0.7));
+      background: linear-gradient(135deg, rgba(6, 78, 59, 0.92), rgba(4, 120, 87, 0.78));
+      backdrop-filter: blur(16px);
       border: 2px solid var(--green);
       padding: 1.1rem 1.6rem;
       border-radius: 16px;
       margin-bottom: 0.85rem;
-      box-shadow: 0 8px 24px rgba(16, 185, 129, 0.3);
+      box-shadow: 0 10px 28px rgba(16, 185, 129, 0.35), inset 0 1px 0 rgba(255, 255, 255, 0.18);
     }
     .answer-reveal-label { font-size: 0.75rem; text-transform: uppercase; color: #6ee7b7; font-weight: 900; letter-spacing: 0.06em; }
     .answer-reveal-text { font-size: 1.85rem; font-weight: 900; color: #fff; margin-top: 0.25rem; }
@@ -434,14 +481,17 @@
       align-items: center;
       gap: 0.85rem;
       text-align: left;
+      backdrop-filter: blur(14px);
     }
     .spotlight-card.speed {
       border: 1.5px solid var(--green);
-      background: linear-gradient(135deg, rgba(16, 185, 129, 0.15), rgba(15, 23, 42, 0.9));
+      background: linear-gradient(135deg, rgba(16, 185, 129, 0.18), rgba(15, 23, 42, 0.9));
+      box-shadow: 0 4px 16px rgba(16, 185, 129, 0.2);
     }
     .spotlight-card.snail {
       border: 1.5px solid var(--amber);
-      background: linear-gradient(135deg, rgba(245, 158, 11, 0.15), rgba(15, 23, 42, 0.9));
+      background: linear-gradient(135deg, rgba(245, 158, 11, 0.18), rgba(15, 23, 42, 0.9));
+      box-shadow: 0 4px 16px rgba(245, 158, 11, 0.2);
     }
     .spotlight-icon { font-size: 1.9rem; }
     .spotlight-title { font-size: 0.75rem; font-weight: 900; text-transform: uppercase; margin-bottom: 0.15rem; letter-spacing: 0.05em; }
@@ -460,6 +510,7 @@
 
     .chart-container {
       background: var(--panel-bg);
+      backdrop-filter: blur(20px);
       border: 1.5px solid var(--border-subtle);
       border-radius: 16px;
       padding: 1rem 1.25rem;
@@ -467,6 +518,7 @@
       display: flex;
       flex-direction: column;
       justify-content: center;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
     }
     .chart-header {
       font-size: 0.8rem;
@@ -495,11 +547,12 @@
       color: #ffffff;
       min-width: 8px;
     }
-    .chart-fill.correct-bar { background: linear-gradient(90deg, #059669, #10b981); }
+    .chart-fill.correct-bar { background: linear-gradient(90deg, #059669, #10b981); box-shadow: 0 0 12px rgba(16, 185, 129, 0.4); }
     .chart-fill.incorrect-bar { background: linear-gradient(90deg, #475569, #64748b); }
 
     .results-qr-card {
       background: var(--panel-bg);
+      backdrop-filter: blur(20px);
       border: 2px solid var(--cyan);
       border-radius: 16px;
       padding: 0.85rem 1rem;
@@ -508,6 +561,7 @@
       align-items: center;
       justify-content: center;
       text-align: center;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.6), 0 0 20px var(--cyan-glow);
     }
     .results-qr-title {
       font-size: 0.8rem;
@@ -534,11 +588,13 @@
       flex: 1;
       height: 100%;
       background: var(--panel-bg);
+      backdrop-filter: blur(20px);
       border: 1.5px solid var(--border-subtle);
       border-radius: 16px;
       overflow: hidden !important;
       position: relative;
       padding: 0.6rem 0;
+      box-shadow: 0 12px 35px rgba(0,0,0,0.55);
     }
     .autoscroll-list {
       list-style: none;
@@ -550,7 +606,8 @@
       transition: transform 0.05s linear;
     }
     .autoscroll-list li {
-      background: rgba(30, 41, 59, 0.75);
+      background: rgba(30, 41, 59, 0.78);
+      backdrop-filter: blur(10px);
       padding: 0.75rem 1.2rem;
       border-radius: 10px;
       display: flex;
@@ -558,12 +615,14 @@
       align-items: center;
       font-size: 1.15rem;
       font-weight: 800;
-      border: 1px solid rgba(255, 255, 255, 0.06);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+      transition: transform 0.2s ease, border-color 0.2s ease;
     }
     .tv-streak-tag {
-      background: rgba(245, 158, 11, 0.15);
+      background: rgba(245, 158, 11, 0.2);
       color: #f59e0b;
-      border: 1px solid rgba(245, 158, 11, 0.4);
+      border: 1px solid rgba(245, 158, 11, 0.5);
       font-size: 0.8rem;
       font-weight: 900;
       padding: 0.15rem 0.45rem;
@@ -572,6 +631,12 @@
       display: inline-flex;
       align-items: center;
       gap: 2px;
+      box-shadow: 0 0 10px rgba(245, 158, 11, 0.35);
+      animation: streakPulse 1.2s infinite alternate;
+    }
+    @keyframes streakPulse {
+      from { transform: scale(1); }
+      to { transform: scale(1.06); }
     }
     .delta-badge {
       font-size: 0.75rem;
@@ -612,9 +677,27 @@
       font-weight: 900;
       color: #070b14;
     }
-    .first .podium-step { height: 135px; background: linear-gradient(180deg, #facc15, #ca8a04); border: 2px solid #fef08a; border-bottom: none; box-shadow: 0 0 30px rgba(250, 204, 21, 0.4); }
-    .second .podium-step { height: 95px; background: linear-gradient(180deg, #cbd5e1, #64748b); border: 2px solid #f1f5f9; border-bottom: none; }
-    .third .podium-step { height: 65px; background: linear-gradient(180deg, #fdba74, #c2410c); border: 2px solid #fed7aa; border-bottom: none; }
+    .first .podium-step { 
+      height: 135px; 
+      background: linear-gradient(180deg, #facc15, #ca8a04); 
+      border: 2px solid #fef08a; 
+      border-bottom: none; 
+      box-shadow: 0 0 35px rgba(250, 204, 21, 0.55), inset 0 2px 0 rgba(255,255,255,0.4); 
+    }
+    .second .podium-step { 
+      height: 95px; 
+      background: linear-gradient(180deg, #cbd5e1, #64748b); 
+      border: 2px solid #f1f5f9; 
+      border-bottom: none; 
+      box-shadow: 0 0 20px rgba(203, 213, 225, 0.3);
+    }
+    .third .podium-step { 
+      height: 65px; 
+      background: linear-gradient(180deg, #fdba74, #c2410c); 
+      border: 2px solid #fed7aa; 
+      border-bottom: none; 
+      box-shadow: 0 0 20px rgba(253, 186, 116, 0.3);
+    }
 
     .superlatives-grid {
       display: grid;
@@ -626,6 +709,7 @@
     }
     .award-card {
       background: var(--panel-bg);
+      backdrop-filter: blur(16px);
       border: 1.5px solid var(--border-subtle);
       border-radius: 14px;
       padding: 0.85rem 1rem;
@@ -633,10 +717,11 @@
       align-items: center;
       gap: 0.75rem;
       text-align: left;
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.45);
     }
-    .award-card.gunslinger { border-color: rgba(56, 189, 248, 0.4); background: linear-gradient(135deg, rgba(56,189,248,0.1), var(--panel-bg)); }
-    .award-card.clutch { border-color: rgba(245, 158, 11, 0.4); background: linear-gradient(135deg, rgba(245,158,11,0.1), var(--panel-bg)); }
-    .award-card.comeback { border-color: rgba(16, 185, 129, 0.4); background: linear-gradient(135deg, rgba(16,185,129,0.1), var(--panel-bg)); }
+    .award-card.gunslinger { border-color: rgba(56, 189, 248, 0.5); background: linear-gradient(135deg, rgba(56,189,248,0.15), var(--panel-bg)); }
+    .award-card.clutch { border-color: rgba(245, 158, 11, 0.5); background: linear-gradient(135deg, rgba(245,158,11,0.15), var(--panel-bg)); }
+    .award-card.comeback { border-color: rgba(16, 185, 129, 0.5); background: linear-gradient(135deg, rgba(16,185,129,0.15), var(--panel-bg)); }
 
     .award-icon { font-size: 1.8rem; }
     .award-title { font-size: 0.7rem; font-weight: 900; text-transform: uppercase; letter-spacing: 0.05em; color: #94a3b8; }
@@ -645,24 +730,34 @@
 
     .submission-tray {
       background: var(--panel-bg);
+      backdrop-filter: blur(16px);
       border: 1.5px solid var(--border-subtle);
       border-radius: 14px;
       padding: 0.75rem 1.25rem;
       display: flex;
       justify-content: space-between;
       align-items: center;
+      box-shadow: 0 6px 20px rgba(0,0,0,0.4);
     }
     .submission-chips { display: flex; gap: 0.5rem; flex-wrap: wrap; }
     .sub-chip {
       background: rgba(30, 41, 59, 0.8);
+      backdrop-filter: blur(6px);
       border: 1px solid #475569;
       color: #94a3b8;
       padding: 0.3rem 0.75rem;
       border-radius: 9999px;
       font-size: 0.8rem;
       font-weight: 800;
+      transition: all 0.25s cubic-bezier(0.175, 0.885, 0.32, 1.275);
     }
-    .sub-chip.answered { background: rgba(16, 185, 129, 0.2); border-color: var(--green); color: #6ee7b7; }
+    .sub-chip.answered { 
+      background: rgba(16, 185, 129, 0.25); 
+      border-color: var(--green); 
+      color: #6ee7b7; 
+      box-shadow: 0 0 10px rgba(16, 185, 129, 0.35);
+      transform: scale(1.04);
+    }
 
     .host-links { display: flex; gap: 0.85rem; justify-content: center; flex-wrap: wrap; margin-top: 1rem; }
     .host-link-btn {
@@ -859,17 +954,17 @@
       <div>
         <div style="display: flex; justify-content: space-between; align-items: center;">
           <div style="display: flex; align-items: center; gap: 0.85rem;">
-            <span id="host-category" style="background: rgba(56, 189, 248, 0.12); border: 1.5px solid var(--cyan); color: var(--cyan); font-weight: 900; padding: 7px 18px; border-radius: 9999px; font-size: 1.05rem; letter-spacing: 0.04em;">Category</span>
+            <span id="host-category" style="background: rgba(56, 189, 248, 0.16); border: 1.5px solid var(--cyan); color: var(--cyan); font-weight: 900; padding: 7px 18px; border-radius: 9999px; font-size: 1.05rem; letter-spacing: 0.04em; box-shadow: 0 0 14px var(--cyan-glow);">Category</span>
             <button class="btn-stop-broadcast stop-game-btn">⏹ End Match</button>
           </div>
-          <span id="host-timer" style="font-size: 2.8rem; font-weight: 900; color: var(--gold); line-height: 1;">15</span>
+          <span id="host-timer" style="font-size: 2.8rem; font-weight: 900; color: var(--gold); line-height: 1; text-shadow: 0 0 20px rgba(250, 204, 21, 0.5);">15</span>
         </div>
         <div class="timer-meter-wrapper">
           <div id="timer-bar" class="timer-meter-bar"></div>
         </div>
       </div>
 
-      <div class="tv-question-box">
+      <div class="tv-question-box" id="host-question-card">
         <div id="host-image-container" class="trivia-image-box hidden">
           <img id="host-question-image" class="trivia-image" src="" alt="Trivia Visual">
         </div>
@@ -969,7 +1064,7 @@
     <!-- 4. ZERO-SCROLL TV SCREEN: MATCH OVER & PODIUM WITH SUPERLATIVES -->
     <div id="host-game-over" class="tv-broadcast-screen hidden">
       <div style="text-align: center;">
-        <h1 style="color: var(--gold); font-size: 2.5rem; font-weight: 900; margin: 0; text-shadow: 0 0 20px rgba(250, 204, 21, 0.4);">👑 Champion Crowned!</h1>
+        <h1 style="color: var(--gold); font-size: 2.5rem; font-weight: 900; margin: 0; text-shadow: 0 0 25px rgba(250, 204, 21, 0.6);">👑 Champion Crowned!</h1>
         <p style="color: #94a3b8; font-weight: 800; margin: 0.3rem 0; font-size: 1.1rem;">Final Match Podium</p>
       </div>
 
@@ -1004,14 +1099,14 @@
       </div>
 
       <!-- AUTO-PLAY NEXT MATCH COUNTDOWN -->
-      <div id="auto-start-banner" class="hidden" style="background: rgba(16, 185, 129, 0.18); border: 2px solid var(--green); color: #6ee7b7; padding: 0.65rem 1.4rem; border-radius: 12px; margin: 0.5rem auto 0; max-width: 540px; font-weight: 900; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 0 16px rgba(16, 185, 129, 0.3);">
+      <div id="auto-start-banner" class="hidden" style="background: rgba(16, 185, 129, 0.22); backdrop-filter: blur(14px); border: 2px solid var(--green); color: #6ee7b7; padding: 0.65rem 1.4rem; border-radius: 12px; margin: 0.5rem auto 0; max-width: 540px; font-weight: 900; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 0 20px rgba(16, 185, 129, 0.45);">
         <span>⏳ Next Match (<span id="auto-next-cat-label" style="color:#fff;">BIBLE</span>) starts in <strong id="auto-start-timer" style="color:var(--gold); font-size:1.2rem;">10</strong>s...</span>
         <button onclick="cancelAutoStart()" style="background:#dc2626; color:#fff; border:none; padding:5px 10px; border-radius:6px; cursor:pointer; font-weight:800;">Cancel</button>
       </div>
 
       <div style="display: flex; justify-content: center; gap: 0.85rem; margin-top: 0.5rem;">
-        <button id="btn-export-recap" style="background: linear-gradient(135deg, #059669, var(--green)); color:#fff; font-weight:800; border:none; padding:0.75rem 1.4rem; border-radius:10px; cursor:pointer;">📥 Export Match Recap (CSV)</button>
-        <button id="btn-restart" style="background: linear-gradient(135deg, #0284c7, #38bdf8); color:#070b14; font-weight:900; border:none; padding:0.75rem 1.8rem; border-radius:10px; cursor:pointer;">Return to Lobby</button>
+        <button id="btn-export-recap" style="background: linear-gradient(135deg, #059669, var(--green)); color:#fff; font-weight:800; border:none; padding:0.75rem 1.4rem; border-radius:10px; cursor:pointer; box-shadow: 0 4px 14px rgba(16, 185, 129, 0.35);">📥 Export Match Recap (CSV)</button>
+        <button id="btn-restart" style="background: linear-gradient(135deg, #0284c7, #38bdf8); color:#070b14; font-weight:900; border:none; padding:0.75rem 1.8rem; border-radius:10px; cursor:pointer; box-shadow: 0 4px 14px rgba(56, 189, 248, 0.35);">Return to Lobby</button>
       </div>
     </div>
   </div>
@@ -1191,8 +1286,8 @@
     const qrcodeContainer = document.getElementById("qrcode");
     const resultsQrcodeContainer = document.getElementById("results-qrcode");
     const timerBar = document.getElementById('timer-bar');
+    const hostQuestionCard = document.getElementById('host-question-card');
 
-    // SAFE QR CODE GENERATION
     function renderQRCode(roomCode) {
       const joinUrl = `${window.location.origin}/?room=${roomCode}`;
 
@@ -1254,7 +1349,6 @@
       standardDiffRow.style.opacity = isPreset ? '0.4' : '1';
     });
 
-    // HALL OF FAME INTERFACE HANDLERS
     const hostLobbyView = document.getElementById('host-lobby-view');
     const hostLobby = document.getElementById('host-lobby');
     const hostHallView = document.getElementById('host-hall-view');
@@ -1305,8 +1399,9 @@
       }
       list.slice(0, 50).forEach((p, idx) => {
         const li = document.createElement('li');
-        li.style.cssText = 'background:var(--panel-bg); padding:12px 18px; border-radius:10px; display:flex; justify-content:space-between; align-items:center; font-weight:800; border: 1px solid rgba(255,255,255,0.06);';
-        li.innerHTML = `<span>#${idx+1} ${p.avatar || '🚀'} ${p.username} (${p.games_played || 1} games)</span><strong style="color:var(--cyan);">${Number(p.score).toLocaleString()} pts</strong>`;
+        li.style.cssText = 'background:var(--panel-bg); backdrop-filter: blur(14px); padding:12px 18px; border-radius:10px; display:flex; justify-content:space-between; align-items:center; font-weight:800; border: 1px solid rgba(255,255,255,0.06); box-shadow: 0 4px 12px rgba(0,0,0,0.3);';
+        const badgeStr = p.badge ? `${p.badge} ` : '';
+        li.innerHTML = `<span>#${idx+1} ${badgeStr}${p.username} (${p.games_played || 1} games)</span><strong style="color:var(--cyan);">${Number(p.score).toLocaleString()} pts</strong>`;
         hallOfFameList.appendChild(li);
       });
     }
@@ -1479,6 +1574,19 @@
       hostMilestone.classList.add('hidden');
       hostGameOver.classList.add('hidden');
       hostGame.classList.remove('hidden');
+
+      const catLower = (data.category || '').toLowerCase();
+      if (catLower.includes('bible')) {
+        hostQuestionCard.style.borderColor = '#f59e0b';
+      } else if (catLower.includes('food')) {
+        hostQuestionCard.style.borderColor = '#f97316';
+      } else if (catLower.includes('superhero') || catLower.includes('sci-fi')) {
+        hostQuestionCard.style.borderColor = '#8b5cf6';
+      } else if (catLower.includes('sport')) {
+        hostQuestionCard.style.borderColor = '#10b981';
+      } else {
+        hostQuestionCard.style.borderColor = 'rgba(56, 189, 248, 0.35)';
+      }
 
       document.getElementById('host-category').textContent = `${data.category} (${data.questionNumber}/${data.totalQuestions})`;
       hostTimer.textContent = data.timeLeft;
