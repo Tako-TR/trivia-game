@@ -153,6 +153,7 @@ function getOrCreateRoom(rawRoomCode) {
       previousRankings: {},
       usedQuestionIds: new Set(),
       isDemoMode: false,
+      demoBotCount: 0,
       demoBotTimeouts: []
     };
   }
@@ -176,7 +177,7 @@ function isPlayerCurrentlyOnline(username) {
 }
 
 /* =========================================================
-   ADMIN API (FULL CRUD & BULK TOOLS)
+   ADMIN API
 ========================================================= */
 
 app.post('/api/questions/list', (req, res) => {
@@ -618,15 +619,16 @@ const ACHIEVEMENTS_DEF = {
 };
 
 /* =========================================================
-   DEMO MODE & SIMULATED BOTS
+   SCALABLE DEMO SIMULATION (UP TO 50+ BOTS)
 ========================================================= */
-const DEMO_BOTS = [
-  { id: 'bot_alex', username: 'Alex', badge: '⚡', skill: 0.85 },
-  { id: 'bot_maya', username: 'Maya', badge: '🧠', skill: 0.75 },
-  { id: 'bot_jordan', username: 'Jordan', badge: '🎯', skill: 0.70 },
-  { id: 'bot_sam', username: 'Sam', badge: '🔥', skill: 0.60 },
-  { id: 'bot_riley', username: 'Riley', badge: '🤠', skill: 0.50 }
+const BOT_NAMES = [
+  'Alex', 'Maya', 'Jordan', 'Sam', 'Riley', 'Taylor', 'Morgan', 'Casey', 'Avery', 'Dakota',
+  'Skyler', 'Quinn', 'Peyton', 'Reese', 'Cameron', 'Logan', 'Parker', 'Kendall', 'Rowan', 'Hayden',
+  'Finley', 'Emerson', 'Harper', 'Sawyer', 'Eden', 'Elliot', 'Amari', 'Kai', 'River', 'Dallas',
+  'Phoenix', 'Remy', 'Sage', 'Milan', 'Tatum', 'Shiloh', 'Lennon', 'Charlie', 'Blake', 'Harley',
+  'Jessie', 'Frankie', 'Sloan', 'Sterling', 'Micah', 'Nico', 'Rory', 'Winter', 'Justice', 'Oakley'
 ];
+const BOT_BADGES = ['⚡', '🧠', '🎯', '🔥', '🤠', '🚀', '🍕', '🏎️', '🦊', '👑', '🦉', '🌟', '🏆', '🥇', '🧊', '🍀'];
 
 function clearDemoBotTimeouts(room) {
   if (room && room.demoBotTimeouts) {
@@ -635,11 +637,17 @@ function clearDemoBotTimeouts(room) {
   }
 }
 
-function seedDemoBots(room) {
-  DEMO_BOTS.forEach(b => {
-    room.activeSockets[b.id] = {
-      username: b.username,
-      badge: b.badge,
+function seedDemoBots(room, count = 50) {
+  const targetCount = Math.min(count, BOT_NAMES.length);
+  for (let i = 0; i < targetCount; i++) {
+    const id = `bot_${i + 1}`;
+    const name = BOT_NAMES[i];
+    const badge = BOT_BADGES[i % BOT_BADGES.length];
+    const skill = parseFloat((0.45 + (Math.random() * 0.45)).toFixed(2)); // Skill ranges 45% - 90%
+
+    room.activeSockets[id] = {
+      username: name,
+      badge: badge,
       score: 0,
       currentAnswer: null,
       answerTimeLeft: 0,
@@ -653,21 +661,21 @@ function seedDemoBots(room) {
       totalQuestionsAnswered: 0,
       hardQuestionsCorrect: 0,
       isBot: true,
-      skill: b.skill
+      skill: skill
     };
-  });
+  }
 }
 
 function scheduleBotAnswers(room, correctIdx) {
   clearDemoBotTimeouts(room);
   if (!room.isDemoMode || !room.roundActive) return;
 
-  DEMO_BOTS.forEach((botDef) => {
-    const p = room.activeSockets[botDef.id];
-    if (!p) return;
+  Object.keys(room.activeSockets).forEach((id) => {
+    const p = room.activeSockets[id];
+    if (!p || !p.isBot) return;
 
-    // Reaction time staggered between 0.8s and 7.0s
-    const delay = Math.floor(Math.random() * 6200) + 800;
+    // Reaction time staggered across 0.7s to 9.5s
+    const delay = Math.floor(Math.random() * 8800) + 700;
 
     const t = setTimeout(() => {
       if (!room.roundActive || p.currentAnswer !== null) return;
@@ -694,7 +702,7 @@ function scheduleBotAnswers(room, correctIdx) {
       io.to(room.code).emit('game:submission_update', {
         username: p.username,
         badge: p.badge,
-        socketId: botDef.id,
+        socketId: id,
         submittedCount: answeredPlayers,
         totalCount: totalPlayers
       });
@@ -921,11 +929,12 @@ io.on('connection', (socket) => {
     clearDemoBotTimeouts(room);
 
     room.isDemoMode = !!config.isDemo;
+    const requestedBotCount = parseInt(config.botCount, 10) || 50;
 
-    // Reset humans
+    // Purge previous bots if not running demo
     Object.keys(room.activeSockets).forEach((id) => {
       const p = room.activeSockets[id];
-      if (p.isBot && !room.isDemoMode) {
+      if (p.isBot) {
         delete room.activeSockets[id];
         return;
       }
@@ -944,7 +953,7 @@ io.on('connection', (socket) => {
     });
 
     if (room.isDemoMode) {
-      seedDemoBots(room);
+      seedDemoBots(room, requestedBotCount);
     }
 
     io.to(room.code).emit('game:player_list', getLobbyPlayers(room));
@@ -1056,7 +1065,7 @@ io.on('connection', (socket) => {
 
       if (room.roundActive) {
         const totalPlayers = Object.keys(room.activeSockets).length;
-        const answeredPlayers = Object.values(room.activeSockets).filter(p => p.currentAnswer !== null).length;
+        const answeredPlayers = Object.values(room.activeSockets).filter(pl => pl.currentAnswer !== null).length;
         if (totalPlayers > 0 && answeredPlayers >= totalPlayers) {
           clearInterval(room.questionTimer);
           clearDemoBotTimeouts(room);
@@ -1317,7 +1326,7 @@ function calculateSuperlatives(room, standings) {
 }
 
 async function evaluateAchievements(p, matchRank, totalPlayers, room) {
-  if (p.isBot) return; // Bots don't save persistent achievements
+  if (p.isBot) return;
   const newUnlocks = [];
   let existingUnlocks = [];
 
