@@ -17,6 +17,12 @@ const pool = process.env.DATABASE_URL
   ? new Pool({ connectionString: process.env.DATABASE_URL, ssl: { rejectUnauthorized: false } })
   : null;
 
+if (pool) {
+  pool.on('error', (err, client) => {
+    console.error('Unexpected error on idle PostgreSQL client', err);
+  });
+}
+
 const memoryPlayers = {};
 const memoryRoomScores = {};
 const memoryCategoryScores = {};
@@ -168,7 +174,7 @@ function isPlayerCurrentlyOnline(username) {
 }
 
 /* =========================================================
-   ADMIN API
+   ADMIN API (FULL CRUD & BULK TOOLS)
 ========================================================= */
 
 app.post('/api/questions/list', (req, res) => {
