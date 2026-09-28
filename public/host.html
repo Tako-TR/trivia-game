@@ -243,6 +243,7 @@
       box-sizing: border-box;
       position: relative;
     }
+    .tv-broadcast-screen.hidden { display: none !important; }
 
     .top-bar-controls {
       display: flex;
@@ -1343,18 +1344,14 @@
         qrcodeContainer.innerHTML = '';
         try {
           new QRCode(qrcodeContainer, { text: joinUrl, width: 220, height: 220, colorDark: "#38bdf8", colorLight: "#070b14" });
-        } catch (e) {
-          console.warn('Lobby QR render delayed:', e);
-        }
+        } catch (e) {}
       }
 
       if (resultsQrcodeContainer) {
         resultsQrcodeContainer.innerHTML = '';
         try {
           new QRCode(resultsQrcodeContainer, { text: joinUrl, width: 175, height: 175, colorDark: "#000000", colorLight: "#ffffff" });
-        } catch (e) {
-          console.warn('Results QR render delayed:', e);
-        }
+        } catch (e) {}
       }
 
       const displayName = ROOM_NAMES[roomCode] || roomCode;
@@ -1514,17 +1511,9 @@
     const autoStartTimer = document.getElementById('auto-start-timer');
     const autoNextCatLabel = document.getElementById('auto-next-cat-label');
 
-    btnStart.addEventListener('click', () => {
-      launchMatch(false, 0);
-    });
-
-    btnStartDemo5.addEventListener('click', () => {
-      launchMatch(true, 5);
-    });
-
-    btnStartDemo50.addEventListener('click', () => {
-      launchMatch(true, 50);
-    });
+    btnStart.addEventListener('click', () => launchMatch(false, 0));
+    btnStartDemo5.addEventListener('click', () => launchMatch(true, 5));
+    btnStartDemo50.addEventListener('click', () => launchMatch(true, 50));
 
     function launchMatch(isDemo = false, botCount = 0) {
       cancelAutoStart();
@@ -1697,12 +1686,6 @@
         chip.textContent = `${badgeStr}${p.name}`;
         submissionChipsContainer.appendChild(chip);
       });
-      if (list.length > 30) {
-        const moreChip = document.createElement('div');
-        moreChip.className = 'sub-chip';
-        moreChip.textContent = `+${list.length - 30} more`;
-        submissionChipsContainer.appendChild(moreChip);
-      }
     });
 
     socket.on('game:submission_update', (data) => {
@@ -1726,10 +1709,6 @@
         timerBar.className = 'timer-meter-bar';
         playTickSound(false);
       }
-    });
-
-    socket.on('game:sabotage_triggered', (data) => {
-      console.log(`Sabotage Alert: ${data.targetName} hit by ${data.sabotageType}!`);
     });
 
     socket.on('game:round_ended', (data) => {
