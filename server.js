@@ -971,8 +971,8 @@ io.on('connection', (socket) => {
     });
   });
 
-  /* =========================================================
-     OFFENSIVE SABOTAGE HANDLER + SHIELD REFLECT
+/* =========================================================
+     OFFENSIVE SABOTAGE HANDLER + SHIELD REFLECT + GRACE PERIOD
   ========================================================= */
   socket.on('player:launch_sabotage', ({ targetRank, sabotageType }) => {
     const room = getSocketRoom(socket);
@@ -1014,6 +1014,13 @@ io.on('connection', (socket) => {
     const targetSocket = io.sockets.sockets.get(targetItem.id);
     const targetPlayer = room.activeSockets[targetItem.id];
 
+    // CHECK POST-HIT IMMUNITY GRACE PERIOD (3.5s cooldown)
+    const now = Date.now();
+    if (targetPlayer && targetPlayer.sabotageImmuneUntil && now < targetPlayer.sabotageImmuneUntil) {
+      const remainingSec = ((targetPlayer.sabotageImmuneUntil - now) / 1000).toFixed(1);
+      return socket.emit('sabotage:error', `Target is recovering from an attack! (${remainingSec}s grace remaining)`);
+    }
+
     // Deduct energy from sender
     sender.sabotageEnergy -= requiredEnergy;
 
@@ -1029,7 +1036,8 @@ io.on('connection', (socket) => {
         });
       }
 
-      // 2. Reflected hit strikes original attacker!
+      // 2. Reflected hit strikes original attacker and gives attacker the immunity cooldown
+      sender.sabotageImmuneUntil = Date.now() + 3500;
       socket.emit('game:incoming_sabotage', {
         sabotageType: sabotageType,
         attackerName: `${targetItem.name} [REFLECTED!]`
@@ -1050,7 +1058,11 @@ io.on('connection', (socket) => {
       return;
     }
 
-    // Normal successful sabotage attack
+    // Normal successful sabotage attack: apply 3.5s grace period to target
+    if (targetPlayer) {
+      targetPlayer.sabotageImmuneUntil = Date.now() + 3500;
+    }
+
     socket.emit('sabotage:success', {
       remainingEnergy: sender.sabotageEnergy,
       targetRank: targetRank,
