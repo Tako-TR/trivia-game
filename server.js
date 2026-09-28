@@ -908,7 +908,7 @@ io.on('connection', (socket) => {
   });
 
   /* =========================================================
-     DEFENSIVE SHIELD TOGGLE (1⚡ COST)
+     DEFENSIVE SHIELD TOGGLE (2⚡ COST)
   ========================================================= */
   socket.on('player:activate_shield', () => {
     const room = getSocketRoom(socket);
