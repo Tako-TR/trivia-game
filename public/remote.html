@@ -12,7 +12,7 @@
       background-color: #0f172a;
       color: #f8fafc;
       margin: 0;
-      padding: 16px;
+      padding: 14px;
       display: flex;
       flex-direction: column;
       align-items: center;
@@ -41,6 +41,7 @@
       width: 100%;
       max-width: 340px;
       text-align: center;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.6);
     }
     .auth-box h2 { color: #38bdf8; margin: 0 0 8px; font-size: 1.3rem; }
     .auth-box p { color: #94a3b8; font-size: 0.85rem; margin: 0 0 16px; }
@@ -70,19 +71,19 @@
     .auth-error { color: #ef4444; font-size: 0.85rem; margin-top: 10px; min-height: 1.2rem; }
 
     /* REMOTE PANEL */
-    #remote-content { display: none; }
+    #remote-content { display: none; width: 100%; }
 
     header {
       display: flex;
       justify-content: space-between;
       align-items: center;
-      margin-bottom: 14px;
+      margin-bottom: 12px;
     }
-    header h1 { font-size: 1.25rem; color: #38bdf8; margin: 0; }
+    header h1 { font-size: 1.2rem; color: #38bdf8; margin: 0; }
     .status-badge {
       font-size: 0.75rem;
       font-weight: 700;
-      padding: 4px 8px;
+      padding: 4px 10px;
       border-radius: 9999px;
       background: #1e293b;
       color: #10b981;
@@ -94,8 +95,8 @@
       border: 1px solid #334155;
       border-radius: 12px;
       padding: 14px;
-      margin-bottom: 14px;
-      box-shadow: 0 4px 12px rgba(0,0,0,0.25);
+      margin-bottom: 12px;
+      box-shadow: 0 4px 14px rgba(0,0,0,0.3);
     }
     .card-title {
       font-size: 0.75rem;
@@ -106,6 +107,7 @@
       margin-bottom: 10px;
       display: flex;
       justify-content: space-between;
+      align-items: center;
     }
 
     /* FORM CONTROLS */
@@ -126,34 +128,38 @@
     .hud-meta-row {
       display: flex;
       justify-content: space-between;
-      font-size: 0.85rem;
+      gap: 6px;
+      font-size: 0.82rem;
       margin-bottom: 8px;
     }
     .hud-meta-pill {
       background: #0f172a;
       border: 1px solid #334155;
-      padding: 4px 8px;
+      padding: 5px 8px;
       border-radius: 6px;
       font-weight: 700;
       color: #38bdf8;
+      flex: 1;
+      text-align: center;
+      white-space: nowrap;
     }
     .hud-question-box {
       background: #0f172a;
       border: 1px solid #334155;
       border-radius: 8px;
-      padding: 10px;
+      padding: 10px 12px;
       margin: 8px 0;
       font-size: 0.95rem;
       font-weight: 600;
       line-height: 1.35;
-      min-height: 50px;
+      min-height: 52px;
     }
     .hud-answer-preview {
       background: rgba(16, 185, 129, 0.15);
       border: 1px solid #10b981;
       color: #6ee7b7;
       border-radius: 6px;
-      padding: 8px;
+      padding: 8px 10px;
       font-size: 0.85rem;
       font-weight: 700;
       margin-top: 6px;
@@ -164,28 +170,29 @@
       display: grid;
       grid-template-columns: 1fr 1fr;
       gap: 10px;
-      margin-top: 10px;
+      margin-top: 8px;
     }
     .btn {
       width: 100%;
-      padding: 14px 10px;
+      padding: 12px 10px;
       border: none;
       border-radius: 10px;
-      font-size: 0.95rem;
+      font-size: 0.92rem;
       font-weight: 800;
       cursor: pointer;
       display: flex;
       justify-content: center;
       align-items: center;
       gap: 6px;
-      transition: transform 0.1s, opacity 0.1s;
+      transition: transform 0.08s, opacity 0.1s;
     }
     .btn:active { transform: scale(0.97); }
-    .btn-start { background: #10b981; color: white; margin-bottom: 10px; }
+    .btn-start { background: #10b981; color: white; margin-top: 10px; }
     .btn-advance { background: #0284c7; color: white; }
     .btn-pause { background: #eab308; color: #0f172a; }
     .btn-skip { background: #64748b; color: white; }
     .btn-stop { background: #dc2626; color: white; }
+    .btn-demo { background: #8b5cf6; color: white; font-size: 0.8rem; padding: 10px 6px; }
     .hidden { display: none !important; }
   </style>
 </head>
@@ -212,43 +219,42 @@
     <!-- LIVE HUD / GAME MONITOR -->
     <div class="card">
       <div class="card-title">
-        <span>Live Game Monitor</span>
+        <span>Live Monitor</span>
         <span id="hud-status-badge" style="color: #f59e0b;">Lobby Idle</span>
       </div>
 
       <div class="hud-meta-row">
-        <div class="hud-meta-pill" id="hud-q-progress">Q: -- / --</div>
+        <div class="hud-meta-pill" id="hud-q-progress">Q: --/--</div>
         <div class="hud-meta-pill" id="hud-timer">⏱ --s</div>
-        <div class="hud-meta-pill" id="hud-subs">Submissions: 0/0</div>
+        <div class="hud-meta-pill" id="hud-subs">0/0 Ans</div>
       </div>
 
       <div class="hud-question-box" id="hud-question-text">
-        Waiting for match to start...
+        Waiting for match to launch...
       </div>
 
-      <!-- Host cheat sheet / early preview of the answer -->
       <div id="hud-answer-preview" class="hud-answer-preview hidden">
-        Key Answer: <span id="hud-answer-text">---</span>
+        ✓ Answer: <span id="hud-answer-text">---</span>
       </div>
     </div>
 
-    <!-- LIVE MATCH CONTROLS (VISIBLE DURING GAMEPLAY) -->
+    <!-- LIVE MATCH CONTROLS -->
     <div class="card" id="match-controls-panel">
-      <div class="card-title">Match Pacing Controls</div>
+      <div class="card-title">Pacing Controls</div>
       
       <div class="btn-grid">
-        <button class="btn btn-advance" onclick="sendNextQuestion()">⏩ Next / Advance</button>
+        <button class="btn btn-advance" onclick="sendNextQuestion()">⏩ Next / Reveal</button>
         <button class="btn btn-pause" id="btn-pause" onclick="sendTogglePause()">⏸ Pause Timer</button>
       </div>
       <div class="btn-grid">
-        <button class="btn btn-skip" onclick="sendSkipQuestion()">⏭ Skip Question</button>
+        <button class="btn btn-skip" onclick="sendSkipQuestion()">⏭ Skip</button>
         <button class="btn btn-stop" onclick="sendStopGame()">⏹ End Match</button>
       </div>
     </div>
 
-    <!-- LOBBY SETUP PANEL (SETUP & START) -->
+    <!-- LOBBY SETUP & LAUNCH -->
     <div class="card" id="setup-panel">
-      <div class="card-title">Lobby & Game Setup</div>
+      <div class="card-title">Lobby Setup & Launch</div>
 
       <label for="remote-room">Target Room</label>
       <select id="remote-room" onchange="changeRoom()">
@@ -260,28 +266,35 @@
         <option value="ROOM6">Northwood</option>
       </select>
 
-      <label for="remote-cat">Category</label>
-      <select id="remote-cat">
-        <option value="all" selected>Mixed (All Categories)</option>
-        <option value="bible">Bible Trivia Only</option>
-        <option value="food">Snacks & Fast Food</option>
-        <option value="superhero">Superheroes & Sci-Fi</option>
-        <option value="sports">Sports & Records</option>
-        <option value="factorcap">Fact or Cap? (Trivia Oddities)</option>
-        <option value="disney">Disney & Pixar</option>
-        <option value="movie">Movie Quotes</option>
-        <option value="music">Pop Culture & Music</option>
+      <label for="remote-preset">Preset Pack (Optional)</label>
+      <select id="remote-preset" onchange="handlePresetChange()">
+        <option value="none" selected>-- None (Use Settings Below) --</option>
       </select>
 
-      <label for="remote-diff">Difficulty</label>
-      <select id="remote-diff">
-        <option value="all" selected>Mixed (All Difficulties)</option>
-        <option value="easy">Easy Only</option>
-        <option value="medium">Medium Only</option>
-        <option value="hard">Hard Only</option>
-        <option value="easy_medium">Easy & Medium</option>
-        <option value="medium_hard">Medium & Hard</option>
-      </select>
+      <div id="standard-options-group">
+        <label for="remote-cat">Category</label>
+        <select id="remote-cat">
+          <option value="all" selected>Mixed (All Categories)</option>
+          <option value="bible">Bible Trivia Only</option>
+          <option value="food">Snacks & Fast Food</option>
+          <option value="superhero">Superheroes & Sci-Fi</option>
+          <option value="sports">Sports & Records</option>
+          <option value="factorcap">Fact or Cap? (Trivia Oddities)</option>
+          <option value="disney">Disney & Pixar</option>
+          <option value="movie">Movie Quotes</option>
+          <option value="music">Pop Culture & Music</option>
+        </select>
+
+        <label for="remote-diff">Difficulty</label>
+        <select id="remote-diff">
+          <option value="all" selected>Mixed (All Difficulties)</option>
+          <option value="easy">Easy Only</option>
+          <option value="medium">Medium Only</option>
+          <option value="hard">Hard Only</option>
+          <option value="easy_medium">Easy & Medium</option>
+          <option value="medium_hard">Medium & Hard</option>
+        </select>
+      </div>
 
       <label for="remote-count">Question Count</label>
       <select id="remote-count">
@@ -292,13 +305,18 @@
         <option value="25">25 Questions</option>
       </select>
 
-      <button class="btn btn-start" style="margin-top: 14px;" onclick="sendStartGame()">▶ Start Game on Screen</button>
+      <button class="btn btn-start" onclick="sendStartGame(false, 0)">▶ Launch Match on TV</button>
+
+      <div class="btn-grid" style="margin-top: 10px;">
+        <button class="btn btn-demo" onclick="sendStartGame(true, 5)">🤖 Demo (5 Bots)</button>
+        <button class="btn btn-demo" style="background:#6366f1;" onclick="sendStartGame(true, 50)">⚡ Demo (50 Bots)</button>
+      </div>
     </div>
   </div>
 
   <script>
     // --- 1. PASSWORD AUTHENTICATION ---
-    const HOST_PASSCODE = "admin"; // Match with your host dashboard password
+    const HOST_PASSCODE = "admin";
 
     function checkPasscode() {
       const entered = document.getElementById('passcode-input').value;
@@ -308,6 +326,7 @@
         document.getElementById('auth-overlay').style.display = 'none';
         document.getElementById('remote-content').style.display = 'block';
         sessionStorage.setItem('remoteAuth', 'true');
+        initRemote();
       } else {
         errorDiv.textContent = 'Incorrect password.';
         document.getElementById('passcode-input').value = '';
@@ -317,6 +336,7 @@
     if (sessionStorage.getItem('remoteAuth') === 'true') {
       document.getElementById('auth-overlay').style.display = 'none';
       document.getElementById('remote-content').style.display = 'block';
+      window.addEventListener('DOMContentLoaded', initRemote);
     }
 
     document.getElementById('passcode-input').addEventListener('keypress', (e) => {
@@ -328,18 +348,54 @@
     let currentRoom = 'ROOM1';
     let isTimerPaused = false;
 
+    function initRemote() {
+      changeRoom();
+      loadPresetsList();
+    }
+
     function changeRoom() {
-      currentRoom = document.getElementById('remote-room').value;
+      const select = document.getElementById('remote-room');
+      if (select) currentRoom = select.value;
       socket.emit('host:join_room', currentRoom);
       document.getElementById('hud-status-badge').textContent = `${currentRoom} Ready`;
     }
 
-    // Automatically join default room on load
-    socket.emit('host:join_room', currentRoom);
+    socket.on('connect', () => {
+      document.getElementById('connection-status').textContent = '🟢 Connected';
+      document.getElementById('connection-status').style.color = '#10b981';
+      if (currentRoom) socket.emit('host:join_room', currentRoom);
+    });
 
-    // Question start event: update HUD and show answer preview
+    socket.on('disconnect', () => {
+      document.getElementById('connection-status').textContent = '🔴 Offline';
+      document.getElementById('connection-status').style.color = '#ef4444';
+    });
+
+    async function loadPresetsList() {
+      const presetSelect = document.getElementById('remote-preset');
+      try {
+        const res = await fetch('/api/presets/list');
+        const data = await res.json();
+        if (res.ok && data.success && data.presets) {
+          presetSelect.innerHTML = '<option value="none" selected>-- None (Use Settings Below) --</option>';
+          Object.keys(data.presets).forEach(name => {
+            const count = data.presets[name].length;
+            const opt = document.createElement('option');
+            opt.value = name;
+            opt.textContent = `${name} (${count} Qs)`;
+            presetSelect.appendChild(opt);
+          });
+        }
+      } catch (e) {}
+    }
+
+    function handlePresetChange() {
+      const isPreset = document.getElementById('remote-preset').value !== 'none';
+      document.getElementById('standard-options-group').style.opacity = isPreset ? '0.4' : '1';
+    }
+
     socket.on('game:new_question', (data) => {
-      document.getElementById('hud-status-badge').textContent = 'Question Active';
+      document.getElementById('hud-status-badge').textContent = 'Live Question';
       document.getElementById('hud-status-badge').style.color = '#10b981';
 
       document.getElementById('hud-q-progress').textContent = `Q: ${data.questionNumber}/${data.totalQuestions}`;
@@ -347,53 +403,50 @@
       document.getElementById('hud-question-text').textContent = data.question;
 
       const connected = (data.connectedPlayers || []).length;
-      document.getElementById('hud-subs').textContent = `0/${connected} Answered`;
+      document.getElementById('hud-subs').textContent = `0/${connected} Ans`;
 
-      // Answer preview for the host
       const answerBox = document.getElementById('hud-answer-preview');
       const answerSpan = document.getElementById('hud-answer-text');
       if (typeof data.correctAnswer === 'number' && data.options && data.options[data.correctAnswer]) {
-        answerSpan.textContent = data.options[data.correctAnswer];
+        answerSpan.textContent = `${String.fromCharCode(65 + data.correctAnswer)}. ${data.options[data.correctAnswer]}`;
         answerBox.classList.remove('hidden');
       } else {
         answerBox.classList.add('hidden');
       }
     });
 
-    // Submission progress updates
     socket.on('game:submission_update', (data) => {
-      document.getElementById('hud-subs').textContent = `${data.submittedCount}/${data.totalCount} Answered`;
+      document.getElementById('hud-subs').textContent = `${data.submittedCount}/${data.totalCount} Ans`;
     });
 
-    // Live countdown updates
     socket.on('game:timer_tick', (data) => {
       const timeLeft = typeof data === 'object' ? data.timeLeft : data;
       document.getElementById('hud-timer').textContent = `⏱ ${timeLeft}s`;
     });
 
-    // Round ended / results screen
     socket.on('game:round_ended', (data) => {
-      document.getElementById('hud-status-badge').textContent = 'Round Results';
+      document.getElementById('hud-status-badge').textContent = 'Round End';
       document.getElementById('hud-status-badge').style.color = '#38bdf8';
-      document.getElementById('hud-question-text').textContent = `Correct Answer: ${data.correctAnswerText}`;
+      document.getElementById('hud-question-text').textContent = `✓ Answer: ${data.correctAnswerText}`;
     });
 
-    // Match concluded
     socket.on('game:over', () => {
       document.getElementById('hud-status-badge').textContent = 'Match Over';
       document.getElementById('hud-status-badge').style.color = '#facc15';
-      document.getElementById('hud-question-text').textContent = 'Podium and match finalized.';
+      document.getElementById('hud-question-text').textContent = 'Final podium on display.';
       document.getElementById('hud-answer-preview').classList.add('hidden');
     });
 
     // --- 3. REMOTE ACTION TRIGGERS ---
-    function sendStartGame() {
+    function sendStartGame(isDemo = false, botCount = 0) {
       socket.emit('host:start_game', {
         roomCode: currentRoom,
-        preset: 'none',
+        preset: isDemo ? 'none' : document.getElementById('remote-preset').value,
         category: document.getElementById('remote-cat').value,
         difficulty: document.getElementById('remote-diff').value,
-        count: document.getElementById('remote-count').value
+        count: document.getElementById('remote-count').value,
+        isDemo: isDemo,
+        botCount: botCount
       });
     }
 
@@ -404,20 +457,20 @@
     function sendTogglePause() {
       isTimerPaused = !isTimerPaused;
       const btn = document.getElementById('btn-pause');
-      btn.textContent = isTimerPaused ? '▶ Resume Timer' : '⏸ Pause Timer';
+      btn.textContent = isTimerPaused ? '▶ Resume' : '⏸ Pause';
       btn.style.background = isTimerPaused ? '#10b981' : '#eab308';
       btn.style.color = isTimerPaused ? '#ffffff' : '#0f172a';
       socket.emit('host:toggle_pause', currentRoom);
     }
 
     function sendSkipQuestion() {
-      if (confirm('Skip to the next question immediately?')) {
+      if (confirm('Skip to next question immediately?')) {
         socket.emit('host:skip_question', currentRoom);
       }
     }
 
     function sendStopGame() {
-      if (confirm('Stop match and save current standings?')) {
+      if (confirm('Stop match and save standings?')) {
         socket.emit('host:stop_game', currentRoom);
       }
     }
