@@ -244,12 +244,12 @@
       position: relative;
     }
 
-    /* HOST TV SABOTAGE ALERT POPUP BANNER */
+    /* HOST TV SABOTAGE & REFLECT ALERT BANNER */
     #host-sabotage-banner {
       position: absolute;
       top: 1.5rem;
       left: 50%;
-      transform: translateX(-50%) translateY(-120%);
+      transform: translateX(-50%) translateY(-130%);
       background: linear-gradient(135deg, rgba(88, 28, 135, 0.95), rgba(15, 23, 42, 0.98));
       border: 2px solid #c084fc;
       border-radius: 9999px;
@@ -260,10 +260,15 @@
       gap: 1.25rem;
       z-index: 9999;
       pointer-events: none;
-      transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+      transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275), border-color 0.3s;
     }
     #host-sabotage-banner.visible {
       transform: translateX(-50%) translateY(0);
+    }
+    #host-sabotage-banner.reflected {
+      background: linear-gradient(135deg, rgba(6, 78, 59, 0.96), rgba(15, 23, 42, 0.98));
+      border-color: #10b981;
+      box-shadow: 0 10px 35px rgba(16, 185, 129, 0.5), 0 0 25px rgba(16, 185, 129, 0.4);
     }
     .sab-banner-icon { font-size: 2rem; animation: pulseAlert 0.8s infinite alternate; }
     @keyframes pulseAlert {
@@ -272,6 +277,7 @@
     }
     .sab-banner-content { display: flex; flex-direction: column; }
     .sab-banner-title { font-size: 0.8rem; font-weight: 900; color: #facc15; text-transform: uppercase; letter-spacing: 0.08em; }
+    .reflected .sab-banner-title { color: #6ee7b7; }
     .sab-banner-text { font-size: 1.25rem; font-weight: 900; color: #ffffff; text-shadow: 0 2px 8px rgba(0,0,0,0.8); }
 
     .top-bar-controls {
@@ -839,11 +845,11 @@
 
   <div id="host-main-wrapper">
     
-    <!-- TV PRESENTATION SABOTAGE ALERT BANNER -->
+    <!-- TV PRESENTATION SABOTAGE & REFLECT ALERT BANNER -->
     <div id="host-sabotage-banner">
       <div class="sab-banner-icon" id="sab-host-icon">⚡</div>
       <div class="sab-banner-content">
-        <span class="sab-banner-title">Underdog Strike Detected</span>
+        <span class="sab-banner-title" id="sab-host-title">Underdog Strike Detected</span>
         <span class="sab-banner-text" id="sab-host-text">Attacker deployed a sabotage!</span>
       </div>
     </div>
@@ -1279,15 +1285,21 @@
       });
     }
 
-    function playSabotageAlertSound() {
+    function playSabotageAlertSound(isReflected = false) {
       if (isSoundMuted || !audioCtx) return;
       const osc = audioCtx.createOscillator();
       const gain = audioCtx.createGain();
       osc.connect(gain);
       gain.connect(audioCtx.destination);
-      osc.type = 'sawtooth';
-      osc.frequency.setValueAtTime(300, audioCtx.currentTime);
-      osc.frequency.exponentialRampToValueAtTime(150, audioCtx.currentTime + 0.35);
+      if (isReflected) {
+        osc.type = 'triangle';
+        osc.frequency.setValueAtTime(400, audioCtx.currentTime);
+        osc.frequency.linearRampToValueAtTime(800, audioCtx.currentTime + 0.25);
+      } else {
+        osc.type = 'sawtooth';
+        osc.frequency.setValueAtTime(320, audioCtx.currentTime);
+        osc.frequency.exponentialRampToValueAtTime(140, audioCtx.currentTime + 0.35);
+      }
       gain.gain.setValueAtTime(0.2, audioCtx.currentTime);
       gain.gain.exponentialRampToValueAtTime(0.0001, audioCtx.currentTime + 0.35);
       osc.start();
@@ -1382,6 +1394,7 @@
     const hostQuestionCard = document.getElementById('host-question-card');
     const hostSabotageBanner = document.getElementById('host-sabotage-banner');
     const sabHostIcon = document.getElementById('sab-host-icon');
+    const sabHostTitle = document.getElementById('sab-host-title');
     const sabHostText = document.getElementById('sab-host-text');
 
     function renderQRCode(roomCode) {
@@ -1682,15 +1695,18 @@
       }
     };
 
-    // HOST SABOTAGE BANNER TRIGGER
+    // HOST TV SABOTAGE & SHIELD REFLECT BANNER
     let sabBannerTimeout = null;
     socket.on('game:sabotage_banner', (data) => {
-      playSabotageAlertSound();
+      playSabotageAlertSound(data.reflected);
       if (sabBannerTimeout) clearTimeout(sabBannerTimeout);
 
       let attackName = 'inked';
       let icon = '🦑';
-      if (data.sabotageType === 'static') {
+      if (data.sabotageType === 'invert') {
+        attackName = 'flipped the screen of';
+        icon = '🪞';
+      } else if (data.sabotageType === 'static') {
         attackName = 'jammed';
         icon = '⚡';
       } else if (data.sabotageType === 'shuffler') {
@@ -1698,8 +1714,17 @@
         icon = '🔀';
       }
 
-      sabHostIcon.textContent = icon;
-      sabHostText.innerHTML = `<span style="color:#c084fc;">${data.attackerBadge || ''}${data.attackerName}</span> ${attackName} <span style="color:#facc15;">#${data.targetRank} (${data.targetBadge || ''}${data.targetName})</span>!`;
+      if (data.reflected) {
+        hostSabotageBanner.classList.add('reflected');
+        sabHostIcon.textContent = '🛡️';
+        sabHostTitle.textContent = 'DEFENSIVE SHIELD REFLECT!';
+        sabHostText.innerHTML = `<span style="color:#6ee7b7;">${data.attackerBadge || ''}${data.attackerName}</span> deflected the strike back onto <span style="color:#fca5a5;">${data.targetBadge || ''}${data.targetName}</span>!`;
+      } else {
+        hostSabotageBanner.classList.remove('reflected');
+        sabHostIcon.textContent = icon;
+        sabHostTitle.textContent = 'UNDERDOG STRIKE DETECTED';
+        sabHostText.innerHTML = `<span style="color:#c084fc;">${data.attackerBadge || ''}${data.attackerName}</span> ${attackName} <span style="color:#facc15;">#${data.targetRank} (${data.targetBadge || ''}${data.targetName})</span>!`;
+      }
       
       hostSabotageBanner.classList.add('visible');
       sabBannerTimeout = setTimeout(() => {
@@ -1909,7 +1934,6 @@
       const leaderboard = Array.isArray(data) ? data : data.leaderboard;
       renderPodium(leaderboard);
 
-      // Render all players into scrolling full-roster view
       finalTotalPlayersLabel.textContent = `${leaderboard.length} Players`;
       hostGameoverLeaderboard.innerHTML = '';
       leaderboard.forEach((p, idx) => {
@@ -1920,7 +1944,6 @@
         hostGameoverLeaderboard.appendChild(li);
       });
 
-      // Start auto-scroll on the final game over leaderboard
       startAutoScroll(gameoverScrollContainer, hostGameoverLeaderboard, 1.15);
 
       const sups = data.superlatives || {};
