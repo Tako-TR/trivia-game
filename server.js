@@ -82,7 +82,6 @@ function normalizeQuestionKey(text) {
   return String(text || '').toLowerCase().replace(/[^a-z0-9]/g, '');
 }
 
-// In-Memory auto-deduplication on startup
 let masterQuestions = [];
 try {
   const rawQuestions = JSON.parse(fs.readFileSync(questionsFilePath, 'utf8'));
@@ -168,7 +167,7 @@ function getOrCreateRoom(rawRoomCode) {
       isPaused: false,
       currentGameCategory: 'all',
       previousRankings: {},
-      playedQuestionHashes: [], // Persistent ring-buffer prevents repeating
+      playedQuestionHashes: [],
       isDemoMode: false,
       demoBotCount: 0,
       demoBotTimeouts: []
@@ -184,13 +183,22 @@ function getSocketRoom(socket) {
   return null;
 }
 
-function isPlayerCurrentlyOnline(username) {
+function removeExistingPlayerSockets(username, currentSocketId) {
+  let existingState = null;
   for (const code of Object.keys(rooms)) {
-    for (const id of Object.keys(rooms[code].activeSockets)) {
-      if (rooms[code].activeSockets[id].username === username) return true;
+    for (const [id, player] of Object.entries(rooms[code].activeSockets)) {
+      if (player.username === username && id !== currentSocketId) {
+        existingState = { ...player };
+        delete rooms[code].activeSockets[id];
+        const oldSock = io.sockets.sockets.get(id);
+        if (oldSock) {
+          oldSock.leave(code);
+          oldSock.disconnect(true);
+        }
+      }
     }
   }
-  return false;
+  return existingState;
 }
 
 /* =========================================================
@@ -762,7 +770,6 @@ io.on('connection', (socket) => {
 
     const room = getOrCreateRoom(targetRoomCode);
     if (!room) return socket.emit('player:auth_error', `Room ${targetRoomCode} unavailable.`);
-    if (isPlayerCurrentlyOnline(cleanUser)) return socket.emit('player:auth_error', `"${cleanUser}" is already playing right now.`);
 
     try {
       let playerProfile = { username: cleanUser, pin: cleanPin, badge: '', high_score: 0, career_score: 0, games_played: 0, achievements: [] };
@@ -771,7 +778,7 @@ io.on('connection', (socket) => {
         const existing = await pool.query('SELECT * FROM players WHERE username = $1;', [cleanUser]);
         if (existing.rows.length > 0) {
           if (existing.rows[0].pin !== cleanPin) {
-            return socket.emit('player:auth_error', `Username "${cleanUser}" taken. Pick another name or correct PIN.`);
+            return socket.emit('player:auth_error', `Username "${cleanUser}" taken. Enter correct PIN.`);
           }
           playerProfile = existing.rows[0];
           playerProfile.achievements = playerProfile.achievements || [];
@@ -784,7 +791,7 @@ io.on('connection', (socket) => {
       } else {
         if (memoryPlayers[cleanUser]) {
           if (memoryPlayers[cleanUser].pin !== cleanPin) {
-            return socket.emit('player:auth_error', `Username "${cleanUser}" taken. Pick another name or correct PIN.`);
+            return socket.emit('player:auth_error', `Username "${cleanUser}" taken. Enter correct PIN.`);
           }
           playerProfile = memoryPlayers[cleanUser];
         } else {
@@ -792,24 +799,28 @@ io.on('connection', (socket) => {
         }
       }
 
+      // Reconnection handler: clean up stale sockets for this user across all rooms
+      const previousState = removeExistingPlayerSockets(cleanUser, socket.id);
+
       socket.join(room.code);
 
+      // Preserve active round progress if reconnected during a game
       room.activeSockets[socket.id] = {
         username: cleanUser,
         badge: playerProfile.badge || '',
-        score: 0,
-        currentAnswer: null,
-        answerTimeLeft: 0,
-        reactionSeconds: null,
-        roundPointsEarned: 0,
-        streak: 0,
-        bestStreak: 0,
-        reactionTimes: [],
-        lowestRankDuringGame: 1,
-        finalQuestionsPoints: 0,
-        correctAnswersCount: 0,
-        totalQuestionsAnswered: 0,
-        hardQuestionsCorrect: 0
+        score: previousState ? previousState.score : 0,
+        currentAnswer: previousState ? previousState.currentAnswer : null,
+        answerTimeLeft: previousState ? previousState.answerTimeLeft : 0,
+        reactionSeconds: previousState ? previousState.reactionSeconds : null,
+        roundPointsEarned: previousState ? previousState.roundPointsEarned : 0,
+        streak: previousState ? previousState.streak : 0,
+        bestStreak: previousState ? previousState.bestStreak : 0,
+        reactionTimes: previousState ? previousState.reactionTimes : [],
+        lowestRankDuringGame: previousState ? previousState.lowestRankDuringGame : 1,
+        finalQuestionsPoints: previousState ? previousState.finalQuestionsPoints : 0,
+        correctAnswersCount: previousState ? previousState.correctAnswersCount : 0,
+        totalQuestionsAnswered: previousState ? previousState.totalQuestionsAnswered : 0,
+        hardQuestionsCorrect: previousState ? previousState.hardQuestionsCorrect : 0
       };
 
       socket.emit('player:authenticated', {
@@ -820,11 +831,13 @@ io.on('connection', (socket) => {
         highScore: playerProfile.high_score,
         careerScore: playerProfile.career_score,
         gamesPlayed: playerProfile.games_played,
-        achievements: playerProfile.achievements || []
+        achievements: playerProfile.achievements || [],
+        inProgress: room.roundActive
       });
 
       io.to(room.code).emit('game:player_list', getLobbyPlayers(room));
 
+      // Re-hydrate active question if rejoining mid-round
       if (room.roundActive && room.currentQuestionIndex >= 0 && room.activeQuestions[room.currentQuestionIndex]) {
         const currentQ = room.activeQuestions[room.currentQuestionIndex];
         const connectedList = Object.values(room.activeSockets).map(p => ({
@@ -842,7 +855,8 @@ io.on('connection', (socket) => {
           totalQuestions: room.activeQuestions.length,
           timeLeft: room.timeLeft,
           duration: QUESTION_DURATION,
-          connectedPlayers: connectedList
+          connectedPlayers: connectedList,
+          alreadyAnswered: room.activeSockets[socket.id].currentAnswer !== null
         });
       }
     } catch (err) {
@@ -955,7 +969,6 @@ io.on('connection', (socket) => {
     room.isDemoMode = !!config.isDemo;
     const requestedBotCount = parseInt(config.botCount, 10) || 50;
 
-    // Reset players
     Object.keys(room.activeSockets).forEach((id) => {
       const p = room.activeSockets[id];
       if (p.isBot) {
@@ -1021,7 +1034,6 @@ io.on('connection', (socket) => {
       });
 
       if (eligible.length === 0) {
-        // Fall back only within the chosen category if difficulty is empty
         const catOnly = masterQuestions.filter(q => (q.category || '').toLowerCase().includes(room.currentGameCategory));
         eligible = catOnly.length > 0 ? catOnly : masterQuestions;
       }
@@ -1030,10 +1042,8 @@ io.on('connection', (socket) => {
     const requestedCount = parseInt(config.count, 10) || 10;
     if (!room.playedQuestionHashes) room.playedQuestionHashes = [];
 
-    // Filter out previously seen questions in this room
     let poolCandidates = eligible.filter(q => !room.playedQuestionHashes.includes(normalizeQuestionKey(q.question)));
 
-    // Exhaustion-Deck: if candidates are depleted, recycle only oldest 50%
     if (poolCandidates.length < requestedCount) {
       const halfSize = Math.max(1, Math.floor(eligible.length / 2));
       room.playedQuestionHashes = room.playedQuestionHashes.slice(-halfSize);
@@ -1530,7 +1540,6 @@ async function finishGameAndSaveStats(room) {
     }
   }
 
-  // Broadcast to host
   io.to(room.code).emit('game:over', {
     roomCode: room.code,
     roomName: room.name,
@@ -1539,7 +1548,6 @@ async function finishGameAndSaveStats(room) {
     superlatives: superlatives
   });
 
-  // Tailored receipt payload to individual players
   Object.keys(room.activeSockets).forEach((sockId) => {
     const socket = io.sockets.sockets.get(sockId);
     if (socket) {
