@@ -20,6 +20,7 @@
       --green: #10b981;
       --amber: #f59e0b;
       --red: #ef4444;
+      --gold: #facc15;
       --muted: #94a3b8;
     }
 
@@ -40,25 +41,12 @@
       transition: background-color 0.4s ease;
     }
 
-    /* Screen Shake & Flash Effects */
-    body.flash-correct { 
-      animation: flashG 0.8s ease-out; 
-    }
-    body.flash-incorrect { 
-      animation: flashRAndShake 0.6s cubic-bezier(0.36, 0.07, 0.19, 0.97) both; 
-    }
-    body.flash-timeout { 
-      animation: flashA 0.8s ease-out; 
-    }
+    body.flash-correct { animation: flashG 0.8s ease-out; }
+    body.flash-incorrect { animation: flashRAndShake 0.6s cubic-bezier(0.36, 0.07, 0.19, 0.97) both; }
+    body.flash-timeout { animation: flashA 0.8s ease-out; }
 
-    @keyframes flashG { 
-      0% { background: #064e3b !important; } 
-      100% { background: var(--bg) !important; } 
-    }
-    @keyframes flashA { 
-      0% { background: #78350f !important; } 
-      100% { background: var(--bg) !important; } 
-    }
+    @keyframes flashG { 0% { background: #064e3b !important; } 100% { background: var(--bg) !important; } }
+    @keyframes flashA { 0% { background: #78350f !important; } 100% { background: var(--bg) !important; } }
     @keyframes flashRAndShake {
       0% { background: #7f1d1d !important; transform: translateX(0); }
       20% { transform: translateX(-6px); }
@@ -84,7 +72,6 @@
     .auth-card {
       background: var(--card-bg);
       backdrop-filter: blur(16px);
-      -webkit-backdrop-filter: blur(16px);
       border: 1px solid #334155;
       padding: 1.5rem;
       border-radius: 14px;
@@ -109,7 +96,6 @@
       border-radius: 8px;
       font-size: 1rem;
       outline: none;
-      transition: border-color 0.2s ease, box-shadow 0.2s ease;
     }
     .auth-card input:focus {
       border-color: var(--cyan);
@@ -307,7 +293,6 @@
       margin-top: 0.35rem;
     }
 
-    /* 3D Tactile Buttons with Press-Depression */
     .option-btn {
       background-color: #1e293b;
       border: 2px solid #384a65;
@@ -446,6 +431,75 @@
       font-weight: 600;
       display: none;
     }
+
+    /* VINTAGE ARCADE DIGITAL RECEIPT */
+    .receipt-card {
+      background: #0f172a;
+      border: 2px dashed #38bdf8;
+      border-radius: 16px;
+      padding: 1.25rem;
+      margin: 0.75rem 0;
+      text-align: left;
+      box-shadow: 0 10px 25px rgba(0,0,0,0.5);
+      position: relative;
+    }
+    .receipt-header {
+      border-bottom: 1.5px dashed #334155;
+      padding-bottom: 0.65rem;
+      margin-bottom: 0.85rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: baseline;
+    }
+    .receipt-title {
+      font-size: 1rem;
+      font-weight: 900;
+      color: var(--cyan);
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+    }
+    .receipt-timestamp {
+      font-size: 0.7rem;
+      color: #94a3b8;
+      font-weight: 700;
+    }
+    .receipt-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 0.75rem;
+      margin-bottom: 0.85rem;
+    }
+    .receipt-item {
+      display: flex;
+      flex-direction: column;
+    }
+    .receipt-item span {
+      font-size: 0.7rem;
+      color: #94a3b8;
+      font-weight: 800;
+      text-transform: uppercase;
+    }
+    .receipt-item strong {
+      font-size: 1.1rem;
+      color: #f8fafc;
+      font-weight: 900;
+    }
+    .btn-copy-receipt {
+      width: 100%;
+      background: linear-gradient(135deg, #0284c7, #38bdf8);
+      color: #070b14;
+      font-weight: 900;
+      padding: 0.65rem;
+      border-radius: 8px;
+      font-size: 0.85rem;
+      cursor: pointer;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      gap: 0.4rem;
+      box-shadow: 0 4px 12px rgba(56, 189, 248, 0.35);
+    }
+
     .player-podium {
       display: flex;
       justify-content: center;
@@ -665,8 +719,42 @@
       </div>
 
       <div id="player-podium-area" class="player-podium hidden"></div>
-
       <div id="mobile-award-notice" class="mobile-superlative-box hidden"></div>
+
+      <!-- PERSONAL MATCH RECEIPT CARD -->
+      <div id="player-receipt-container" class="receipt-card hidden">
+        <div class="receipt-header">
+          <span class="receipt-title">🧾 Match Receipt</span>
+          <span class="receipt-timestamp" id="receipt-date">NOW</span>
+        </div>
+        <div class="receipt-grid">
+          <div class="receipt-item">
+            <span>Final Rank</span>
+            <strong id="receipt-rank" style="color:var(--cyan);">#--</strong>
+          </div>
+          <div class="receipt-item">
+            <span>Final Score</span>
+            <strong id="receipt-score" style="color:var(--green);">0 pts</strong>
+          </div>
+          <div class="receipt-item">
+            <span>Accuracy</span>
+            <strong id="receipt-accuracy">0%</strong>
+          </div>
+          <div class="receipt-item">
+            <span>Best Streak</span>
+            <strong id="receipt-streak" style="color:var(--amber);">0</strong>
+          </div>
+          <div class="receipt-item">
+            <span>Fastest Tap</span>
+            <strong id="receipt-speed">--s</strong>
+          </div>
+          <div class="receipt-item">
+            <span>Category</span>
+            <strong id="receipt-cat" style="font-size:0.85rem; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">Mixed</strong>
+          </div>
+        </div>
+        <button id="btn-copy-receipt" class="btn-copy-receipt">📋 Copy Match Stats</button>
+      </div>
 
       <div class="player-answer-reveal" id="answer-reveal-wrapper">
         <div class="player-answer-label">Correct Answer</div>
@@ -764,6 +852,7 @@
     let selectedAnswer = null;
     let playerAchievements = [];
     let equippedBadge = '';
+    let lastReceiptText = '';
 
     const urlParams = new URLSearchParams(window.location.search);
     const assignedRoomCode = (urlParams.get('room') || 'ROOM1').trim().toUpperCase();
@@ -810,11 +899,7 @@
 
         if (isUnlocked) {
           div.addEventListener('click', () => {
-            if (equippedBadge === badge.icon) {
-              equippedBadge = '';
-            } else {
-              equippedBadge = badge.icon;
-            }
+            equippedBadge = equippedBadge === badge.icon ? '' : badge.icon;
             socket.emit('player:set_badge', equippedBadge);
             renderAchievementsShelf(playerAchievements);
             updatePlayerHeaderDisplay();
@@ -868,6 +953,16 @@
     const leaderboardList = document.getElementById('leaderboard-list');
     const resultsHeading = document.getElementById('results-heading');
     const mobileAwardNotice = document.getElementById('mobile-award-notice');
+
+    const playerReceiptContainer = document.getElementById('player-receipt-container');
+    const receiptDate = document.getElementById('receipt-date');
+    const receiptRank = document.getElementById('receipt-rank');
+    const receiptScore = document.getElementById('receipt-score');
+    const receiptAccuracy = document.getElementById('receipt-accuracy');
+    const receiptStreak = document.getElementById('receipt-streak');
+    const receiptSpeed = document.getElementById('receipt-speed');
+    const receiptCat = document.getElementById('receipt-cat');
+    const btnCopyReceipt = document.getElementById('btn-copy-receipt');
 
     const milestoneText = document.getElementById('milestone-text');
     const milestoneLeaderboardList = document.getElementById('milestone-leaderboard-list');
@@ -1012,6 +1107,7 @@
       resultsScreen.classList.add('hidden');
       playerPodiumArea.classList.add('hidden');
       mobileAwardNotice.classList.add('hidden');
+      playerReceiptContainer.classList.add('hidden');
       answerRevealWrapper.classList.remove('hidden');
       postGameViewToggle.classList.add('hidden');
       currentMatchContainer.classList.remove('hidden');
@@ -1148,6 +1244,29 @@
       }
       resultFeedback.style.color = "#38bdf8";
 
+      // Render digital match receipt
+      if (data.receipt) {
+        const rc = data.receipt;
+        receiptDate.textContent = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+        receiptRank.textContent = `#${rc.rank || myRank} of ${rc.totalPlayers}`;
+        receiptScore.textContent = `${Number(rc.score).toLocaleString()} pts`;
+        receiptAccuracy.textContent = `${rc.correctCount}/${rc.totalQuestions} (${rc.accuracy}%)`;
+        receiptStreak.textContent = `🔥 ${rc.bestStreak}`;
+        receiptSpeed.textContent = rc.fastestReaction ? `${rc.fastestReaction}s` : '--';
+        receiptCat.textContent = rc.categoryName || 'Mixed';
+
+        lastReceiptText = `🎮 Trivia Match Receipt\n` +
+          `👤 Player: ${rc.username}\n` +
+          `🏆 Rank: #${rc.rank || myRank} of ${rc.totalPlayers}\n` +
+          `⭐ Score: ${Number(rc.score).toLocaleString()} pts\n` +
+          `🎯 Accuracy: ${rc.correctCount}/${rc.totalQuestions} (${rc.accuracy}%)\n` +
+          `🔥 Best Streak: ${rc.bestStreak}\n` +
+          `⚡ Fastest Tap: ${rc.fastestReaction || '--'}s\n` +
+          `📍 Room: ${rc.roomName}`;
+
+        playerReceiptContainer.classList.remove('hidden');
+      }
+
       const sups = data.superlatives || {};
       let wonAward = '';
       if (sups.gunslinger && sups.gunslinger.name.toLowerCase() === myUsername) {
@@ -1173,6 +1292,28 @@
         if (typeof confetti === 'function') {
           confetti({ particleCount: 90, spread: 75, origin: { y: 0.7 } });
         }
+      }
+    });
+
+    btnCopyReceipt.addEventListener('click', async () => {
+      if (!lastReceiptText) return;
+      try {
+        if (navigator.clipboard && navigator.clipboard.writeText) {
+          await navigator.clipboard.writeText(lastReceiptText);
+          btnCopyReceipt.textContent = '✓ Copied to Clipboard!';
+        } else {
+          const textarea = document.createElement('textarea');
+          textarea.value = lastReceiptText;
+          document.body.appendChild(textarea);
+          textarea.select();
+          document.execCommand('copy');
+          document.body.removeChild(textarea);
+          btnCopyReceipt.textContent = '✓ Copied to Clipboard!';
+        }
+        haptic(40);
+        setTimeout(() => { btnCopyReceipt.textContent = '📋 Copy Match Stats'; }, 2200);
+      } catch (e) {
+        alert('Stats ready to copy:\n\n' + lastReceiptText);
       }
     });
 
