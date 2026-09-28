@@ -208,7 +208,7 @@
     .control-deck {
       display: flex;
       flex-direction: column;
-      gap: 0.85rem;
+      gap: 0.75rem;
     }
     .deck-group label {
       display: block;
@@ -263,7 +263,7 @@
       letter-spacing: 0.04em;
       box-shadow: 0 0 16px var(--cyan-glow);
     }
-    .top-toggles { display: flex; gap: 0.6rem; align-items: center; }
+    .top-toggles { display: flex; gap: 0.6rem; align-items: center; flex-wrap: wrap; }
     .toggle-pill {
       background: rgba(30, 41, 59, 0.8);
       backdrop-filter: blur(8px);
@@ -817,7 +817,7 @@
           <button id="btn-reset-leaderboards" class="btn-reset-leaderboards">⚠️ Reset Leaderboards</button>
           <button id="btn-toggle-sound" class="toggle-pill">🔊 Sound: ON</button>
           <button id="btn-toggle-autopilot" class="toggle-pill">⚡ Auto-Pilot: ON</button>
-          <button id="btn-toggle-sabotage" class="toggle-pill">⚡ Sabotage: ON</button>
+          <button id="btn-toggle-sabotage" class="toggle-pill">⚡ Sabotages: ON</button>
         </div>
       </div>
 
@@ -826,9 +826,11 @@
         <button id="tab-btn-hall" class="toggle-pill off" style="padding: 0.55rem 1.4rem; font-size: 0.95rem;">All-Time Hall of Fame</button>
       </div>
 
+      <!-- MAIN LOBBY CONTAINER -->
       <div id="host-lobby">
         <div class="lobby-broadcast-grid">
           
+          <!-- LEFT: LIVE TV STAGE -->
           <div class="lobby-stage-card">
             <div class="join-hero-box">
               <h2>Scan to Join: <span id="qr-room-label">Fremont Main</span></h2>
@@ -845,6 +847,7 @@
             </div>
           </div>
 
+          <!-- RIGHT: MATCH CONTROL DECK -->
           <div class="lobby-stage-card" style="justify-content: space-between;">
             <div>
               <div style="font-size: 1.1rem; font-weight: 900; color: #f8fafc; margin-bottom: 0.25rem;">Match Setup Deck</div>
@@ -879,7 +882,7 @@
                     <option value="superhero">Superheroes & Sci-Fi</option>
                     <option value="sports">Sports & Records</option>
                     <option value="factorcap">Fact or Cap? (Trivia Oddities)</option>
-                    <option value="disney">Disney & Pixar</option>
+                    <option value="disney">Disney & Pixar Animation</option>
                     <option value="movie">Movie Quotes Only</option>
                     <option value="music">Pop Culture & Music Only</option>
                   </select>
@@ -936,6 +939,7 @@
         </div>
       </div>
 
+      <!-- HALL OF FAME SUB-PANEL -->
       <div id="host-hall-view" class="hidden" style="margin-top: 1rem;">
         <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:0.6rem; margin-bottom:1.25rem;">
           <div style="display:flex; gap:0.6rem; align-items:center; flex-wrap:wrap;">
@@ -1097,6 +1101,7 @@
       </div>
 
       <div class="gameover-split-layout">
+        <!-- LEFT: PHYSICAL 3D PODIUM & SUPERLATIVES -->
         <div class="gameover-left-col">
           <div id="podium-area" class="podium-container"></div>
 
@@ -1133,6 +1138,7 @@
           </div>
         </div>
 
+        <!-- RIGHT: CONTINUOUS AUTO-SCROLLING FINAL STANDINGS FOR 50+ PLAYERS -->
         <div class="gameover-right-col">
           <div style="font-size: 0.9rem; font-weight: 900; color: #94a3b8; text-transform: uppercase; margin-bottom: 0.5rem; letter-spacing: 0.05em; display: flex; justify-content: space-between;">
             <span>Final Room Standings</span>
@@ -1174,7 +1180,7 @@
     let audioCtx = null;
     let isSoundMuted = false;
     let isAutoPilot = true;
-    let isSabotageEnabled = true;
+    let sabotageEnabled = true;
     let matchQuestionStats = [];
     let lastCompletedMatchData = null;
 
@@ -1253,10 +1259,9 @@
 
     const btnToggleSabotage = document.getElementById('btn-toggle-sabotage');
     btnToggleSabotage.addEventListener('click', () => {
-      isSabotageEnabled = !isSabotageEnabled;
-      btnToggleSabotage.textContent = isSabotageEnabled ? '⚡ Sabotage: ON' : '🛡️ Sabotage: OFF';
-      btnToggleSabotage.classList.toggle('off', !isSabotageEnabled);
-      socket.emit('host:toggle_sabotage', { roomCode: currentRoomCode, enabled: isSabotageEnabled });
+      sabotageEnabled = !sabotageEnabled;
+      btnToggleSabotage.textContent = sabotageEnabled ? '⚡ Sabotages: ON' : '🛡️ Sabotages: OFF';
+      btnToggleSabotage.classList.toggle('off', !sabotageEnabled);
     });
 
     const btnResetLeaderboards = document.getElementById('btn-reset-leaderboards');
@@ -1535,7 +1540,8 @@
         difficulty: difficultySelect.value,
         count: questionCountSelect.value,
         isDemo: isDemo,
-        botCount: botCount
+        botCount: botCount,
+        sabotageEnabled: sabotageEnabled
       });
     }
 
@@ -1596,7 +1602,8 @@
           category: nextCategory,
           difficulty: difficultySelect.value,
           count: questionCountSelect.value,
-          isDemo: false
+          isDemo: false,
+          sabotageEnabled: sabotageEnabled
         });
       }, 10000);
     }
@@ -1719,6 +1726,10 @@
         timerBar.className = 'timer-meter-bar';
         playTickSound(false);
       }
+    });
+
+    socket.on('game:sabotage_triggered', (data) => {
+      console.log(`Sabotage Alert: ${data.targetName} hit by ${data.sabotageType}!`);
     });
 
     socket.on('game:round_ended', (data) => {
