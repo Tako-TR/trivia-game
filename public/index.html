@@ -206,6 +206,7 @@
     }
     .badge-icon { font-size: 1.5rem; }
 
+    /* ACHIEVEMENT DETAIL MODAL */
     .modal-backdrop {
       position: fixed;
       top: 0; left: 0; width: 100%; height: 100%;
@@ -226,9 +227,22 @@
       text-align: center;
       box-shadow: 0 20px 40px rgba(0,0,0,0.8), 0 0 25px var(--cyan-glow);
     }
-    .achievement-modal-icon { font-size: 3.5rem; margin-bottom: 0.5rem; }
-    .achievement-modal-title { font-size: 1.3rem; font-weight: 900; color: #f8fafc; margin-bottom: 0.4rem; }
-    .achievement-modal-desc { font-size: 0.95rem; color: #cbd5e1; margin-bottom: 1.25rem; line-height: 1.4; }
+    .achievement-modal-icon {
+      font-size: 3.5rem;
+      margin-bottom: 0.5rem;
+    }
+    .achievement-modal-title {
+      font-size: 1.3rem;
+      font-weight: 900;
+      color: #f8fafc;
+      margin-bottom: 0.4rem;
+    }
+    .achievement-modal-desc {
+      font-size: 0.95rem;
+      color: #cbd5e1;
+      margin-bottom: 1.25rem;
+      line-height: 1.4;
+    }
     .achievement-modal-status {
       font-size: 0.8rem;
       font-weight: 800;
@@ -262,61 +276,6 @@
       border-radius: 10px;
       cursor: pointer;
     }
-
-    .sabotage-overlay {
-      position: fixed;
-      inset: 0;
-      pointer-events: none;
-      z-index: 9999;
-      transition: opacity 0.3s;
-    }
-    .sabotage-overlay.ink-splash {
-      background: radial-gradient(circle at 40% 30%, #000000 0%, rgba(15,23,42,0.92) 75%);
-      pointer-events: auto;
-      display: flex;
-      flex-direction: column;
-      justify-content: center;
-      align-items: center;
-      text-align: center;
-      padding: 20px;
-    }
-    .sabotage-overlay.static-jam {
-      background: repeating-linear-gradient(0deg, rgba(255,255,255,0.15) 0px, rgba(255,255,255,0.05) 2px, transparent 4px), #030712;
-      animation: staticFlicker 0.1s infinite;
-    }
-    @keyframes staticFlicker {
-      0% { opacity: 0.85; }
-      50% { opacity: 0.98; }
-      100% { opacity: 0.85; }
-    }
-
-    .sabotage-panel {
-      background: linear-gradient(135deg, rgba(124, 58, 237, 0.25), rgba(15, 23, 42, 0.9));
-      border: 1.5px solid #a855f7;
-      border-radius: 14px;
-      padding: 12px;
-      margin-top: 10px;
-      text-align: left;
-      box-shadow: 0 4px 16px rgba(168, 85, 247, 0.25);
-    }
-    .sabotage-btns {
-      display: grid;
-      grid-template-columns: repeat(3, 1fr);
-      gap: 6px;
-      margin-top: 6px;
-    }
-    .sab-btn {
-      background: #1e293b;
-      border: 1px solid #a855f7;
-      color: #e9d5ff;
-      padding: 8px 4px;
-      border-radius: 8px;
-      font-size: 0.75rem;
-      font-weight: 800;
-      cursor: pointer;
-      text-align: center;
-    }
-    .sab-btn:active { transform: scale(0.96); background: #7c3aed; color: #fff; }
 
     .tab-bar {
       display: flex;
@@ -716,13 +675,6 @@
   </style>
 </head>
 <body>
-  <!-- SABOTAGE VISUAL EFFECT OVERLAY -->
-  <div id="sabotage-overlay" class="sabotage-overlay hidden">
-    <div style="font-size: 2.2rem; margin-bottom: 0.5rem;" id="sab-overlay-icon">⚠️</div>
-    <h2 id="sab-overlay-title" style="color: #f8fafc; font-size: 1.3rem; margin: 0;">Incoming Sabotage!</h2>
-    <p id="sab-overlay-desc" style="color: #cbd5e1; font-size: 0.9rem; margin-top: 0.4rem;">Screen interference active...</p>
-  </div>
-
   <div class="container">
     <div id="join-screen">
       <h1>Trivia Login</h1>
@@ -828,20 +780,6 @@
 
       <div id="options-container" class="options-grid"></div>
       <p id="status-message" class="badge hidden" style="margin-top:0.4rem; padding:0.5rem; text-align:center; background:rgba(16, 185, 129, 0.2); border-color:var(--green); color:#6ee7b7;">✓ Answer Locked In!</p>
-
-      <!-- SABOTAGE LAUNCH PANEL -->
-      <div id="sabotage-panel" class="sabotage-panel hidden">
-        <div style="display:flex; justify-content:space-between; align-items:center; font-size:0.75rem; font-weight:900; color:#c084fc; text-transform:uppercase;">
-          <span>⚡ Underdog Sabotage</span>
-          <span id="sabotage-energy-label">Energy: 0/3</span>
-        </div>
-        <div class="sabotage-btns">
-          <button class="sab-btn" onclick="launchSabotage(3, 'ink')">Ink #1 (3⚡)</button>
-          <button class="sab-btn" onclick="launchSabotage(2, 'static')">Jam #2 (2⚡)</button>
-          <button class="sab-btn" onclick="launchSabotage(1, 'shuffler')">Shuffle #3 (1⚡)</button>
-        </div>
-        <div id="sabotage-feedback" style="font-size:0.7rem; color:#f43f5e; margin-top:4px; min-height:1rem;"></div>
-      </div>
     </div>
 
     <!-- Milestone Screen -->
@@ -1021,8 +959,6 @@
     let equippedBadge = '';
     let lastReceiptText = '';
     let activeModalBadge = null;
-    let currentSabotageEnergy = 0;
-    let sabotageEnabled = true;
 
     const urlParams = new URLSearchParams(window.location.search);
     const assignedRoomCode = (urlParams.get('room') || 'ROOM1').trim().toUpperCase();
@@ -1047,6 +983,7 @@
       setTimeout(clearBodyFlashes, 1000);
     }
 
+    // Modal inspection of achievements
     const achievementModal = document.getElementById('achievement-modal');
     const modalBadgeIcon = document.getElementById('modal-badge-icon');
     const modalBadgeTitle = document.getElementById('modal-badge-title');
@@ -1172,11 +1109,6 @@
     const btnCopyReceipt = document.getElementById('btn-copy-receipt');
     const btnReturnLobby = document.getElementById('btn-return-lobby');
 
-    const sabotagePanel = document.getElementById('sabotage-panel');
-    const sabotageEnergyLabel = document.getElementById('sabotage-energy-label');
-    const sabotageFeedback = document.getElementById('sabotage-feedback');
-    const sabotageOverlay = document.getElementById('sabotage-overlay');
-
     const milestoneText = document.getElementById('milestone-text');
     const milestoneLeaderboardList = document.getElementById('milestone-leaderboard-list');
 
@@ -1271,6 +1203,7 @@
       window.location.reload();
     });
 
+    // Clean return to main lobby
     btnReturnLobby.addEventListener('click', () => {
       clearBodyFlashes();
       resultsScreen.classList.add('hidden');
@@ -1324,70 +1257,6 @@
       loadLobbyLeaderboards();
     });
 
-    function updateSabotageEnergyUI() {
-      if (!sabotagePanel) return;
-      if (!sabotageEnabled) {
-        sabotagePanel.classList.add('hidden');
-        return;
-      }
-      sabotageEnergyLabel.textContent = `Energy: ${currentSabotageEnergy}/3`;
-      if (currentSabotageEnergy > 0) {
-        sabotagePanel.classList.remove('hidden');
-      } else {
-        sabotagePanel.classList.add('hidden');
-      }
-    }
-
-    window.launchSabotage = function(targetRank, sabotageType) {
-      if (!sabotageEnabled) return;
-      sabotageFeedback.textContent = '';
-      socket.emit('player:launch_sabotage', { targetRank, sabotageType });
-    };
-
-    socket.on('sabotage:success', (data) => {
-      currentSabotageEnergy = data.remainingEnergy;
-      updateSabotageEnergyUI();
-      sabotageFeedback.style.color = '#34d399';
-      sabotageFeedback.textContent = `✓ Sabotage launched against ${data.targetName}!`;
-      haptic([40, 40]);
-    });
-
-    socket.on('sabotage:error', (msg) => {
-      sabotageFeedback.style.color = '#f43f5e';
-      sabotageFeedback.textContent = msg;
-      haptic(100);
-    });
-
-    socket.on('game:incoming_sabotage', (data) => {
-      if (!sabotageEnabled) return;
-      haptic([100, 50, 100, 50, 200]);
-      sabotageOverlay.className = 'sabotage-overlay';
-      
-      const titleEl = document.getElementById('sab-overlay-title');
-      const descEl = document.getElementById('sab-overlay-desc');
-      const iconEl = document.getElementById('sab-overlay-icon');
-
-      if (data.sabotageType === 'ink') {
-        sabotageOverlay.classList.add('ink-splash');
-        iconEl.textContent = '🦑';
-        titleEl.textContent = `Inked by ${data.attackerName}!`;
-        descEl.textContent = 'Screen blurred!';
-      } else if (data.sabotageType === 'static') {
-        sabotageOverlay.classList.add('static-jam');
-        iconEl.textContent = '⚡';
-        titleEl.textContent = `Signal Jammed by ${data.attackerName}!`;
-        descEl.textContent = 'Static interference active!';
-      } else {
-        sabotageOverlay.classList.add('static-jam');
-        iconEl.textContent = '🔀';
-        titleEl.textContent = `Pads Shuffled by ${data.attackerName}!`;
-        descEl.textContent = 'Buttons scrambled!';
-      }
-
-      sabotageOverlay.classList.remove('hidden');
-      setTimeout(() => { sabotageOverlay.classList.add('hidden'); }, 3000);
-    });
-
     socket.on('game:new_question', (data) => {
       clearBodyFlashes();
       selectedAnswer = null;
@@ -1404,14 +1273,7 @@
       alltimeContainer.classList.add('hidden');
       reactionTimePill.classList.add('hidden');
       streakBanner.classList.add('hidden');
-      sabotageOverlay.classList.add('hidden');
       gameScreen.classList.remove('hidden');
-
-      sabotageEnabled = data.sabotageEnabled !== false;
-      if (data.sabotageEnergy !== undefined) {
-        currentSabotageEnergy = data.sabotageEnergy;
-        updateSabotageEnergyUI();
-      }
 
       categoryBadge.textContent = `${data.category} (${data.questionNumber}/${data.totalQuestions})`;
       timerDisplay.textContent = data.timeLeft;
@@ -1463,11 +1325,6 @@
       milestoneScreen.classList.add('hidden');
       resultsScreen.classList.remove('hidden');
       btnReturnLobby.classList.add('hidden');
-      sabotageOverlay.classList.add('hidden');
-
-      if (data.sabotageEnergy !== undefined) {
-        currentSabotageEnergy = data.sabotageEnergy;
-      }
 
       resultsHeading.textContent = "Round Results";
       playerCorrectAnswer.textContent = data.correctAnswerText;
@@ -1533,7 +1390,6 @@
       gameScreen.classList.add('hidden');
       milestoneScreen.classList.add('hidden');
       resultsScreen.classList.remove('hidden');
-      sabotageOverlay.classList.add('hidden');
 
       resultsHeading.textContent = "Match Complete!";
       answerRevealWrapper.classList.add('hidden');
