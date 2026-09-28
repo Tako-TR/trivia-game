@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -208,7 +209,7 @@
     .control-deck {
       display: flex;
       flex-direction: column;
-      gap: 0.75rem;
+      gap: 0.85rem;
     }
     .deck-group label {
       display: block;
@@ -243,7 +244,6 @@
       box-sizing: border-box;
       position: relative;
     }
-    .tv-broadcast-screen.hidden { display: none !important; }
 
     .top-bar-controls {
       display: flex;
@@ -264,7 +264,7 @@
       letter-spacing: 0.04em;
       box-shadow: 0 0 16px var(--cyan-glow);
     }
-    .top-toggles { display: flex; gap: 0.6rem; align-items: center; flex-wrap: wrap; }
+    .top-toggles { display: flex; gap: 0.6rem; align-items: center; }
     .toggle-pill {
       background: rgba(30, 41, 59, 0.8);
       backdrop-filter: blur(8px);
@@ -649,6 +649,7 @@
     .delta-down { background-color: #7f1d1d; color: #fca5a5; border: 1px solid #ef4444; }
     .delta-same { background-color: #1e293b; color: #64748b; }
 
+    /* SPLIT FINAL GAME OVER VIEWPORT */
     .gameover-split-layout {
       display: grid;
       grid-template-columns: 1.25fr 0.95fr;
@@ -818,7 +819,6 @@
           <button id="btn-reset-leaderboards" class="btn-reset-leaderboards">⚠️ Reset Leaderboards</button>
           <button id="btn-toggle-sound" class="toggle-pill">🔊 Sound: ON</button>
           <button id="btn-toggle-autopilot" class="toggle-pill">⚡ Auto-Pilot: ON</button>
-          <button id="btn-toggle-sabotage" class="toggle-pill">⚡ Sabotages: ON</button>
         </div>
       </div>
 
@@ -1181,7 +1181,6 @@
     let audioCtx = null;
     let isSoundMuted = false;
     let isAutoPilot = true;
-    let sabotageEnabled = true;
     let matchQuestionStats = [];
     let lastCompletedMatchData = null;
 
@@ -1256,13 +1255,6 @@
       isAutoPilot = !isAutoPilot;
       btnToggleAutoPilot.textContent = isAutoPilot ? '⚡ Auto-Pilot: ON' : '⏸ Auto-Pilot: OFF';
       btnToggleAutoPilot.classList.toggle('off', !isAutoPilot);
-    });
-
-    const btnToggleSabotage = document.getElementById('btn-toggle-sabotage');
-    btnToggleSabotage.addEventListener('click', () => {
-      sabotageEnabled = !sabotageEnabled;
-      btnToggleSabotage.textContent = sabotageEnabled ? '⚡ Sabotages: ON' : '🛡️ Sabotages: OFF';
-      btnToggleSabotage.classList.toggle('off', !sabotageEnabled);
     });
 
     const btnResetLeaderboards = document.getElementById('btn-reset-leaderboards');
@@ -1344,14 +1336,18 @@
         qrcodeContainer.innerHTML = '';
         try {
           new QRCode(qrcodeContainer, { text: joinUrl, width: 220, height: 220, colorDark: "#38bdf8", colorLight: "#070b14" });
-        } catch (e) {}
+        } catch (e) {
+          console.warn('Lobby QR render delayed:', e);
+        }
       }
 
       if (resultsQrcodeContainer) {
         resultsQrcodeContainer.innerHTML = '';
         try {
           new QRCode(resultsQrcodeContainer, { text: joinUrl, width: 175, height: 175, colorDark: "#000000", colorLight: "#ffffff" });
-        } catch (e) {}
+        } catch (e) {
+          console.warn('Results QR render delayed:', e);
+        }
       }
 
       const displayName = ROOM_NAMES[roomCode] || roomCode;
@@ -1511,9 +1507,17 @@
     const autoStartTimer = document.getElementById('auto-start-timer');
     const autoNextCatLabel = document.getElementById('auto-next-cat-label');
 
-    btnStart.addEventListener('click', () => launchMatch(false, 0));
-    btnStartDemo5.addEventListener('click', () => launchMatch(true, 5));
-    btnStartDemo50.addEventListener('click', () => launchMatch(true, 50));
+    btnStart.addEventListener('click', () => {
+      launchMatch(false, 0);
+    });
+
+    btnStartDemo5.addEventListener('click', () => {
+      launchMatch(true, 5);
+    });
+
+    btnStartDemo50.addEventListener('click', () => {
+      launchMatch(true, 50);
+    });
 
     function launchMatch(isDemo = false, botCount = 0) {
       cancelAutoStart();
@@ -1529,8 +1533,7 @@
         difficulty: difficultySelect.value,
         count: questionCountSelect.value,
         isDemo: isDemo,
-        botCount: botCount,
-        sabotageEnabled: sabotageEnabled
+        botCount: botCount
       });
     }
 
@@ -1591,8 +1594,7 @@
           category: nextCategory,
           difficulty: difficultySelect.value,
           count: questionCountSelect.value,
-          isDemo: false,
-          sabotageEnabled: sabotageEnabled
+          isDemo: false
         });
       }, 10000);
     }
@@ -1686,6 +1688,12 @@
         chip.textContent = `${badgeStr}${p.name}`;
         submissionChipsContainer.appendChild(chip);
       });
+      if (list.length > 30) {
+        const moreChip = document.createElement('div');
+        moreChip.className = 'sub-chip';
+        moreChip.textContent = `+${list.length - 30} more`;
+        submissionChipsContainer.appendChild(moreChip);
+      }
     });
 
     socket.on('game:submission_update', (data) => {
@@ -1821,6 +1829,7 @@
       const leaderboard = Array.isArray(data) ? data : data.leaderboard;
       renderPodium(leaderboard);
 
+      // Render all players into scrolling full-roster view
       finalTotalPlayersLabel.textContent = `${leaderboard.length} Players`;
       hostGameoverLeaderboard.innerHTML = '';
       leaderboard.forEach((p, idx) => {
@@ -1831,6 +1840,7 @@
         hostGameoverLeaderboard.appendChild(li);
       });
 
+      // Start auto-scroll on the final game over leaderboard
       startAutoScroll(gameoverScrollContainer, hostGameoverLeaderboard, 1.15);
 
       const sups = data.superlatives || {};
