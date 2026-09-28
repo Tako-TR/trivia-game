@@ -206,7 +206,6 @@
     }
     .badge-icon { font-size: 1.5rem; }
 
-    /* MODAL */
     .modal-backdrop {
       position: fixed;
       top: 0; left: 0; width: 100%; height: 100%;
@@ -264,7 +263,6 @@
       cursor: pointer;
     }
 
-    /* SABOTAGE OVERLAYS */
     .sabotage-overlay {
       position: fixed;
       inset: 0;
@@ -292,7 +290,6 @@
       100% { opacity: 0.85; }
     }
 
-    /* SABOTAGE PANEL */
     .sabotage-panel {
       background: linear-gradient(135deg, rgba(124, 58, 237, 0.25), rgba(15, 23, 42, 0.9));
       border: 1.5px solid #a855f7;
@@ -832,7 +829,7 @@
       <div id="options-container" class="options-grid"></div>
       <p id="status-message" class="badge hidden" style="margin-top:0.4rem; padding:0.5rem; text-align:center; background:rgba(16, 185, 129, 0.2); border-color:var(--green); color:#6ee7b7;">✓ Answer Locked In!</p>
 
-      <!-- SABOTAGE LAUNCH PANEL (APPEARS FOR TRAILING PLAYERS) -->
+      <!-- SABOTAGE LAUNCH PANEL -->
       <div id="sabotage-panel" class="sabotage-panel hidden">
         <div style="display:flex; justify-content:space-between; align-items:center; font-size:0.75rem; font-weight:900; color:#c084fc; text-transform:uppercase;">
           <span>⚡ Underdog Sabotage</span>
@@ -1025,6 +1022,7 @@
     let lastReceiptText = '';
     let activeModalBadge = null;
     let currentSabotageEnergy = 0;
+    let sabotageEnabled = true;
 
     const urlParams = new URLSearchParams(window.location.search);
     const assignedRoomCode = (urlParams.get('room') || 'ROOM1').trim().toUpperCase();
@@ -1049,7 +1047,6 @@
       setTimeout(clearBodyFlashes, 1000);
     }
 
-    // Modal inspection of achievements
     const achievementModal = document.getElementById('achievement-modal');
     const modalBadgeIcon = document.getElementById('modal-badge-icon');
     const modalBadgeTitle = document.getElementById('modal-badge-title');
@@ -1327,9 +1324,12 @@
       loadLobbyLeaderboards();
     });
 
-    // --- SABOTAGE CLIENT HANDLERS ---
     function updateSabotageEnergyUI() {
-      if (!sabotageEnergyLabel) return;
+      if (!sabotagePanel) return;
+      if (!sabotageEnabled) {
+        sabotagePanel.classList.add('hidden');
+        return;
+      }
       sabotageEnergyLabel.textContent = `Energy: ${currentSabotageEnergy}/3`;
       if (currentSabotageEnergy > 0) {
         sabotagePanel.classList.remove('hidden');
@@ -1339,6 +1339,7 @@
     }
 
     window.launchSabotage = function(targetRank, sabotageType) {
+      if (!sabotageEnabled) return;
       sabotageFeedback.textContent = '';
       socket.emit('player:launch_sabotage', { targetRank, sabotageType });
     };
@@ -1358,8 +1359,9 @@
     });
 
     socket.on('game:incoming_sabotage', (data) => {
+      if (!sabotageEnabled) return;
       haptic([100, 50, 100, 50, 200]);
-      sabotageOverlay.className = 'sabotage-overlay'; // Reset
+      sabotageOverlay.className = 'sabotage-overlay';
       
       const titleEl = document.getElementById('sab-overlay-title');
       const descEl = document.getElementById('sab-overlay-desc');
@@ -1383,10 +1385,7 @@
       }
 
       sabotageOverlay.classList.remove('hidden');
-
-      setTimeout(() => {
-        sabotageOverlay.classList.add('hidden');
-      }, 3000);
+      setTimeout(() => { sabotageOverlay.classList.add('hidden'); }, 3000);
     });
 
     socket.on('game:new_question', (data) => {
@@ -1408,6 +1407,7 @@
       sabotageOverlay.classList.add('hidden');
       gameScreen.classList.remove('hidden');
 
+      sabotageEnabled = data.sabotageEnabled !== false;
       if (data.sabotageEnergy !== undefined) {
         currentSabotageEnergy = data.sabotageEnergy;
         updateSabotageEnergyUI();
@@ -1698,7 +1698,7 @@
       if (p1) html += `<div class="p-slot first"><span class="p-icon">${p1.badge || '👑'}</span><span class="p-name">${p1.name}</span><div class="p-step">1</div></div>`;
       if (p3) html += `<div class="p-slot third"><span class="p-icon">${p3.badge || '🥉'}</span><span class="p-name">${p3.name}</span><div class="p-step">3</div></div>`;
 
-      playerPodiumArea.innerHTML = hermi || html;
+      playerPodiumArea.innerHTML = html;
     }
 
     function renderLeaderboard(players, targetElement) {
