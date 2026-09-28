@@ -78,13 +78,30 @@ app.use(express.static(path.join(__dirname, 'public')));
 const questionsFilePath = path.join(__dirname, 'questions.json');
 const presetsFilePath = path.join(__dirname, 'presets.json');
 
+function normalizeQuestionKey(text) {
+  return String(text || '').toLowerCase().replace(/[^a-z0-9]/g, '');
+}
+
+// In-Memory auto-deduplication on startup
 let masterQuestions = [];
 try {
   const rawQuestions = JSON.parse(fs.readFileSync(questionsFilePath, 'utf8'));
-  masterQuestions = rawQuestions.filter(q => {
+  const seenHashes = new Set();
+  const deduped = [];
+
+  rawQuestions.forEach(q => {
     const cat = (q.category || '').toLowerCase();
-    return !cat.includes('logo');
+    if (cat.includes('logo')) return;
+
+    const hash = normalizeQuestionKey(q.question);
+    if (!seenHashes.has(hash)) {
+      seenHashes.add(hash);
+      deduped.push(q);
+    }
   });
+
+  masterQuestions = deduped;
+  console.log(`Questions loaded: ${masterQuestions.length} unique questions ready (auto-deduplicated).`);
 } catch (err) {
   console.error('Error loading questions.json:', err);
 }
@@ -151,7 +168,7 @@ function getOrCreateRoom(rawRoomCode) {
       isPaused: false,
       currentGameCategory: 'all',
       previousRankings: {},
-      usedQuestionIds: new Set(),
+      playedQuestionHashes: [], // Persistent ring-buffer prevents repeating
       isDemoMode: false,
       demoBotCount: 0,
       demoBotTimeouts: []
@@ -237,20 +254,26 @@ app.post('/api/questions/bulk', (req, res) => {
   }
 
   const validQuestions = [];
+  const existingHashes = new Set(masterQuestions.map(q => normalizeQuestionKey(q.question)));
+
   for (const q of questions) {
     if (q.category && q.question && Array.isArray(q.options) && q.options.length >= 2 && q.answer !== undefined) {
-      const formatted = {
-        category: q.category.trim(),
-        question: q.question.trim(),
-        options: q.options.map(opt => String(opt).trim()),
-        answer: parseInt(q.answer, 10)
-      };
-      if (q.image && String(q.image).trim() !== '') formatted.image = String(q.image).trim();
-      validQuestions.push(formatted);
+      const hash = normalizeQuestionKey(q.question);
+      if (!existingHashes.has(hash)) {
+        existingHashes.add(hash);
+        const formatted = {
+          category: q.category.trim(),
+          question: q.question.trim(),
+          options: q.options.map(opt => String(opt).trim()),
+          answer: parseInt(q.answer, 10)
+        };
+        if (q.image && String(q.image).trim() !== '') formatted.image = String(q.image).trim();
+        validQuestions.push(formatted);
+      }
     }
   }
 
-  if (validQuestions.length === 0) return res.status(400).json({ success: false, message: 'No valid rows found.' });
+  if (validQuestions.length === 0) return res.status(400).json({ success: false, message: 'No unique new rows found.' });
 
   masterQuestions.push(...validQuestions);
   saveQuestionsToFile(res, { success: true, addedCount: validQuestions.length, totalQuestions: masterQuestions.length });
@@ -643,7 +666,7 @@ function seedDemoBots(room, count = 50) {
     const id = `bot_${i + 1}`;
     const name = BOT_NAMES[i];
     const badge = BOT_BADGES[i % BOT_BADGES.length];
-    const skill = parseFloat((0.45 + (Math.random() * 0.45)).toFixed(2)); // Skill ranges 45% - 90%
+    const skill = parseFloat((0.45 + (Math.random() * 0.45)).toFixed(2));
 
     room.activeSockets[id] = {
       username: name,
@@ -654,6 +677,7 @@ function seedDemoBots(room, count = 50) {
       reactionSeconds: null,
       roundPointsEarned: 0,
       streak: 0,
+      bestStreak: 0,
       reactionTimes: [],
       lowestRankDuringGame: 1,
       finalQuestionsPoints: 0,
@@ -674,7 +698,6 @@ function scheduleBotAnswers(room, correctIdx) {
     const p = room.activeSockets[id];
     if (!p || !p.isBot) return;
 
-    // Reaction time staggered across 0.7s to 9.5s
     const delay = Math.floor(Math.random() * 8800) + 700;
 
     const t = setTimeout(() => {
@@ -780,6 +803,7 @@ io.on('connection', (socket) => {
         reactionSeconds: null,
         roundPointsEarned: 0,
         streak: 0,
+        bestStreak: 0,
         reactionTimes: [],
         lowestRankDuringGame: 1,
         finalQuestionsPoints: 0,
@@ -931,7 +955,7 @@ io.on('connection', (socket) => {
     room.isDemoMode = !!config.isDemo;
     const requestedBotCount = parseInt(config.botCount, 10) || 50;
 
-    // Purge previous bots if not running demo
+    // Reset players
     Object.keys(room.activeSockets).forEach((id) => {
       const p = room.activeSockets[id];
       if (p.isBot) {
@@ -944,6 +968,7 @@ io.on('connection', (socket) => {
       p.reactionSeconds = null;
       p.roundPointsEarned = 0;
       p.streak = 0;
+      p.bestStreak = 0;
       p.reactionTimes = [];
       p.lowestRankDuringGame = 1;
       p.finalQuestionsPoints = 0;
@@ -962,18 +987,16 @@ io.on('connection', (socket) => {
     room.isPaused = false;
 
     const chosenPreset = config.preset && config.preset !== 'none' ? gamePresets[config.preset] : null;
+    let eligible = [];
 
     if (chosenPreset && chosenPreset.length > 0) {
       room.currentGameCategory = `Preset: ${config.preset}`;
-      const shuffled = shuffle(chosenPreset);
-      const requestedCount = parseInt(config.count, 10) || shuffled.length;
-      room.activeQuestions = shuffled.slice(0, Math.min(requestedCount, shuffled.length));
+      eligible = chosenPreset;
     } else {
       room.currentGameCategory = config.category || 'all';
       const requestedDifficulty = config.difficulty || 'all';
-      const requestedCount = parseInt(config.count, 10) || 10;
 
-      let eligible = masterQuestions.filter((q) => {
+      eligible = masterQuestions.filter((q) => {
         const cat = (q.category || '').toLowerCase();
         let matchCat = false;
         if (room.currentGameCategory === 'all') matchCat = true;
@@ -997,22 +1020,39 @@ io.on('connection', (socket) => {
         }
       });
 
-      if (eligible.length === 0) eligible = masterQuestions;
-
-      if (!room.usedQuestionIds) room.usedQuestionIds = new Set();
-      let freshPool = eligible.filter(q => !room.usedQuestionIds.has(q.id || q.question));
-
-      if (freshPool.length < requestedCount) {
-        room.usedQuestionIds.clear();
-        freshPool = eligible;
+      if (eligible.length === 0) {
+        // Fall back only within the chosen category if difficulty is empty
+        const catOnly = masterQuestions.filter(q => (q.category || '').toLowerCase().includes(room.currentGameCategory));
+        eligible = catOnly.length > 0 ? catOnly : masterQuestions;
       }
-
-      const shuffled = shuffle(freshPool);
-      const selected = shuffled.slice(0, Math.min(requestedCount, shuffled.length));
-      selected.forEach(q => room.usedQuestionIds.add(q.id || q.question));
-      room.activeQuestions = selected;
     }
 
+    const requestedCount = parseInt(config.count, 10) || 10;
+    if (!room.playedQuestionHashes) room.playedQuestionHashes = [];
+
+    // Filter out previously seen questions in this room
+    let poolCandidates = eligible.filter(q => !room.playedQuestionHashes.includes(normalizeQuestionKey(q.question)));
+
+    // Exhaustion-Deck: if candidates are depleted, recycle only oldest 50%
+    if (poolCandidates.length < requestedCount) {
+      const halfSize = Math.max(1, Math.floor(eligible.length / 2));
+      room.playedQuestionHashes = room.playedQuestionHashes.slice(-halfSize);
+      poolCandidates = eligible.filter(q => !room.playedQuestionHashes.includes(normalizeQuestionKey(q.question)));
+      if (poolCandidates.length === 0) poolCandidates = eligible;
+    }
+
+    const shuffled = shuffle(poolCandidates);
+    const selected = shuffled.slice(0, Math.min(requestedCount, shuffled.length));
+
+    selected.forEach(q => {
+      room.playedQuestionHashes.push(normalizeQuestionKey(q.question));
+    });
+
+    if (room.playedQuestionHashes.length > 250) {
+      room.playedQuestionHashes = room.playedQuestionHashes.slice(-125);
+    }
+
+    room.activeQuestions = selected;
     room.currentQuestionIndex = -1;
     startNextQuestion(room);
   });
@@ -1159,6 +1199,8 @@ function endRound(room) {
       p.correctAnswersCount++;
       if (isHardQ) p.hardQuestionsCorrect++;
       p.streak = (p.streak || 0) + 1;
+      p.bestStreak = Math.max(p.bestStreak || 0, p.streak);
+
       const multiplier = getStreakMultiplier(p.streak);
       const baseSpeedBonus = Math.round((Math.max(1, p.answerTimeLeft) / QUESTION_DURATION) * 500);
       const rawPoints = 500 + baseSpeedBonus;
@@ -1410,6 +1452,7 @@ async function evaluateAchievements(p, matchRank, totalPlayers, room) {
 async function finishGameAndSaveStats(room) {
   const standings = getCurrentGameStandings(room);
   const superlatives = calculateSuperlatives(room, standings);
+  const totalQuestions = room.activeQuestions.length;
 
   for (let idx = 0; idx < standings.length; idx++) {
     const sItem = standings[idx];
@@ -1487,6 +1530,7 @@ async function finishGameAndSaveStats(room) {
     }
   }
 
+  // Broadcast to host
   io.to(room.code).emit('game:over', {
     roomCode: room.code,
     roomName: room.name,
@@ -1495,17 +1539,43 @@ async function finishGameAndSaveStats(room) {
     superlatives: superlatives
   });
 
+  // Tailored receipt payload to individual players
   Object.keys(room.activeSockets).forEach((sockId) => {
     const socket = io.sockets.sockets.get(sockId);
     if (socket) {
+      const p = room.activeSockets[sockId];
       const rankIndex = standings.findIndex((item) => item.id === sockId);
+
+      const fastestTime = (p && p.reactionTimes && p.reactionTimes.length > 0)
+        ? Math.min(...p.reactionTimes)
+        : null;
+
+      const accuracyPct = (p && totalQuestions > 0)
+        ? Math.round((p.correctAnswersCount / totalQuestions) * 100)
+        : 0;
+
       socket.emit('game:over', {
         roomCode: room.code,
         roomName: room.name,
         category: room.currentGameCategory,
         leaderboard: standings,
         superlatives: superlatives,
-        myRank: rankIndex !== -1 ? rankIndex + 1 : null
+        myRank: rankIndex !== -1 ? rankIndex + 1 : null,
+        totalPlayers: standings.length,
+        receipt: {
+          username: p ? p.username : '',
+          badge: p ? p.badge : '',
+          rank: rankIndex !== -1 ? rankIndex + 1 : null,
+          totalPlayers: standings.length,
+          score: p ? p.score : 0,
+          correctCount: p ? p.correctAnswersCount : 0,
+          totalQuestions: totalQuestions,
+          accuracy: accuracyPct,
+          bestStreak: p ? (p.bestStreak || p.streak || 0) : 0,
+          fastestReaction: fastestTime,
+          roomName: room.name,
+          categoryName: room.currentGameCategory
+        }
       });
     }
   });
