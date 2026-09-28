@@ -458,7 +458,7 @@ app.post('/api/players/bulk', async (req, res) => {
           }
         });
         rooms[code].activeSockets = {};
-        io.to(code).emit('game:player_list', []);
+        io.to(code).emit('game:player_list', getLobbyPlayers(room));
       }
       return res.json({ success: true, message: 'All player profiles wiped.' });
     }
@@ -680,6 +680,7 @@ function seedDemoBots(room, count = 50) {
       username: name,
       badge: badge,
       score: 0,
+      sabotageEnergy: 0,
       currentAnswer: null,
       answerTimeLeft: 0,
       reactionSeconds: null,
@@ -726,6 +727,10 @@ function scheduleBotAnswers(room, correctIdx) {
       p.reactionSeconds = elapsedSeconds;
       p.reactionTimes.push(elapsedSeconds);
       p.totalQuestionsAnswered++;
+
+      if (isCorrect) {
+        p.sabotageEnergy = Math.min(3, (p.sabotageEnergy || 0) + 1);
+      }
 
       const totalPlayers = Object.keys(room.activeSockets).length;
       const answeredPlayers = Object.values(room.activeSockets).filter(pl => pl.currentAnswer !== null).length;
@@ -799,16 +804,15 @@ io.on('connection', (socket) => {
         }
       }
 
-      // Reconnection handler: clean up stale sockets for this user across all rooms
       const previousState = removeExistingPlayerSockets(cleanUser, socket.id);
 
       socket.join(room.code);
 
-      // Preserve active round progress if reconnected during a game
       room.activeSockets[socket.id] = {
         username: cleanUser,
         badge: playerProfile.badge || '',
         score: previousState ? previousState.score : 0,
+        sabotageEnergy: previousState ? (previousState.sabotageEnergy || 0) : 0,
         currentAnswer: previousState ? previousState.currentAnswer : null,
         answerTimeLeft: previousState ? previousState.answerTimeLeft : 0,
         reactionSeconds: previousState ? previousState.reactionSeconds : null,
@@ -837,7 +841,6 @@ io.on('connection', (socket) => {
 
       io.to(room.code).emit('game:player_list', getLobbyPlayers(room));
 
-      // Re-hydrate active question if rejoining mid-round
       if (room.roundActive && room.currentQuestionIndex >= 0 && room.activeQuestions[room.currentQuestionIndex]) {
         const currentQ = room.activeQuestions[room.currentQuestionIndex];
         const connectedList = Object.values(room.activeSockets).map(p => ({
@@ -845,6 +848,9 @@ io.on('connection', (socket) => {
           badge: p.badge,
           answered: p.currentAnswer !== null
         }));
+
+        const standings = getCurrentGameStandings(room);
+        const myRank = standings.findIndex(s => s.id === socket.id) + 1;
 
         socket.emit('game:new_question', {
           category: currentQ.category,
@@ -856,7 +862,9 @@ io.on('connection', (socket) => {
           timeLeft: room.timeLeft,
           duration: QUESTION_DURATION,
           connectedPlayers: connectedList,
-          alreadyAnswered: room.activeSockets[socket.id].currentAnswer !== null
+          alreadyAnswered: room.activeSockets[socket.id].currentAnswer !== null,
+          sabotageEnergy: room.activeSockets[socket.id].sabotageEnergy || 0,
+          myRank: myRank
         });
       }
     } catch (err) {
@@ -894,6 +902,74 @@ io.on('connection', (socket) => {
     } catch (e) {
       console.error('Error setting badge:', e);
     }
+  });
+
+  /* =========================================================
+     SABOTAGE ACTION HANDLER
+  ========================================================= */
+  socket.on('player:launch_sabotage', ({ targetRank, sabotageType }) => {
+    const room = getSocketRoom(socket);
+    if (!room || !room.roundActive) return;
+
+    const sender = room.activeSockets[socket.id];
+    if (!sender) return;
+
+    const standings = getCurrentGameStandings(room);
+    if (standings.length < 2) return;
+
+    const senderIndex = standings.findIndex(s => s.id === socket.id);
+    const myRank = senderIndex + 1;
+
+    // First place cannot sabotage
+    if (myRank === 1) {
+      return socket.emit('sabotage:error', '1st place cannot sabotage! Defend your lead.');
+    }
+
+    let requiredEnergy = 3;
+    if (targetRank === 1) requiredEnergy = 3;
+    else if (targetRank === 2) requiredEnergy = 2;
+    else if (targetRank === 3) requiredEnergy = 1;
+
+    if ((sender.sabotageEnergy || 0) < requiredEnergy) {
+      return socket.emit('sabotage:error', `Need ${requiredEnergy}⚡ energy for #${targetRank}.`);
+    }
+
+    const targetIdx = targetRank - 1;
+    if (targetIdx < 0 || targetIdx >= standings.length) {
+      return socket.emit('sabotage:error', `Target #${targetRank} not available.`);
+    }
+
+    const targetItem = standings[targetIdx];
+    if (targetItem.id === socket.id) {
+      return socket.emit('sabotage:error', "You can't sabotage yourself!");
+    }
+
+    // Deduct energy
+    sender.sabotageEnergy -= requiredEnergy;
+    socket.emit('sabotage:success', {
+      remainingEnergy: sender.sabotageEnergy,
+      targetRank: targetRank,
+      targetName: targetItem.name
+    });
+
+    // Send animation payload to target player's phone
+    const targetSocket = io.sockets.sockets.get(targetItem.id);
+    if (targetSocket) {
+      targetSocket.emit('game:incoming_sabotage', {
+        sabotageType: sabotageType,
+        attackerName: sender.username
+      });
+    }
+
+    // Send visual announcement to host display
+    io.to(room.code).emit('game:sabotage_banner', {
+      attackerName: sender.username,
+      attackerBadge: sender.badge || '',
+      targetRank: targetRank,
+      targetName: targetItem.name,
+      targetBadge: targetItem.badge || '',
+      sabotageType: sabotageType
+    });
   });
 
   socket.on('player:submit_answer', (answerIndex) => {
@@ -976,6 +1052,7 @@ io.on('connection', (socket) => {
         return;
       }
       p.score = 0;
+      p.sabotageEnergy = 0;
       p.currentAnswer = null;
       p.answerTimeLeft = 0;
       p.reactionSeconds = null;
@@ -1153,6 +1230,7 @@ function startNextQuestion(room) {
     answered: false
   }));
 
+  // 1. BROADCAST GLOBALLY TO HOST AND BASE CLIENTS
   io.to(room.code).emit('game:new_question', {
     category: currentQ.category,
     question: currentQ.question,
@@ -1164,6 +1242,31 @@ function startNextQuestion(room) {
     timeLeft: room.timeLeft,
     duration: QUESTION_DURATION,
     connectedPlayers: connectedList
+  });
+
+  // 2. DISPATCH PERSONAL ENERGY AND LIVE RANK TO EACH PLAYER
+  const standings = getCurrentGameStandings(room);
+  Object.keys(room.activeSockets).forEach((sockId) => {
+    const sock = io.sockets.sockets.get(sockId);
+    if (sock) {
+      const p = room.activeSockets[sockId];
+      const myRank = standings.findIndex(s => s.id === sockId) + 1;
+
+      sock.emit('game:new_question', {
+        category: currentQ.category,
+        question: currentQ.question,
+        image: currentQ.image || null,
+        options: currentQ.options,
+        correctAnswer: currentQ.answer,
+        questionNumber: room.currentQuestionIndex + 1,
+        totalQuestions: room.activeQuestions.length,
+        timeLeft: room.timeLeft,
+        duration: QUESTION_DURATION,
+        connectedPlayers: connectedList,
+        sabotageEnergy: p.sabotageEnergy || 0,
+        myRank: myRank
+      });
+    }
   });
 
   if (room.isDemoMode) {
@@ -1210,6 +1313,9 @@ function endRound(room) {
       if (isHardQ) p.hardQuestionsCorrect++;
       p.streak = (p.streak || 0) + 1;
       p.bestStreak = Math.max(p.bestStreak || 0, p.streak);
+
+      // Earn +1 Sabotage Energy Token on correct answer (up to 3)
+      p.sabotageEnergy = Math.min(3, (p.sabotageEnergy || 0) + 1);
 
       const multiplier = getStreakMultiplier(p.streak);
       const baseSpeedBonus = Math.round((Math.max(1, p.answerTimeLeft) / QUESTION_DURATION) * 500);
@@ -1268,6 +1374,7 @@ function endRound(room) {
 
   const isMilestone = totalQuestions > 10 && finishedQuestionNum % 10 === 0 && finishedQuestionNum < totalQuestions;
 
+  // Global broadcast to host and TV displays
   io.to(room.code).emit('game:round_ended', {
     correctAnswer: correctIdx,
     correctAnswerText: currentQ.options[correctIdx],
@@ -1283,6 +1390,7 @@ function endRound(room) {
     milestoneNumber: finishedQuestionNum
   });
 
+  // Targeted broadcast to each player device
   Object.keys(room.activeSockets).forEach((sockId) => {
     const socket = io.sockets.sockets.get(sockId);
     if (socket) {
@@ -1310,7 +1418,8 @@ function endRound(room) {
         fastestPlayer: fastestPlayer,
         slowestPlayer: slowestPlayer,
         isMilestone: isMilestone,
-        milestoneNumber: finishedQuestionNum
+        milestoneNumber: finishedQuestionNum,
+        sabotageEnergy: p ? (p.sabotageEnergy || 0) : 0
       });
     }
   });
