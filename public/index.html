@@ -38,7 +38,12 @@
       min-height: 100vh;
       min-height: -webkit-fill-available;
       overflow-x: hidden;
-      transition: background-color 0.4s ease;
+      transition: background-color 0.4s ease, transform 0.4s ease;
+    }
+
+    /* INVERTED / MIRRORED SCREEN SABOTAGE */
+    body.screen-inverted {
+      transform: scaleX(-1);
     }
 
     body.flash-correct { animation: flashG 0.8s ease-out; }
@@ -206,7 +211,6 @@
     }
     .badge-icon { font-size: 1.5rem; }
 
-    /* ACHIEVEMENT DETAIL MODAL */
     .modal-backdrop {
       position: fixed;
       top: 0; left: 0; width: 100%; height: 100%;
@@ -227,22 +231,9 @@
       text-align: center;
       box-shadow: 0 20px 40px rgba(0,0,0,0.8), 0 0 25px var(--cyan-glow);
     }
-    .achievement-modal-icon {
-      font-size: 3.5rem;
-      margin-bottom: 0.5rem;
-    }
-    .achievement-modal-title {
-      font-size: 1.3rem;
-      font-weight: 900;
-      color: #f8fafc;
-      margin-bottom: 0.4rem;
-    }
-    .achievement-modal-desc {
-      font-size: 0.95rem;
-      color: #cbd5e1;
-      margin-bottom: 1.25rem;
-      line-height: 1.4;
-    }
+    .achievement-modal-icon { font-size: 3.5rem; margin-bottom: 0.5rem; }
+    .achievement-modal-title { font-size: 1.3rem; font-weight: 900; color: #f8fafc; margin-bottom: 0.4rem; }
+    .achievement-modal-desc { font-size: 0.95rem; color: #cbd5e1; margin-bottom: 1.25rem; line-height: 1.4; }
     .achievement-modal-status {
       font-size: 0.8rem;
       font-weight: 800;
@@ -277,9 +268,7 @@
       cursor: pointer;
     }
 
-    /* =========================================================
-       ANIMATED FULLSCREEN VICTIM SABOTAGE OVERLAYS
-    ========================================================= */
+    /* ANIMATED VICTIM SABOTAGE OVERLAYS */
     .sabotage-overlay {
       position: fixed;
       inset: 0;
@@ -335,14 +324,16 @@
       100% { opacity: 1; filter: contrast(180%) brightness(0.9); }
     }
 
-    .sabotage-overlay.scramble-alert {
-      background: radial-gradient(circle, rgba(245, 158, 11, 0.3) 0%, rgba(3, 7, 18, 0.9) 100%);
+    .sabotage-overlay.invert-glitch {
+      background: radial-gradient(circle, rgba(168, 85, 247, 0.3) 0%, rgba(3, 7, 18, 0.9) 100%);
     }
 
-    /* =========================================================
-       CLEAN SABOTAGE ACTION DOCK (UNDERDOG MECHANIC)
-    ========================================================= */
-    .sabotage-dock {
+    .sabotage-overlay.shield-reflect {
+      background: radial-gradient(circle, rgba(16, 185, 129, 0.35) 0%, rgba(3, 7, 18, 0.92) 100%);
+    }
+
+    /* ACTION & POWERUP DOCK */
+    .powerup-dock {
       background: linear-gradient(135deg, rgba(88, 28, 135, 0.4), rgba(15, 23, 42, 0.95));
       border: 1.5px solid #a855f7;
       border-radius: 14px;
@@ -352,13 +343,13 @@
       box-shadow: 0 8px 24px rgba(168, 85, 247, 0.35);
       animation: smoothFade 0.3s ease-out;
     }
-    .sabotage-dock-header {
+    .powerup-dock-header {
       display: flex;
       justify-content: space-between;
       align-items: center;
       margin-bottom: 0.5rem;
     }
-    .sabotage-dock-title {
+    .powerup-dock-title {
       font-size: 0.8rem;
       font-weight: 900;
       color: #e9d5ff;
@@ -366,9 +357,9 @@
       letter-spacing: 0.06em;
       display: flex;
       align-items: center;
-      gap: 5px;
+      gap: 6px;
     }
-    .sab-energy-meter {
+    .energy-meter {
       font-size: 0.8rem;
       font-weight: 900;
       color: #facc15;
@@ -377,18 +368,18 @@
       padding: 2px 8px;
       border-radius: 9999px;
     }
-    .sabotage-buttons-grid {
+    .powerup-buttons-grid {
       display: grid;
       grid-template-columns: repeat(3, 1fr);
-      gap: 0.5rem;
+      gap: 0.45rem;
     }
-    .btn-sab-action {
+    .btn-powerup {
       background: #1e293b;
       border: 1.5px solid #6b21a8;
       color: #f8fafc;
-      padding: 0.6rem 0.3rem;
+      padding: 0.6rem 0.25rem;
       border-radius: 10px;
-      font-size: 0.75rem;
+      font-size: 0.72rem;
       font-weight: 800;
       cursor: pointer;
       display: flex;
@@ -399,23 +390,37 @@
       box-shadow: 0 3px 0 #3b0764, 0 4px 10px rgba(0,0,0,0.4);
       transition: all 0.12s;
     }
-    .btn-sab-action:hover:not(:disabled) {
+    .btn-powerup:hover:not(:disabled) {
       border-color: #c084fc;
       background: #2e1065;
     }
-    .btn-sab-action:active:not(:disabled) {
+    .btn-powerup:active:not(:disabled) {
       transform: translateY(2px);
       box-shadow: 0 1px 0 #3b0764;
     }
-    .btn-sab-action:disabled {
+    .btn-powerup:disabled {
       opacity: 0.35;
       cursor: not-allowed;
       border-color: #334155;
       box-shadow: none;
     }
-    .sab-action-icon { font-size: 1.25rem; }
-    .sab-action-cost { font-size: 0.68rem; color: #facc15; font-weight: 900; }
-    #sabotage-feedback {
+    .btn-powerup.shield-btn {
+      border-color: #059669;
+      box-shadow: 0 3px 0 #064e3b;
+    }
+    .btn-powerup.shield-btn.active-shield {
+      background: #065f46;
+      border-color: #34d399;
+      box-shadow: 0 0 12px rgba(52, 211, 153, 0.6);
+      color: #6ee7b7;
+    }
+    .btn-powerup.lifeline-btn {
+      border-color: #0284c7;
+      box-shadow: 0 3px 0 #075985;
+    }
+    .powerup-icon { font-size: 1.2rem; }
+    .powerup-cost { font-size: 0.65rem; color: #facc15; font-weight: 900; }
+    #powerup-feedback {
       font-size: 0.72rem;
       font-weight: 800;
       margin-top: 0.45rem;
@@ -522,6 +527,7 @@
       text-align: left;
       display: flex;
       align-items: center;
+      justify-content: space-between;
       gap: 0.75rem;
       box-shadow: 0 4px 0 #0d1522, 0 6px 14px rgba(0, 0, 0, 0.35);
       transform: translateY(0);
@@ -536,6 +542,15 @@
       color: #38bdf8;
       font-weight: 900;
       font-size: 1rem;
+    }
+    .option-btn .lifeline-pct {
+      color: #38bdf8;
+      font-weight: 900;
+      font-size: 0.85rem;
+      background: rgba(56, 189, 248, 0.15);
+      border: 1px solid rgba(56, 189, 248, 0.35);
+      padding: 2px 8px;
+      border-radius: 6px;
     }
     .option-btn.selected {
       background-color: #064e3b !important;
@@ -935,32 +950,53 @@
       <div id="options-container" class="options-grid"></div>
       <p id="status-message" class="badge hidden" style="margin-top:0.4rem; padding:0.5rem; text-align:center; background:rgba(16, 185, 129, 0.2); border-color:var(--green); color:#6ee7b7;">✓ Answer Locked In!</p>
 
-      <!-- UNDERDOG SABOTAGE LAUNCH DOCK -->
-      <div id="sabotage-panel" class="sabotage-dock hidden">
-        <div class="sabotage-dock-header">
-          <div class="sabotage-dock-title">
-            <span>⚡ Underdog Sabotage</span>
+      <!-- UNDERDOG SABOTAGES & POWERUPS DOCK -->
+      <div id="powerup-dock" class="powerup-dock hidden">
+        <div class="powerup-dock-header">
+          <div class="powerup-dock-title">
+            <span>⚡ Energy Powers</span>
           </div>
-          <span id="sabotage-energy-label" class="sab-energy-meter">⚡ 0/3 Energy</span>
+          <span id="energy-meter-label" class="energy-meter">⚡ 0/3 Energy</span>
         </div>
-        <div class="sabotage-buttons-grid">
-          <button id="btn-sab-1" class="btn-sab-action" onclick="launchSabotage(1, 'ink')">
-            <span class="sab-action-icon">🦑</span>
+        <div class="powerup-buttons-grid">
+          <!-- DEFENSIVE SHIELD (Available to all, including 1st place) -->
+          <button id="btn-shield" class="btn-powerup shield-btn" onclick="activateShield()">
+            <span class="powerup-icon" id="shield-icon">🛡️</span>
+            <span id="shield-label">Deploy Shield</span>
+            <span class="powerup-cost">1⚡ Cost</span>
+          </button>
+          <!-- AUDIENCE LIFELINE -->
+          <button id="btn-lifeline" class="btn-powerup lifeline-btn" onclick="useLifeline()">
+            <span class="powerup-icon">📊</span>
+            <span>Ask Room</span>
+            <span class="powerup-cost">2⚡ Cost</span>
+          </button>
+          <!-- INVERTED SCREEN SABOTAGE (Target #2 or #1) -->
+          <button id="btn-sab-invert" class="btn-powerup" onclick="launchSabotage(2, 'invert')">
+            <span class="powerup-icon">🪞</span>
+            <span>Flip #2 Screen</span>
+            <span class="powerup-cost">2⚡ Cost</span>
+          </button>
+          <!-- INK SABOTAGE (Target #1) -->
+          <button id="btn-sab-ink" class="btn-powerup" onclick="launchSabotage(1, 'ink')">
+            <span class="powerup-icon">🦑</span>
             <span>Ink #1</span>
-            <span class="sab-action-cost">3⚡ Cost</span>
+            <span class="powerup-cost">3⚡ Cost</span>
           </button>
-          <button id="btn-sab-2" class="btn-sab-action" onclick="launchSabotage(2, 'static')">
-            <span class="sab-action-icon">⚡</span>
-            <span>Jam #2</span>
-            <span class="sab-action-cost">2⚡ Cost</span>
-          </button>
-          <button id="btn-sab-3" class="btn-sab-action" onclick="launchSabotage(3, 'shuffler')">
-            <span class="sab-action-icon">🔀</span>
+          <!-- SHUFFLE SABOTAGE (Target #3) -->
+          <button id="btn-sab-shuffler" class="btn-powerup" onclick="launchSabotage(3, 'shuffler')">
+            <span class="powerup-icon">🔀</span>
             <span>Shuffle #3</span>
-            <span class="sab-action-cost">1⚡ Cost</span>
+            <span class="powerup-cost">1⚡ Cost</span>
+          </button>
+          <!-- STATIC JAM SABOTAGE (Target #2) -->
+          <button id="btn-sab-static" class="btn-powerup" onclick="launchSabotage(2, 'static')">
+            <span class="powerup-icon">⚡</span>
+            <span>Jam #2</span>
+            <span class="powerup-cost">2⚡ Cost</span>
           </button>
         </div>
-        <div id="sabotage-feedback"></div>
+        <div id="powerup-feedback"></div>
       </div>
     </div>
 
@@ -1143,6 +1179,7 @@
     let activeModalBadge = null;
     let currentSabotageEnergy = 0;
     let myLiveRank = 999;
+    let myShieldActive = false;
 
     const urlParams = new URLSearchParams(window.location.search);
     const assignedRoomCode = (urlParams.get('room') || 'ROOM1').trim().toUpperCase();
@@ -1292,17 +1329,22 @@
     const btnCopyReceipt = document.getElementById('btn-copy-receipt');
     const btnReturnLobby = document.getElementById('btn-return-lobby');
 
-    const sabotagePanel = document.getElementById('sabotage-panel');
-    const sabotageEnergyLabel = document.getElementById('sabotage-energy-label');
-    const sabotageFeedback = document.getElementById('sabotage-feedback');
+    const powerupDock = document.getElementById('powerup-dock');
+    const energyMeterLabel = document.getElementById('energy-meter-label');
+    const powerupFeedback = document.getElementById('powerup-feedback');
     const sabotageOverlay = document.getElementById('sabotage-overlay');
     const sabAnimTarget = document.getElementById('sab-anim-target');
     const sabOverlayTitle = document.getElementById('sab-overlay-title');
     const sabOverlayDesc = document.getElementById('sab-overlay-desc');
 
-    const btnSab1 = document.getElementById('btn-sab-1');
-    const btnSab2 = document.getElementById('btn-sab-2');
-    const btnSab3 = document.getElementById('btn-sab-3');
+    const btnShield = document.getElementById('btn-shield');
+    const shieldIcon = document.getElementById('shield-icon');
+    const shieldLabel = document.getElementById('shield-label');
+    const btnLifeline = document.getElementById('btn-lifeline');
+    const btnSabInvert = document.getElementById('btn-sab-invert');
+    const btnSabInk = document.getElementById('btn-sab-ink');
+    const btnSabShuffler = document.getElementById('btn-sab-shuffler');
+    const btnSabStatic = document.getElementById('btn-sab-static');
 
     const milestoneText = document.getElementById('milestone-text');
     const milestoneLeaderboardList = document.getElementById('milestone-leaderboard-list');
@@ -1400,6 +1442,7 @@
 
     btnReturnLobby.addEventListener('click', () => {
       clearBodyFlashes();
+      document.body.classList.remove('screen-inverted');
       resultsScreen.classList.add('hidden');
       gameScreen.classList.add('hidden');
       milestoneScreen.classList.add('hidden');
@@ -1452,50 +1495,124 @@
     });
 
     /* =========================================================
-       DYNAMIC SABOTAGE CONTROL LOGIC
+       POWERUPS & SABOTAGES DOCK LOGIC
     ========================================================= */
-    function updateSabotageUI() {
-      if (!sabotagePanel) return;
+    function updatePowerupsUI() {
+      if (!powerupDock) return;
+      energyMeterLabel.textContent = `⚡ ${currentSabotageEnergy}/3 Energy`;
 
-      sabotageEnergyLabel.textContent = `⚡ ${currentSabotageEnergy}/3 Energy`;
-
-      // 1st place players cannot launch sabotages (Must defend their crown)
-      const isUnderdog = myLiveRank > 1;
-
-      if (isUnderdog && currentSabotageEnergy > 0) {
-        sabotagePanel.classList.remove('hidden');
+      // Dock opens if player has at least 1 energy
+      if (currentSabotageEnergy > 0) {
+        powerupDock.classList.remove('hidden');
       } else {
-        sabotagePanel.classList.add('hidden');
+        powerupDock.classList.add('hidden');
       }
 
-      btnSab1.disabled = currentSabotageEnergy < 3;
-      btnSab2.disabled = currentSabotageEnergy < 2;
-      btnSab3.disabled = currentSabotageEnergy < 1;
+      // Defensive Shield status
+      if (myShieldActive) {
+        btnShield.classList.add('active-shield');
+        shieldIcon.textContent = '🛡️✨';
+        shieldLabel.textContent = 'Shield Active!';
+        btnShield.disabled = true;
+      } else {
+        btnShield.classList.remove('active-shield');
+        shieldIcon.textContent = '🛡️';
+        shieldLabel.textContent = 'Deploy Shield';
+        btnShield.disabled = currentSabotageEnergy < 1;
+      }
+
+      // Audience Lifeline
+      btnLifeline.disabled = currentSabotageEnergy < 2 || selectedAnswer !== null;
+
+      // Offensive sabotages - 1st place cannot launch offensive sabotages
+      const isUnderdog = myLiveRank > 1;
+
+      btnSabInvert.disabled = !isUnderdog || currentSabotageEnergy < 2;
+      btnSabInk.disabled = !isUnderdog || currentSabotageEnergy < 3;
+      btnSabShuffler.disabled = !isUnderdog || currentSabotageEnergy < 1;
+      btnSabStatic.disabled = !isUnderdog || currentSabotageEnergy < 2;
     }
 
+    window.activateShield = function() {
+      powerupFeedback.textContent = '';
+      socket.emit('player:activate_shield');
+      haptic([30, 40]);
+    };
+
+    socket.on('shield:activated', (data) => {
+      currentSabotageEnergy = data.remainingEnergy;
+      myShieldActive = true;
+      updatePowerupsUI();
+      powerupFeedback.style.color = '#34d399';
+      powerupFeedback.textContent = '✓ Shield Activated! Next attack will be reflected.';
+      haptic([50, 100]);
+    });
+
+    window.useLifeline = function() {
+      powerupFeedback.textContent = '';
+      socket.emit('player:use_lifeline');
+      haptic(40);
+    };
+
+    socket.on('lifeline:result', (data) => {
+      currentSabotageEnergy = data.remainingEnergy;
+      updatePowerupsUI();
+      powerupFeedback.style.color = '#38bdf8';
+      powerupFeedback.textContent = `✓ Room Consensus Revealed (${data.totalVotes} votes cast)!`;
+
+      // Render percentage badges inside each answer choice button
+      const btns = optionsContainer.querySelectorAll('.option-btn');
+      btns.forEach((btn, idx) => {
+        const pct = data.percentages[idx] || 0;
+        let pctTag = btn.querySelector('.lifeline-pct');
+        if (!pctTag) {
+          pctTag = document.createElement('span');
+          pctTag.className = 'lifeline-pct';
+          btn.appendChild(pctTag);
+        }
+        pctTag.textContent = `${pct}% Room`;
+      });
+      haptic([40, 80]);
+    });
+
     window.launchSabotage = function(targetRank, sabotageType) {
-      sabotageFeedback.textContent = '';
+      powerupFeedback.textContent = '';
       socket.emit('player:launch_sabotage', { targetRank, sabotageType });
       haptic(35);
     };
 
     socket.on('sabotage:success', (data) => {
       currentSabotageEnergy = data.remainingEnergy;
-      updateSabotageUI();
-      sabotageFeedback.style.color = '#34d399';
-      sabotageFeedback.textContent = `✓ Hit #${data.targetRank} (${data.targetName})!`;
+      updatePowerupsUI();
+      powerupFeedback.style.color = '#34d399';
+      powerupFeedback.textContent = `✓ Hit #${data.targetRank} (${data.targetName})!`;
       haptic([40, 50, 40]);
     });
 
     socket.on('sabotage:error', (msg) => {
-      sabotageFeedback.style.color = '#f87171';
-      sabotageFeedback.textContent = msg;
+      powerupFeedback.style.color = '#f87171';
+      powerupFeedback.textContent = msg;
       haptic(120);
     });
 
-    /* =========================================================
-       INCOMING SABOTAGE VICTIM ANIMATION SUITE
-    ========================================================= */
+    /* SHIELD REFLECT DEFENSE TRIGGER */
+    socket.on('shield:reflected', (data) => {
+      myShieldActive = false;
+      updatePowerupsUI();
+      haptic([100, 100, 200]);
+
+      sabotageOverlay.className = 'sabotage-overlay shield-reflect';
+      sabAnimTarget.textContent = '🛡️💥';
+      sabOverlayTitle.textContent = 'SHIELD REFLECTED ATTACK!';
+      sabOverlayDesc.textContent = `Deflected ${data.attackerName}'s ${data.sabotageType} attack right back at them!`;
+
+      sabotageOverlay.classList.remove('hidden');
+      setTimeout(() => {
+        sabotageOverlay.classList.add('hidden');
+      }, 3200);
+    });
+
+    /* ANIMATED VICTIM SABOTAGE SUITE */
     socket.on('game:incoming_sabotage', (data) => {
       haptic([100, 60, 100, 60, 250]);
       sabotageOverlay.className = 'sabotage-overlay';
@@ -1505,18 +1622,29 @@
         sabAnimTarget.textContent = '🦑';
         sabOverlayTitle.textContent = `INKED BY ${data.attackerName.toUpperCase()}!`;
         sabOverlayDesc.textContent = 'Your screen is covered in squid ink!';
+      } else if (data.sabotageType === 'invert') {
+        sabotageOverlay.classList.add('invert-glitch');
+        sabAnimTarget.textContent = '🪞';
+        sabOverlayTitle.textContent = `SCREEN FLIPPED!`;
+        sabOverlayDesc.textContent = `${data.attackerName} flipped your screen controls horizontally!`;
+
+        // Invert viewport
+        document.body.classList.add('screen-inverted');
+        setTimeout(() => {
+          document.body.classList.remove('screen-inverted');
+        }, 6000);
       } else if (data.sabotageType === 'static') {
         sabotageOverlay.classList.add('static-emp');
         sabAnimTarget.textContent = '⚡';
         sabOverlayTitle.textContent = `STATIC EMP BLAST!`;
-        sabOverlayDesc.textContent = `${data.attackerName} jammed your connection!`;
+        sabOverlayDesc.textContent = `${data.attackerName} jammed your signal!`;
       } else if (data.sabotageType === 'shuffler') {
-        sabotageOverlay.classList.add('scramble-alert');
+        sabotageOverlay.classList.add('invert-glitch');
         sabAnimTarget.textContent = '🔀';
-        sabOverlayTitle.textContent = `BUTTONS SHUFFLED!`;
-        sabOverlayDesc.textContent = `${data.attackerName} scrambled your answer pads!`;
+        sabOverlayTitle.textContent = `BUTTONS SCRAMBLED!`;
+        sabOverlayDesc.textContent = `${data.attackerName} randomized your answer choices!`;
 
-        // Physical shuffle of DOM buttons
+        // Physical DOM button scramble
         const btns = Array.from(optionsContainer.children);
         for (let i = btns.length - 1; i > 0; i--) {
           const j = Math.floor(Math.random() * (i + 1));
@@ -1532,6 +1660,7 @@
 
     socket.on('game:new_question', (data) => {
       clearBodyFlashes();
+      document.body.classList.remove('screen-inverted');
       selectedAnswer = null;
       lobbyScreen.classList.add('hidden');
       milestoneScreen.classList.add('hidden');
@@ -1549,13 +1678,16 @@
       sabotageOverlay.classList.add('hidden');
       gameScreen.classList.remove('hidden');
 
-      if (data.sabotageEnergy !== undefined) {
-        currentSabotageEnergy = data.sabotageEnergy;
-      }
       if (data.myRank !== undefined) {
         myLiveRank = data.myRank;
       }
-      updateSabotageUI();
+      if (data.sabotageEnergy !== undefined) {
+        currentSabotageEnergy = data.sabotageEnergy;
+      }
+      if (data.hasShield !== undefined) {
+        myShieldActive = !!data.hasShield;
+      }
+      updatePowerupsUI();
 
       categoryBadge.textContent = `${data.category} (${data.questionNumber}/${data.totalQuestions})`;
       timerDisplay.textContent = data.timeLeft;
@@ -1582,6 +1714,7 @@
           btn.classList.add('selected');
           Array.from(optionsContainer.children).forEach(b => b.disabled = true);
           statusMessage.classList.remove('hidden');
+          updatePowerupsUI();
           socket.emit('player:submit_answer', index);
         });
         optionsContainer.appendChild(btn);
@@ -1609,17 +1742,19 @@
       btnReturnLobby.classList.add('hidden');
       sabotageOverlay.classList.add('hidden');
 
+      if (data.myRank !== null && data.myRank !== undefined) {
+        myLiveRank = data.myRank;
+        playerRankDisplay.textContent = `#${data.myRank}`;
+      }
       if (data.sabotageEnergy !== undefined) {
         currentSabotageEnergy = data.sabotageEnergy;
       }
-      if (data.myRank !== undefined) {
-        myLiveRank = data.myRank;
+      if (data.hasShield !== undefined) {
+        myShieldActive = !!data.hasShield;
       }
-      updateSabotageUI();
 
       resultsHeading.textContent = "Round Results";
       playerCorrectAnswer.textContent = data.correctAnswerText;
-      if (data.myRank) playerRankDisplay.textContent = `#${data.myRank}`;
 
       if (data.myReactionTime !== null && data.myReactionTime !== undefined) {
         reactionTimePill.textContent = `⏱ Locked in: ${data.myReactionTime}s`;
@@ -1678,6 +1813,7 @@
 
     socket.on('game:over', (data) => {
       clearBodyFlashes();
+      document.body.classList.remove('screen-inverted');
       gameScreen.classList.add('hidden');
       milestoneScreen.classList.add('hidden');
       resultsScreen.classList.remove('hidden');
