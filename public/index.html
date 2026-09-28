@@ -206,6 +206,77 @@
     }
     .badge-icon { font-size: 1.5rem; }
 
+    /* ACHIEVEMENT DETAIL MODAL */
+    .modal-backdrop {
+      position: fixed;
+      top: 0; left: 0; width: 100%; height: 100%;
+      background: rgba(0, 0, 0, 0.8);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      z-index: 10000;
+      padding: 1rem;
+    }
+    .achievement-modal-box {
+      background: #0f172a;
+      border: 2px solid var(--cyan);
+      border-radius: 16px;
+      padding: 1.5rem;
+      max-width: 360px;
+      width: 100%;
+      text-align: center;
+      box-shadow: 0 20px 40px rgba(0,0,0,0.8), 0 0 25px var(--cyan-glow);
+    }
+    .achievement-modal-icon {
+      font-size: 3.5rem;
+      margin-bottom: 0.5rem;
+    }
+    .achievement-modal-title {
+      font-size: 1.3rem;
+      font-weight: 900;
+      color: #f8fafc;
+      margin-bottom: 0.4rem;
+    }
+    .achievement-modal-desc {
+      font-size: 0.95rem;
+      color: #cbd5e1;
+      margin-bottom: 1.25rem;
+      line-height: 1.4;
+    }
+    .achievement-modal-status {
+      font-size: 0.8rem;
+      font-weight: 800;
+      text-transform: uppercase;
+      padding: 0.35rem 0.75rem;
+      border-radius: 9999px;
+      display: inline-block;
+      margin-bottom: 1.25rem;
+    }
+    .status-unlocked { background: rgba(16, 185, 129, 0.2); color: #6ee7b7; border: 1px solid var(--green); }
+    .status-locked { background: rgba(239, 68, 68, 0.2); color: #fca5a5; border: 1px solid var(--red); }
+    .btn-modal-action {
+      width: 100%;
+      background: linear-gradient(135deg, #0284c7, var(--cyan));
+      color: #070b14;
+      font-weight: 900;
+      padding: 0.75rem;
+      border-radius: 10px;
+      cursor: pointer;
+      border: none;
+      font-size: 0.95rem;
+      margin-bottom: 0.5rem;
+    }
+    .btn-modal-close {
+      width: 100%;
+      background: #1e293b;
+      color: #94a3b8;
+      border: 1px solid #475569;
+      font-weight: 700;
+      padding: 0.6rem;
+      border-radius: 10px;
+      cursor: pointer;
+    }
+
     .tab-bar {
       display: flex;
       justify-content: center;
@@ -432,7 +503,6 @@
       display: none;
     }
 
-    /* VINTAGE ARCADE DIGITAL RECEIPT */
     .receipt-card {
       background: #0f172a;
       border: 2px dashed #38bdf8;
@@ -498,6 +568,24 @@
       align-items: center;
       gap: 0.4rem;
       box-shadow: 0 4px 12px rgba(56, 189, 248, 0.35);
+    }
+
+    .btn-return-lobby {
+      width: 100%;
+      background: linear-gradient(135deg, #059669, #10b981);
+      color: #ffffff;
+      font-weight: 900;
+      padding: 0.85rem;
+      border-radius: 10px;
+      font-size: 1rem;
+      cursor: pointer;
+      margin: 0.75rem 0 0.5rem;
+      box-shadow: 0 4px 16px rgba(16, 185, 129, 0.4);
+      border: none;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      gap: 0.5rem;
     }
 
     .player-podium {
@@ -632,7 +720,7 @@
           <h3 style="margin:0; font-size:1rem; color:#f8fafc;">🏆 Achievements Shelf</h3>
           <span id="achievement-count-label" style="font-size:0.75rem; color:var(--cyan); font-weight:800;">0 / 29 Unlocked</span>
         </div>
-        <p style="margin:0.2rem 0 0.5rem; font-size:0.75rem; color:#94a3b8;">Click an unlocked badge icon below to equip it next to your name</p>
+        <p style="margin:0.2rem 0 0.5rem; font-size:0.75rem; color:#94a3b8;">Tap any badge to view how it was earned and equip it</p>
         <div id="achievements-shelf-grid" class="achievements-grid"></div>
       </div>
 
@@ -756,6 +844,11 @@
         <button id="btn-copy-receipt" class="btn-copy-receipt">📋 Copy Match Stats</button>
       </div>
 
+      <!-- RETURN TO MATCH LOBBY BUTTON -->
+      <button id="btn-return-lobby" class="btn-return-lobby hidden">
+        <span>🎮 Ready for Next Round (Return to Lobby)</span>
+      </button>
+
       <div class="player-answer-reveal" id="answer-reveal-wrapper">
         <div class="player-answer-label">Correct Answer</div>
         <div id="player-correct-answer" class="player-answer-text">---</div>
@@ -806,6 +899,18 @@
     </div>
   </div>
 
+  <!-- ACHIEVEMENT EXPLANATION & EQUIP MODAL -->
+  <div id="achievement-modal" class="modal-backdrop hidden">
+    <div class="achievement-modal-box">
+      <div id="modal-badge-icon" class="achievement-modal-icon">🏆</div>
+      <div id="modal-badge-title" class="achievement-modal-title">Achievement Name</div>
+      <div id="modal-badge-desc" class="achievement-modal-desc">Description of requirements</div>
+      <div id="modal-badge-status" class="achievement-modal-status status-unlocked">UNLOCKED</div>
+      <button id="btn-modal-equip" class="btn-modal-action">Equip This Badge</button>
+      <button id="btn-modal-close" class="btn-modal-close">Close</button>
+    </div>
+  </div>
+
   <script>
     const ROOM_NAMES = {
       'ROOM1': 'Fremont Main',
@@ -853,6 +958,7 @@
     let playerAchievements = [];
     let equippedBadge = '';
     let lastReceiptText = '';
+    let activeModalBadge = null;
 
     const urlParams = new URLSearchParams(window.location.search);
     const assignedRoomCode = (urlParams.get('room') || 'ROOM1').trim().toUpperCase();
@@ -877,6 +983,50 @@
       setTimeout(clearBodyFlashes, 1000);
     }
 
+    // Modal inspection of achievements
+    const achievementModal = document.getElementById('achievement-modal');
+    const modalBadgeIcon = document.getElementById('modal-badge-icon');
+    const modalBadgeTitle = document.getElementById('modal-badge-title');
+    const modalBadgeDesc = document.getElementById('modal-badge-desc');
+    const modalBadgeStatus = document.getElementById('modal-badge-status');
+    const btnModalEquip = document.getElementById('btn-modal-equip');
+    const btnModalClose = document.getElementById('btn-modal-close');
+
+    function openAchievementModal(badge, isUnlocked) {
+      activeModalBadge = badge;
+      modalBadgeIcon.textContent = badge.icon;
+      modalBadgeTitle.textContent = badge.name;
+      modalBadgeDesc.textContent = badge.desc;
+
+      if (isUnlocked) {
+        modalBadgeStatus.textContent = 'UNLOCKED';
+        modalBadgeStatus.className = 'achievement-modal-status status-unlocked';
+        btnModalEquip.style.display = 'block';
+        btnModalEquip.textContent = equippedBadge === badge.icon ? 'Unequip Badge' : 'Equip Badge';
+      } else {
+        modalBadgeStatus.textContent = 'LOCKED';
+        modalBadgeStatus.className = 'achievement-modal-status status-locked';
+        btnModalEquip.style.display = 'none';
+      }
+
+      achievementModal.classList.remove('hidden');
+      haptic(25);
+    }
+
+    btnModalClose.addEventListener('click', () => {
+      achievementModal.classList.add('hidden');
+    });
+
+    btnModalEquip.addEventListener('click', () => {
+      if (!activeModalBadge) return;
+      equippedBadge = equippedBadge === activeModalBadge.icon ? '' : activeModalBadge.icon;
+      socket.emit('player:set_badge', equippedBadge);
+      renderAchievementsShelf(playerAchievements);
+      updatePlayerHeaderDisplay();
+      btnModalEquip.textContent = equippedBadge === activeModalBadge.icon ? 'Unequip Badge' : 'Equip Badge';
+      haptic(40);
+    });
+
     function renderAchievementsShelf(unlockedList) {
       playerAchievements = unlockedList || [];
       const shelfGrid = document.getElementById('achievements-shelf-grid');
@@ -894,18 +1044,12 @@
 
         const div = document.createElement('div');
         div.className = `achievement-badge-item ${isUnlocked ? 'unlocked' : 'locked'} ${isEquipped ? 'equipped' : ''}`;
-        div.title = `${badge.name}: ${badge.desc} ${isUnlocked ? '(Unlocked)' : '(Locked)'}`;
         div.innerHTML = `<span class="badge-icon">${badge.icon}</span>`;
 
-        if (isUnlocked) {
-          div.addEventListener('click', () => {
-            equippedBadge = equippedBadge === badge.icon ? '' : badge.icon;
-            socket.emit('player:set_badge', equippedBadge);
-            renderAchievementsShelf(playerAchievements);
-            updatePlayerHeaderDisplay();
-            haptic(25);
-          });
-        }
+        div.addEventListener('click', () => {
+          openAchievementModal(badge, isUnlocked);
+        });
+
         shelfGrid.appendChild(div);
       });
 
@@ -963,6 +1107,7 @@
     const receiptSpeed = document.getElementById('receipt-speed');
     const receiptCat = document.getElementById('receipt-cat');
     const btnCopyReceipt = document.getElementById('btn-copy-receipt');
+    const btnReturnLobby = document.getElementById('btn-return-lobby');
 
     const milestoneText = document.getElementById('milestone-text');
     const milestoneLeaderboardList = document.getElementById('milestone-leaderboard-list');
@@ -1034,8 +1179,10 @@
       statCareerScore.textContent = Number(data.careerScore).toLocaleString() + ' pts';
 
       joinScreen.classList.add('hidden');
-      lobbyScreen.classList.remove('hidden');
-      loadLobbyLeaderboards();
+      if (!data.inProgress) {
+        lobbyScreen.classList.remove('hidden');
+        loadLobbyLeaderboards();
+      }
     });
 
     socket.on('player:badge_updated', (badge) => {
@@ -1054,6 +1201,17 @@
       localStorage.removeItem('trivia_user');
       localStorage.removeItem('trivia_pin');
       window.location.reload();
+    });
+
+    // Clean return to main lobby
+    btnReturnLobby.addEventListener('click', () => {
+      clearBodyFlashes();
+      resultsScreen.classList.add('hidden');
+      gameScreen.classList.add('hidden');
+      milestoneScreen.classList.add('hidden');
+      lobbyScreen.classList.remove('hidden');
+      loadLobbyLeaderboards();
+      haptic(30);
     });
 
     async function loadLobbyLeaderboards() {
@@ -1108,6 +1266,7 @@
       playerPodiumArea.classList.add('hidden');
       mobileAwardNotice.classList.add('hidden');
       playerReceiptContainer.classList.add('hidden');
+      btnReturnLobby.classList.add('hidden');
       answerRevealWrapper.classList.remove('hidden');
       postGameViewToggle.classList.add('hidden');
       currentMatchContainer.classList.remove('hidden');
@@ -1145,6 +1304,11 @@
         });
         optionsContainer.appendChild(btn);
       });
+
+      if (data.alreadyAnswered) {
+        Array.from(optionsContainer.children).forEach(b => b.disabled = true);
+        statusMessage.classList.remove('hidden');
+      }
     });
 
     socket.on('game:timer_tick', (data) => {
@@ -1160,6 +1324,7 @@
       gameScreen.classList.add('hidden');
       milestoneScreen.classList.add('hidden');
       resultsScreen.classList.remove('hidden');
+      btnReturnLobby.classList.add('hidden');
 
       resultsHeading.textContent = "Round Results";
       playerCorrectAnswer.textContent = data.correctAnswerText;
@@ -1231,6 +1396,7 @@
       reactionTimePill.classList.add('hidden');
       streakBanner.classList.add('hidden');
       postGameViewToggle.classList.remove('hidden');
+      btnReturnLobby.classList.remove('hidden');
 
       const leaderboard = Array.isArray(data) ? data : data.leaderboard;
       const myRank = data.myRank;
@@ -1244,7 +1410,6 @@
       }
       resultFeedback.style.color = "#38bdf8";
 
-      // Render digital match receipt
       if (data.receipt) {
         const rc = data.receipt;
         receiptDate.textContent = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
