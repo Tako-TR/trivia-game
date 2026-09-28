@@ -166,10 +166,10 @@ function getOrCreateRoom(rawRoomCode) {
       roundActive: false,
       isPaused: false,
       currentGameCategory: 'all',
+      sabotageEnabled: true,
       previousRankings: {},
       playedQuestionHashes: [],
       isDemoMode: false,
-      sabotageEnabled: true,
       demoBotCount: 0,
       demoBotTimeouts: []
     };
@@ -651,7 +651,7 @@ const ACHIEVEMENTS_DEF = {
 };
 
 /* =========================================================
-   SCALABLE DEMO SIMULATION & SABOTAGE
+   SCALABLE DEMO SIMULATION & SABOTAGE ENGINE
 ========================================================= */
 const BOT_NAMES = [
   'Alex', 'Maya', 'Jordan', 'Sam', 'Riley', 'Taylor', 'Morgan', 'Casey', 'Avery', 'Dakota',
@@ -761,17 +761,8 @@ io.on('connection', (socket) => {
     socket.emit('host:room_joined', {
       roomCode: room.code,
       roomName: room.name,
-      players: getLobbyPlayers(room),
-      sabotageEnabled: room.sabotageEnabled
+      players: getLobbyPlayers(room)
     });
-  });
-
-  socket.on('host:toggle_sabotage', ({ roomCode, enabled }) => {
-    const room = getOrCreateRoom(roomCode);
-    if (room) {
-      room.sabotageEnabled = !!enabled;
-      io.to(room.code).emit('game:sabotage_toggled', room.sabotageEnabled);
-    }
   });
 
   socket.on('player:auth', async ({ username, pin, roomCode }) => {
@@ -871,7 +862,7 @@ io.on('connection', (socket) => {
           connectedPlayers: connectedList,
           alreadyAnswered: room.activeSockets[socket.id].currentAnswer !== null,
           sabotageEnergy: room.activeSockets[socket.id].sabotageEnergy,
-          sabotageEnabled: room.sabotageEnabled
+          sabotageEnabled: room.sabotageEnabled !== false
         });
       }
     } catch (err) {
@@ -911,44 +902,42 @@ io.on('connection', (socket) => {
     }
   });
 
+  // Handle Sabotage Action (Simplified & Reliable)
   socket.on('player:launch_sabotage', ({ targetRank, sabotageType }) => {
     const room = getSocketRoom(socket);
-    if (!room || !room.roundActive || !room.sabotageEnabled) return;
+    if (!room || !room.roundActive || room.sabotageEnabled === false) return;
 
     const sender = room.activeSockets[socket.id];
     if (!sender) return;
 
     const standings = getCurrentGameStandings(room);
     const totalPlayers = standings.length;
-    if (totalPlayers < 3) return;
+    if (totalPlayers < 2) return;
 
     const senderIndex = standings.findIndex(s => s.id === socket.id);
-    const senderPercentile = senderIndex / totalPlayers;
+    const myRank = senderIndex + 1;
 
-    const targetIdx = targetRank - 1;
-    if (targetIdx < 0 || targetIdx >= standings.length || targetIdx >= 3) return;
-
-    const targetItem = standings[targetIdx];
-    if (targetItem.id === socket.id) return;
-
-    let requiredEnergy = 3;
-    let allowedMaxRank = 0.25;
-
-    if (targetRank === 1) {
-      requiredEnergy = 3;
-      allowedMaxRank = 0.25;
-    } else if (targetRank === 2) {
-      requiredEnergy = 2;
-      allowedMaxRank = 0.50;
-    } else if (targetRank === 3) {
-      requiredEnergy = 1;
-      allowedMaxRank = 0.75;
+    if (myRank === 1) {
+      return socket.emit('sabotage:error', '1st place cannot sabotage! Defend your crown.');
     }
 
-    if (senderPercentile < allowedMaxRank) return;
+    let requiredEnergy = 3;
+    if (targetRank === 1) requiredEnergy = 3;
+    else if (targetRank === 2) requiredEnergy = 2;
+    else if (targetRank === 3) requiredEnergy = 1;
 
     if ((sender.sabotageEnergy || 0) < requiredEnergy) {
-      return socket.emit('sabotage:error', `Need ${requiredEnergy} energy tokens to target #${targetRank}.`);
+      return socket.emit('sabotage:error', `Need ${requiredEnergy}⚡ energy to target #${targetRank}.`);
+    }
+
+    const targetIdx = targetRank - 1;
+    if (targetIdx < 0 || targetIdx >= standings.length) {
+      return socket.emit('sabotage:error', `Target #${targetRank} not found in game.`);
+    }
+
+    const targetItem = standings[targetIdx];
+    if (targetItem.id === socket.id) {
+      return socket.emit('sabotage:error', "You can't sabotage yourself!");
     }
 
     sender.sabotageEnergy -= requiredEnergy;
@@ -1040,6 +1029,7 @@ io.on('connection', (socket) => {
     clearDemoBotTimeouts(room);
 
     room.isDemoMode = !!config.isDemo;
+    room.sabotageEnabled = config.sabotageEnabled !== false;
     const requestedBotCount = parseInt(config.botCount, 10) || 50;
 
     Object.keys(room.activeSockets).forEach((id) => {
@@ -1227,18 +1217,25 @@ function startNextQuestion(room) {
     answered: false
   }));
 
-  io.to(room.code).emit('game:new_question', {
-    category: currentQ.category,
-    question: currentQ.question,
-    image: currentQ.image || null,
-    options: currentQ.options,
-    correctAnswer: currentQ.answer,
-    questionNumber: room.currentQuestionIndex + 1,
-    totalQuestions: room.activeQuestions.length,
-    timeLeft: room.timeLeft,
-    duration: QUESTION_DURATION,
-    connectedPlayers: connectedList,
-    sabotageEnabled: room.sabotageEnabled
+  Object.keys(room.activeSockets).forEach((sockId) => {
+    const sock = io.sockets.sockets.get(sockId);
+    if (sock) {
+      const p = room.activeSockets[sockId];
+      sock.emit('game:new_question', {
+        category: currentQ.category,
+        question: currentQ.question,
+        image: currentQ.image || null,
+        options: currentQ.options,
+        correctAnswer: currentQ.answer,
+        questionNumber: room.currentQuestionIndex + 1,
+        totalQuestions: room.activeQuestions.length,
+        timeLeft: room.timeLeft,
+        duration: QUESTION_DURATION,
+        connectedPlayers: connectedList,
+        sabotageEnergy: p.sabotageEnergy || 0,
+        sabotageEnabled: room.sabotageEnabled !== false
+      });
+    }
   });
 
   if (room.isDemoMode) {
@@ -1343,21 +1340,6 @@ function endRound(room) {
   room.previousRankings = nextRankings;
 
   const isMilestone = totalQuestions > 10 && finishedQuestionNum % 10 === 0 && finishedQuestionNum < totalQuestions;
-
-  io.to(room.code).emit('game:round_ended', {
-    correctAnswer: correctIdx,
-    correctAnswerText: currentQ.options[correctIdx],
-    questionText: currentQ.question,
-    options: currentQ.options,
-    distribution: distribution,
-    totalResponders: totalResponders,
-    unansweredCount: unansweredCount,
-    leaderboard: leaderboard,
-    fastestPlayer: fastestPlayer,
-    slowestPlayer: slowestPlayer,
-    isMilestone: isMilestone,
-    milestoneNumber: finishedQuestionNum
-  });
 
   Object.keys(room.activeSockets).forEach((sockId) => {
     const socket = io.sockets.sockets.get(sockId);
