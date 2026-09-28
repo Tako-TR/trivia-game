@@ -458,7 +458,7 @@ app.post('/api/players/bulk', async (req, res) => {
           }
         });
         rooms[code].activeSockets = {};
-        io.to(code).emit('game:player_list', getLobbyPlayers(room));
+        io.to(code).emit('game:player_list', []);
       }
       return res.json({ success: true, message: 'All player profiles wiped.' });
     }
@@ -681,6 +681,7 @@ function seedDemoBots(room, count = 50) {
       badge: badge,
       score: 0,
       sabotageEnergy: 0,
+      hasShield: false,
       currentAnswer: null,
       answerTimeLeft: 0,
       reactionSeconds: null,
@@ -813,6 +814,7 @@ io.on('connection', (socket) => {
         badge: playerProfile.badge || '',
         score: previousState ? previousState.score : 0,
         sabotageEnergy: previousState ? (previousState.sabotageEnergy || 0) : 0,
+        hasShield: previousState ? !!previousState.hasShield : false,
         currentAnswer: previousState ? previousState.currentAnswer : null,
         answerTimeLeft: previousState ? previousState.answerTimeLeft : 0,
         reactionSeconds: previousState ? previousState.reactionSeconds : null,
@@ -864,6 +866,7 @@ io.on('connection', (socket) => {
           connectedPlayers: connectedList,
           alreadyAnswered: room.activeSockets[socket.id].currentAnswer !== null,
           sabotageEnergy: room.activeSockets[socket.id].sabotageEnergy || 0,
+          hasShield: room.activeSockets[socket.id].hasShield || false,
           myRank: myRank
         });
       }
@@ -905,7 +908,71 @@ io.on('connection', (socket) => {
   });
 
   /* =========================================================
-     SABOTAGE ACTION HANDLER
+     DEFENSIVE SHIELD TOGGLE (1⚡ COST)
+  ========================================================= */
+  socket.on('player:activate_shield', () => {
+    const room = getSocketRoom(socket);
+    if (!room || !room.roundActive) return;
+
+    const sender = room.activeSockets[socket.id];
+    if (!sender) return;
+
+    if (sender.hasShield) {
+      return socket.emit('sabotage:error', 'Shield is already active!');
+    }
+
+    if ((sender.sabotageEnergy || 0) < 1) {
+      return socket.emit('sabotage:error', 'Need 1⚡ energy to deploy a Shield!');
+    }
+
+    sender.sabotageEnergy -= 1;
+    sender.hasShield = true;
+
+    socket.emit('shield:activated', {
+      remainingEnergy: sender.sabotageEnergy,
+      hasShield: true
+    });
+  });
+
+  /* =========================================================
+     AUDIENCE LIFELINE ("ASK THE ROOM") (2⚡ COST)
+  ========================================================= */
+  socket.on('player:use_lifeline', () => {
+    const room = getSocketRoom(socket);
+    if (!room || !room.roundActive) return;
+
+    const sender = room.activeSockets[socket.id];
+    if (!sender) return;
+
+    if ((sender.sabotageEnergy || 0) < 2) {
+      return socket.emit('sabotage:error', 'Need 2⚡ energy to use Audience Lifeline!');
+    }
+
+    const currentQ = room.activeQuestions[room.currentQuestionIndex];
+    if (!currentQ) return;
+
+    const distribution = currentQ.options.map(() => 0);
+    let totalVotes = 0;
+
+    Object.values(room.activeSockets).forEach(p => {
+      if (p.currentAnswer !== null && p.currentAnswer >= 0 && p.currentAnswer < distribution.length) {
+        distribution[p.currentAnswer]++;
+        totalVotes++;
+      }
+    });
+
+    const percentages = distribution.map(count => totalVotes > 0 ? Math.round((count / totalVotes) * 100) : 25);
+
+    sender.sabotageEnergy -= 2;
+    socket.emit('lifeline:result', {
+      remainingEnergy: sender.sabotageEnergy,
+      percentages: percentages,
+      totalVotes: totalVotes
+    });
+  });
+
+  /* =========================================================
+     OFFENSIVE SABOTAGE HANDLER + SHIELD REFLECT
   ========================================================= */
   socket.on('player:launch_sabotage', ({ targetRank, sabotageType }) => {
     const room = getSocketRoom(socket);
@@ -920,18 +987,18 @@ io.on('connection', (socket) => {
     const senderIndex = standings.findIndex(s => s.id === socket.id);
     const myRank = senderIndex + 1;
 
-    // First place cannot sabotage
+    // 1st place cannot sabotage
     if (myRank === 1) {
-      return socket.emit('sabotage:error', '1st place cannot sabotage! Defend your lead.');
+      return socket.emit('sabotage:error', '1st place cannot sabotage! Defend your lead with a Shield.');
     }
 
     let requiredEnergy = 3;
-    if (targetRank === 1) requiredEnergy = 3;
-    else if (targetRank === 2) requiredEnergy = 2;
-    else if (targetRank === 3) requiredEnergy = 1;
+    if (sabotageType === 'ink') requiredEnergy = 3;
+    else if (sabotageType === 'invert' || sabotageType === 'static') requiredEnergy = 2;
+    else if (sabotageType === 'shuffler') requiredEnergy = 1;
 
     if ((sender.sabotageEnergy || 0) < requiredEnergy) {
-      return socket.emit('sabotage:error', `Need ${requiredEnergy}⚡ energy for #${targetRank}.`);
+      return socket.emit('sabotage:error', `Need ${requiredEnergy}⚡ energy for this attack.`);
     }
 
     const targetIdx = targetRank - 1;
@@ -944,16 +1011,52 @@ io.on('connection', (socket) => {
       return socket.emit('sabotage:error', "You can't sabotage yourself!");
     }
 
-    // Deduct energy
+    const targetSocket = io.sockets.sockets.get(targetItem.id);
+    const targetPlayer = room.activeSockets[targetItem.id];
+
+    // Deduct energy from sender
     sender.sabotageEnergy -= requiredEnergy;
+
+    // CHECK IF TARGET HAS A DEFENSIVE SHIELD EQUIPPED
+    if (targetPlayer && targetPlayer.hasShield) {
+      targetPlayer.hasShield = false; // Shield shatters absorbing the hit
+
+      // 1. Notify target that shield held and reflected
+      if (targetSocket) {
+        targetSocket.emit('shield:reflected', {
+          attackerName: sender.username,
+          sabotageType: sabotageType
+        });
+      }
+
+      // 2. Reflected hit strikes original attacker!
+      socket.emit('game:incoming_sabotage', {
+        sabotageType: sabotageType,
+        attackerName: `${targetItem.name} [REFLECTED!]`
+      });
+
+      socket.emit('sabotage:error', `SHIELD REFLECT! ${targetItem.name}'s shield reflected the attack back onto you!`);
+
+      // 3. Broadcast shield reflect alert to TV host screen
+      io.to(room.code).emit('game:sabotage_banner', {
+        attackerName: targetItem.name,
+        attackerBadge: targetItem.badge || '🛡️',
+        targetRank: myRank,
+        targetName: sender.username,
+        targetBadge: sender.badge || '',
+        sabotageType: sabotageType,
+        reflected: true
+      });
+      return;
+    }
+
+    // Normal successful sabotage attack
     socket.emit('sabotage:success', {
       remainingEnergy: sender.sabotageEnergy,
       targetRank: targetRank,
       targetName: targetItem.name
     });
 
-    // Send animation payload to target player's phone
-    const targetSocket = io.sockets.sockets.get(targetItem.id);
     if (targetSocket) {
       targetSocket.emit('game:incoming_sabotage', {
         sabotageType: sabotageType,
@@ -961,14 +1064,14 @@ io.on('connection', (socket) => {
       });
     }
 
-    // Send visual announcement to host display
     io.to(room.code).emit('game:sabotage_banner', {
       attackerName: sender.username,
       attackerBadge: sender.badge || '',
       targetRank: targetRank,
       targetName: targetItem.name,
       targetBadge: targetItem.badge || '',
-      sabotageType: sabotageType
+      sabotageType: sabotageType,
+      reflected: false
     });
   });
 
@@ -1053,6 +1156,7 @@ io.on('connection', (socket) => {
       }
       p.score = 0;
       p.sabotageEnergy = 0;
+      p.hasShield = false;
       p.currentAnswer = null;
       p.answerTimeLeft = 0;
       p.reactionSeconds = null;
@@ -1230,7 +1334,7 @@ function startNextQuestion(room) {
     answered: false
   }));
 
-  // 1. BROADCAST GLOBALLY TO HOST AND BASE CLIENTS
+  // 1. BROADCAST GLOBALLY TO HOST AND TV VIEWPORTS
   io.to(room.code).emit('game:new_question', {
     category: currentQ.category,
     question: currentQ.question,
@@ -1244,7 +1348,7 @@ function startNextQuestion(room) {
     connectedPlayers: connectedList
   });
 
-  // 2. DISPATCH PERSONAL ENERGY AND LIVE RANK TO EACH PLAYER
+  // 2. DISPATCH PERSONAL ENERGY, SHIELD STATUS, AND LIVE RANK TO EACH PLAYER
   const standings = getCurrentGameStandings(room);
   Object.keys(room.activeSockets).forEach((sockId) => {
     const sock = io.sockets.sockets.get(sockId);
@@ -1264,6 +1368,7 @@ function startNextQuestion(room) {
         duration: QUESTION_DURATION,
         connectedPlayers: connectedList,
         sabotageEnergy: p.sabotageEnergy || 0,
+        hasShield: p.hasShield || false,
         myRank: myRank
       });
     }
@@ -1374,7 +1479,7 @@ function endRound(room) {
 
   const isMilestone = totalQuestions > 10 && finishedQuestionNum % 10 === 0 && finishedQuestionNum < totalQuestions;
 
-  // Global broadcast to host and TV displays
+  // Global broadcast to host
   io.to(room.code).emit('game:round_ended', {
     correctAnswer: correctIdx,
     correctAnswerText: currentQ.options[correctIdx],
@@ -1419,7 +1524,8 @@ function endRound(room) {
         slowestPlayer: slowestPlayer,
         isMilestone: isMilestone,
         milestoneNumber: finishedQuestionNum,
-        sabotageEnergy: p ? (p.sabotageEnergy || 0) : 0
+        sabotageEnergy: p ? (p.sabotageEnergy || 0) : 0,
+        hasShield: p ? !!p.hasShield : false
       });
     }
   });
