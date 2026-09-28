@@ -505,7 +505,7 @@
           <table class="player-table">
             <thead>
               <tr>
-                <th>Avatar & User</th>
+                <th>Badge & User</th>
                 <th>Single Best</th>
                 <th>Career XP</th>
                 <th>Games</th>
@@ -651,6 +651,7 @@
     let allPresets = {};
     let selectedQuestionIndices = new Set();
     let currentlyVisibleFilteredIndices = [];
+    let selectedForPreset = new Set();
 
     navQuestions.addEventListener('click', () => {
       navQuestions.classList.add('active');
@@ -1048,7 +1049,6 @@
       }
     }
 
-    let selectedForPreset = new Set();
     btnSelectVisible.addEventListener('click', () => {
       const query = presetSearchInput.value.toLowerCase().trim();
       const isAllCat = chkCatAll.checked;
@@ -1294,8 +1294,9 @@
 
       filtered.forEach(p => {
         const tr = document.createElement('tr');
+        const badgeStr = p.badge ? `${p.badge} ` : '';
         tr.innerHTML = `
-          <td><strong>${p.avatar || '🚀'} ${p.username}</strong></td>
+          <td><strong>${badgeStr}${p.username}</strong></td>
           <td style="color:#38bdf8;">${Number(p.high_score).toLocaleString()} pts</td>
           <td style="color:#10b981;">${Number(p.career_score).toLocaleString()} pts</td>
           <td>${p.games_played}</td>
