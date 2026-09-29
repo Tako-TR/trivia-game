@@ -27,6 +27,21 @@ const memoryPlayers = {};
 const memoryRoomScores = {};
 const memoryCategoryScores = {};
 
+// Fallback JSON persistence for all-time question stats
+const questionStatsFilePath = path.join(__dirname, 'question_stats.json');
+let memoryQuestionStats = {};
+try {
+  if (fs.existsSync(questionStatsFilePath)) {
+    memoryQuestionStats = JSON.parse(fs.readFileSync(questionStatsFilePath, 'utf8'));
+  }
+} catch (e) {
+  console.error('Error loading question_stats.json:', e);
+}
+
+function saveQuestionStatsMemory() {
+  fs.writeFile(questionStatsFilePath, JSON.stringify(memoryQuestionStats, null, 2), 'utf8', () => {});
+}
+
 async function initDb() {
   if (!pool) {
     console.warn('DATABASE_URL not detected. Persistent stats running in memory only.');
@@ -63,6 +78,12 @@ async function initDb() {
         career_score INT DEFAULT 0,
         games_played INT DEFAULT 0,
         PRIMARY KEY (username, category)
+      );
+
+      CREATE TABLE IF NOT EXISTS question_stats (
+        question_hash VARCHAR(64) PRIMARY KEY,
+        total_answers INT DEFAULT 0,
+        correct_answers INT DEFAULT 0
       );
     `);
     console.log('Database initialized successfully.');
@@ -458,7 +479,7 @@ app.post('/api/players/bulk', async (req, res) => {
           }
         });
         rooms[code].activeSockets = {};
-        io.to(code).emit('game:player_list', []);
+        io.to(code).emit('game:player_list', getLobbyPlayers(room));
       }
       return res.json({ success: true, message: 'All player profiles wiped.' });
     }
@@ -620,7 +641,7 @@ function getStreakLabel(streak) {
 const ACHIEVEMENTS_DEF = {
   'flawless': { name: 'Flawless Victory', icon: '🎯', desc: 'Answer every question correctly in a match' },
   'lightning': { name: 'Lightning Fast', icon: '💨', desc: 'Submit a correct answer in under 1.0s' },
-  'elevator': { name: 'The Elevator', icon: '🧗‍♂️', desc: 'Climb 5+ spots during final 3 questions' },
+  'elevator': { name: 'The Elevator', icon: '🧗‍♂️️', desc: 'Climb 5+ spots during final 3 questions' },
   'ice': { name: 'Ice in the Veins', icon: '🧊', desc: 'Win match on the very last question' },
   'lucky': { name: 'Lucky Guess', icon: '🍀', desc: 'Correct answer with <1s remaining' },
   'speed_demon': { name: 'Speed Demon', icon: '⚡', desc: 'Answer correctly in under 1.5s' },
@@ -921,11 +942,11 @@ io.on('connection', (socket) => {
       return socket.emit('sabotage:error', 'Shield is already active!');
     }
 
-    if ((sender.sabotageEnergy || 0) < 1) {
-      return socket.emit('sabotage:error', 'Need 1⚡ energy to deploy a Shield!');
+    if ((sender.sabotageEnergy || 0) < 2) {
+      return socket.emit('sabotage:error', 'Need 2⚡ energy to deploy a Shield!');
     }
 
-    sender.sabotageEnergy -= 1;
+    sender.sabotageEnergy -= 2;
     sender.hasShield = true;
 
     socket.emit('shield:activated', {
@@ -971,7 +992,7 @@ io.on('connection', (socket) => {
     });
   });
 
-/* =========================================================
+  /* =========================================================
      OFFENSIVE SABOTAGE HANDLER + SHIELD REFLECT + GRACE PERIOD
   ========================================================= */
   socket.on('player:launch_sabotage', ({ targetRank, sabotageType }) => {
@@ -1407,7 +1428,7 @@ function startNextQuestion(room) {
   }, 1000);
 }
 
-function endRound(room) {
+async function endRound(room) {
   room.roundActive = false;
   clearDemoBotTimeouts(room);
 
@@ -1418,6 +1439,8 @@ function endRound(room) {
 
   const distribution = currentQ.options.map(() => 0);
   let unansweredCount = 0;
+  let roundCorrectCount = 0;
+  let roundTotalAnswers = 0;
 
   let fastestPlayer = null;
   let slowestPlayer = null;
@@ -1425,7 +1448,12 @@ function endRound(room) {
   Object.keys(room.activeSockets).forEach((id) => {
     const p = room.activeSockets[id];
 
+    if (p.currentAnswer !== null) {
+      roundTotalAnswers++;
+    }
+
     if (p.currentAnswer === correctIdx) {
+      roundCorrectCount++;
       p.correctAnswersCount++;
       if (isHardQ) p.hardQuestionsCorrect++;
       p.streak = (p.streak || 0) + 1;
@@ -1466,6 +1494,43 @@ function endRound(room) {
     }
   });
 
+  // Calculate & Persist All-Time Accuracy
+  const qHash = normalizeQuestionKey(currentQ.question);
+  let allTimeTotal = roundTotalAnswers;
+  let allTimeCorrect = roundCorrectCount;
+
+  if (pool) {
+    try {
+      const qRes = await pool.query(
+        `INSERT INTO question_stats (question_hash, total_answers, correct_answers)
+         VALUES ($1, $2, $3)
+         ON CONFLICT (question_hash)
+         DO UPDATE SET
+           total_answers = question_stats.total_answers + EXCLUDED.total_answers,
+           correct_answers = question_stats.correct_answers + EXCLUDED.correct_answers
+         RETURNING total_answers, correct_answers;`,
+        [qHash, roundTotalAnswers, roundCorrectCount]
+      );
+      if (qRes.rows.length > 0) {
+        allTimeTotal = qRes.rows[0].total_answers;
+        allTimeCorrect = qRes.rows[0].correct_answers;
+      }
+    } catch (e) {
+      console.error('Error saving question stats:', e);
+    }
+  } else {
+    if (!memoryQuestionStats[qHash]) {
+      memoryQuestionStats[qHash] = { total_answers: 0, correct_answers: 0 };
+    }
+    memoryQuestionStats[qHash].total_answers += roundTotalAnswers;
+    memoryQuestionStats[qHash].correct_answers += roundCorrectCount;
+    allTimeTotal = memoryQuestionStats[qHash].total_answers;
+    allTimeCorrect = memoryQuestionStats[qHash].correct_answers;
+    saveQuestionStatsMemory();
+  }
+
+  const allTimeAccuracy = allTimeTotal > 0 ? Math.round((allTimeCorrect / allTimeTotal) * 100) : 0;
+
   const leaderboard = getCurrentGameStandings(room);
   const finishedQuestionNum = room.currentQuestionIndex + 1;
   const totalQuestions = room.activeQuestions.length;
@@ -1504,7 +1569,9 @@ function endRound(room) {
     fastestPlayer: fastestPlayer,
     slowestPlayer: slowestPlayer,
     isMilestone: isMilestone,
-    milestoneNumber: finishedQuestionNum
+    milestoneNumber: finishedQuestionNum,
+    allTimeAccuracy: allTimeAccuracy,
+    allTimeTotal: allTimeTotal
   });
 
   // Targeted broadcast to each player device
@@ -1537,7 +1604,9 @@ function endRound(room) {
         isMilestone: isMilestone,
         milestoneNumber: finishedQuestionNum,
         sabotageEnergy: p ? (p.sabotageEnergy || 0) : 0,
-        hasShield: p ? !!p.hasShield : false
+        hasShield: p ? !!p.hasShield : false,
+        allTimeAccuracy: allTimeAccuracy,
+        allTimeTotal: allTimeTotal
       });
     }
   });
