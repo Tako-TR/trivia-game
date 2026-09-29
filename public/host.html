@@ -498,7 +498,22 @@
       margin-bottom: 0.85rem;
       box-shadow: 0 10px 28px rgba(16, 185, 129, 0.35), inset 0 1px 0 rgba(255, 255, 255, 0.18);
     }
+    .answer-reveal-top-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
     .answer-reveal-label { font-size: 0.75rem; text-transform: uppercase; color: #6ee7b7; font-weight: 900; letter-spacing: 0.06em; }
+    .alltime-accuracy-badge {
+      background: rgba(15, 23, 42, 0.65);
+      border: 1px solid rgba(56, 189, 248, 0.5);
+      color: var(--cyan);
+      font-size: 0.78rem;
+      font-weight: 900;
+      padding: 0.25rem 0.75rem;
+      border-radius: 9999px;
+      box-shadow: 0 0 10px rgba(56, 189, 248, 0.25);
+    }
     .answer-reveal-text { font-size: 1.85rem; font-weight: 900; color: #fff; margin-top: 0.25rem; }
 
     .spotlights-container {
@@ -1060,7 +1075,10 @@
       <div class="tv-results-split">
         <div class="tv-results-left">
           <div class="answer-reveal-box">
-            <div class="answer-reveal-label">Correct Answer</div>
+            <div class="answer-reveal-top-row">
+              <span class="answer-reveal-label">Correct Answer</span>
+              <span id="host-alltime-badge" class="alltime-accuracy-badge">🎯 --% All-Time Accuracy</span>
+            </div>
             <div id="host-correct-answer" class="answer-reveal-text">---</div>
           </div>
 
@@ -1396,6 +1414,7 @@
     const sabHostIcon = document.getElementById('sab-host-icon');
     const sabHostTitle = document.getElementById('sab-host-title');
     const sabHostText = document.getElementById('sab-host-text');
+    const hostAlltimeBadge = document.getElementById('host-alltime-badge');
 
     function renderQRCode(roomCode) {
       const joinUrl = `${window.location.origin}/?room=${roomCode}`;
@@ -1844,6 +1863,11 @@
 
       playRevealSound();
       hostCorrectAnswer.textContent = data.correctAnswerText;
+
+      // Update All-Time Global Accuracy Badge
+      const allTimeAcc = data.allTimeAccuracy !== undefined ? data.allTimeAccuracy : 0;
+      const allTimeTotal = data.allTimeTotal !== undefined ? data.allTimeTotal : 0;
+      hostAlltimeBadge.textContent = `🎯 ${allTimeAcc}% All-Time Accuracy (${allTimeTotal} answers logged)`;
 
       const total = data.totalResponders || 0;
       const correctCount = (data.distribution && typeof data.correctAnswer === 'number') ? (data.distribution[data.correctAnswer] || 0) : 0;
