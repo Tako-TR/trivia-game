@@ -4,51 +4,47 @@ const { Server } = require('socket.io');
 const fs = require('fs');
 const path = require('path');
 const { Pool } = require('pg');
-const Filter = require('bad-words');
 
 const app = express();
 const server = http.createServer(app);
 const io = new Server(server);
 
-const baseFilter = new Filter();
+/* =========================================================
+   ZERO-DEPENDENCY CHURCH YOUTH GROUP SAFETY FILTER
+========================================================= */
+const CHURCH_BLOCKED_PATTERNS = [
+  // Profanity & Vulgarity
+  /f+u+c*k+/i, /s+h+i+t+/i, /b+i+t+c*h+/i, /a+s+s+h+o+l+e*/i, /b+a+s+t+a+r+d+/i,
+  /c+u+n+t+/i, /d+a+m+n+/i, /c+r+a+p+/i, /p+i+s+s+/i,
 
-// Comprehensive youth ministry safety blocklist
-const CHURCH_FLAGGED_TERMS = [
-  // Profanity & vulgarity
-  'fuck', 'fck', 'fuk', 'fuc', 'fucker', 'fucking', 'shit', 'sh1t', 'sht', 'bitch', 'btch',
-  'b1tch', 'ass', 'a55', 'asshole', 'bastard', 'damn', 'crap', 'piss', 'cunt',
+  // Anatomy, Innuendo & Sexual Terms
+  /p+e+n+i+s+/i, /d+i+c*k+/i, /c+o+c*k+/i, /v+a+g+i+n+a+/i, /p+u+s+s+y+/i,
+  /b+o+o+b+s*/i, /t+i+t+s*/i, /t+i+t+t+i+e+s*/i, /c+l+i+t+/i, /a+n+u+s+/i,
+  /a+n+a+l+/i, /b+o+n+e+r+/i, /e+r+e+c+t+/i, /s+e+m+e+n+/i, /c+u+m+/i,
+  /o+r+g+a+s+m+/i, /h+o+r+n+y+/i, /d+i+l+d+o+/i, /c+o+n+d+o+m+/i, /w+h+o+r+e+/i,
+  /s+l+u+t+/i, /t+h+o+t+/i, /p+o+r+n+/i, /x+x+x+/i, /h+e+n+t+a+i+/i,
+  /o+n+l+y+f+a+n+s*/i, /p+o+r+n+h+u+b+/i, /b+a+l+l+s+a+c*k+/i, /n+u+t+s+a+c*k+/i,
+  /d+e+e+z+n+u+t+s*/i, /s+u+g+m+a+/i, /l+i+g+m+a+/i, /g+y+a+t+/i,
 
-  // Sexual anatomy & innuendo
-  'penis', 'pen1s', 'p3nis', 'dick', 'd1ck', 'dck', 'dik', 'dix', 'cock', 'c0ck', 'cok',
-  'vagina', 'pussy', 'pusy', 'puss', 'boob', 'boobs', 'b00b', 'b00bs', 'tit', 'tits',
-  'titties', 'clit', 'vulva', 'anus', 'anal', 'rectum', 'boner', 'erection', 'nutsack',
-  'ballsack', 'testicle', 'testicles', 'semen', 'cum', 'kumm', 'ejaculat', 'orgasm',
-  'masturbat', 'horny', 'dildo', 'condom', 'stripper', 'hooker', 'escort', 'whore',
-  'hoe', 'thot', 'slut', 'onlyfans', 'pornhub', 'brazzers', 'xnxx', 'hentai', 'porn',
-  'xxx', 'deeznut', 'deeznutz', 'sugma', 'ligma', 'gyatt', 'rizzler', 'skibidi',
+  // Drugs, Vaping & Alcohol
+  /w+e+e+d+/i, /b+l+u+n+t+/i, /j+o+i+n+t+/i, /s+t+o+n+e+r+/i, /v+a+p+e+/i,
+  /v+a+p+i+n+g+/i, /n+i+c+o+t+i+n+e+/i, /b+o+n+g+/i, /b+e+e+r+/i, /v+o+d+k+a+/i,
+  /w+h+i+s+k+e*y+/i, /l+i+q+u+o+r+/i, /c+o+c+a+i+n+e+/i, /m+e+t+h+/i, /h+e+r+o+i+n+/i,
+  /f+e+n+t+a+n+y+l+/i,
 
-  // Drugs, vaping & alcohol
-  'weed', 'blunt', 'joint', 'stoner', 'high', 'drunk', 'beer', 'vodka', 'whiskey',
-  'liquor', 'cocaine', 'meth', 'heroin', 'vape', 'vaping', 'nicotine', 'bong', 'edible',
-  'cart', 'cigs', 'cigarette', 'tobacco', 'lean', 'fentanyl', 'percocet', 'xanax',
+  // Slurs & Hate
+  /n+i+g+g+[a|e]+r*/i, /f+a+g+/i, /f+a+g+g+o+t+/i, /r+e+t+a+r+d+/i, /s+p+i+c+/i,
+  /c+h+i+n+k+/i, /k+i+k+e+/i, /n+a+z+i+/i, /h+i+t+l+e+r+/i,
 
-  // Hate, slurs & violence
-  'nigger', 'nigga', 'n1gger', 'n1gga', 'negro', 'fag', 'faggot', 'f@g', 'retard',
-  'spic', 'chink', 'kike', 'wetback', 'nazi', 'hitler', 'suicide', 'killmyself',
-  'hangmyself', 'shootup', 'schoolshooter',
-
-  // Blasphemy & demonic parodies
-  'satan', 'demon', 'devil', 'lucifer', 'antichrist', '666'
+  // Numbers & Cultic/Blasphemous Names
+  /\b69\b/, /\b420\b/, /\b666\b/, /s+a+t+a+n+/i, /l+u+c+i+f+e+r+/i, /d+e+v+i+l+/i
 ];
 
-baseFilter.addWords(...CHURCH_FLAGGED_TERMS);
+function cleanAndNormalizeGlyphs(raw) {
+  if (!raw) return '';
+  let s = String(raw).toLowerCase();
 
-// Normalizes symbol substitutions, leetspeak, Unicode homoglyphs, and bypasses
-function cleanAndNormalizeGlyphs(str) {
-  if (!str) return '';
-  let s = str.toLowerCase();
-
-  // Multi-character glyph expansions
+  // Multi-character lookalikes
   s = s.replace(/\|-\||}{/g, 'h')
        .replace(/\|\/\|/g, 'n')
        .replace(/\|\\\/\|/g, 'm')
@@ -61,100 +57,59 @@ function cleanAndNormalizeGlyphs(str) {
        .replace(/\\\/\\\//g, 'w')
        .replace(/\\\//g, 'v');
 
-  // Single-character Unicode / ASCII / Leetspeak mappings
+  // Single-character substitutions (leetspeak, symbols, Cyrillic lookalikes)
   const map = {
-    // A
-    '@': 'a', '4': 'a', 'а': 'a', 'α': 'a', 'д': 'a', 'λ': 'a', 'å': 'a', 'á': 'a', 'à': 'a', 'ä': 'a', 'â': 'a',
-    // B
-    '8': 'b', 'ß': 'b', 'в': 'b', 'Ь': 'b', 'ь': 'b',
-    // C
-    '(': 'c', '<': 'c', '{': 'c', '[': 'c', '©': 'c', '¢': 'c', 'с': 'c', 'ç': 'c',
-    // D
-    'ԁ': 'd', 'cl': 'd',
-    // E
-    '3': 'e', '€': 'e', 'е': 'e', 'є': 'e', 'é': 'e', 'è': 'e', 'ë': 'e', 'ê': 'e', 'э': 'e',
-    // F
-    'ƒ': 'f',
-    // G
-    '6': 'g', '9': 'g', 'q': 'g',
-    // H
-    'н': 'h', '#': 'h',
-    // I
-    '1': 'i', '!': 'i', '|': 'i', 'l': 'i', '¡': 'i', 'і': 'i', 'ї': 'i', 'í': 'i', 'ì': 'i', 'ï': 'i', 'î': 'i',
-    // J
-    'ј': 'j',
-    // K
-    'к': 'k',
-    // L
-    '£': 'l',
-    // M
-    'м': 'm',
-    // N
-    'п': 'n', 'ñ': 'n',
-    // O
-    '0': 'o', 'о': 'o', 'ø': 'o', 'ö': 'o', 'ó': 'o', 'ò': 'o', 'ô': 'o', 'θ': 'o',
-    // P
-    'р': 'p', 'ρ': 'p',
-    // R
-    '®': 'r', 'я': 'r',
-    // S
-    '5': 's', '$': 's', '§': 's', 'ѕ': 's', 'š': 's',
-    // T
-    '7': 't', '+': 't', '†': 't', 'т': 't',
-    // U
-    'u': 'u', 'μ': 'u', 'ü': 'u', 'ú': 'u', 'ù': 'u', 'û': 'u',
-    // V
-    'ν': 'v',
-    // W
-    'vv': 'w', 'uu': 'w', 'ш': 'w',
-    // X
-    '×': 'x', 'х': 'x', 'ж': 'x',
-    // Y
-    '¥': 'y', 'у': 'y', 'ý': 'y', 'ÿ': 'y',
-    // Z
-    '2': 'z', 'z': 'z', 'ž': 'z'
+    '@': 'a', '4': 'a', 'а': 'a', 'α': 'a', 'å': 'a', 'á': 'a', 'à': 'a', 'ä': 'a',
+    '8': 'b', 'ß': 'b', 'в': 'b',
+    '(': 'c', '<': 'c', '{': 'c', '[': 'c', 'с': 'c', '©': 'c',
+    '3': 'e', '€': 'e', 'е': 'e', 'é': 'e', 'è': 'e', 'ë': 'e',
+    '6': 'g', '9': 'g',
+    '1': 'i', '!': 'i', '|': 'i', 'l': 'i', 'і': 'i', 'í': 'i',
+    '0': 'o', 'о': 'o', 'ø': 'o', 'ö': 'o',
+    'р': 'p',
+    '5': 's', '$': 's', '§': 's',
+    '7': 't', '+': 't', '†': 't',
+    'u': 'u', 'μ': 'u', 'ü': 'u',
+    'vv': 'w', 'uu': 'w',
+    '×': 'x', 'х': 'x',
+    '¥': 'y', 'у': 'y',
+    '2': 'z'
   };
 
-  let out = '';
+  let decoded = '';
   for (let i = 0; i < s.length; i++) {
-    const ch = s[i];
-    out += map[ch] || ch;
+    decoded += map[s[i]] || s[i];
   }
-  return out;
+  return decoded;
 }
 
 function isNameInappropriate(rawName) {
   if (!rawName || typeof rawName !== 'string') return true;
 
-  const original = rawName.toLowerCase().trim();
-
-  // Length constraints
+  const original = rawName.trim();
   if (original.length < 2 || original.length > 20) return true;
 
-  // Direct check
-  if (baseFilter.isProfane(original)) return true;
-
-  // Normalized glyph decoding
-  const decoded = cleanAndNormalizeGlyphs(original);
-
-  // Strip all non-alphanumeric separator symbols (handles: f.u.c.k, s-e-x, d_i_c_k)
-  const stripped = decoded.replace(/[^a-z0-9]/g, '');
-
-  if (baseFilter.isProfane(stripped)) return true;
-
-  // Collapse repeated consecutive letters (handles: fuuuuuck -> fuck, ssssex -> sex)
-  const collapsed = stripped.replace(/(.)\1+/g, '$1');
-
-  // Multi-pass phrase inspection against blocklist
-  for (const term of CHURCH_FLAGGED_TERMS) {
-    if (original.includes(term) || stripped.includes(term) || collapsed.includes(term)) {
-      return true;
-    }
+  // Pass 1: Test original string
+  for (const regex of CHURCH_BLOCKED_PATTERNS) {
+    if (regex.test(original)) return true;
   }
 
-  // Explicit number bypasses
-  if (stripped.includes('69') || stripped.includes('420') || stripped.includes('666')) {
-    return true;
+  // Pass 2: Normalize symbols and leetspeak
+  const normalized = cleanAndNormalizeGlyphs(original);
+  for (const regex of CHURCH_BLOCKED_PATTERNS) {
+    if (regex.test(normalized)) return true;
+  }
+
+  // Pass 3: Strip spaces and punctuation (catches: s.e.x, d-i-c-k, b o o b)
+  const stripped = normalized.replace(/[^a-z0-9]/g, '');
+  for (const regex of CHURCH_BLOCKED_PATTERNS) {
+    if (regex.test(stripped)) return true;
+  }
+
+  // Pass 4: Collapse repeat runs (catches: fuuuuuck -> fuck, ssshhhiiitt -> shit)
+  const collapsed = stripped.replace(/(.)\1+/g, '$1');
+  for (const regex of CHURCH_BLOCKED_PATTERNS) {
+    if (regex.test(collapsed)) return true;
   }
 
   return false;
@@ -169,7 +124,7 @@ const pool = process.env.DATABASE_URL
   : null;
 
 if (pool) {
-  pool.on('error', (err, client) => {
+  pool.on('error', (err) => {
     console.error('Unexpected error on idle PostgreSQL client', err);
   });
 }
@@ -272,7 +227,7 @@ try {
   });
 
   masterQuestions = deduped;
-  console.log(`Questions loaded: ${masterQuestions.length} unique questions ready (auto-deduplicated).`);
+  console.log(`Questions loaded: ${masterQuestions.length} unique questions ready.`);
 } catch (err) {
   console.error('Error loading questions.json:', err);
 }
@@ -946,7 +901,7 @@ io.on('connection', (socket) => {
       return socket.emit('player:auth_error', 'Username (2+ chars) and 4-digit PIN required.');
     }
 
-    // MULTI-STAGE CHURCH SAFETY CHECK
+    // STRICT MULTI-PASS SAFETY VERIFICATION
     if (isNameInappropriate(cleanUser)) {
       return socket.emit('player:auth_error', "That nickname isn't appropriate for church youth group. Please choose another.");
     }
@@ -1520,7 +1475,6 @@ function startNextQuestion(room) {
     answered: false
   }));
 
-  // Host broadcast
   io.to(room.code).emit('game:new_question', {
     category: currentQ.category,
     question: currentQ.question,
@@ -1534,7 +1488,6 @@ function startNextQuestion(room) {
     connectedPlayers: connectedList
   });
 
-  // Player personal states
   const standings = getCurrentGameStandings(room);
   Object.keys(room.activeSockets).forEach((sockId) => {
     const sock = io.sockets.sockets.get(sockId);
@@ -1646,7 +1599,6 @@ async function endRound(room) {
     }
   });
 
-  // Calculate & Persist All-Time Accuracy
   const qHash = normalizeQuestionKey(currentQ.question);
   let allTimeTotal = roundTotalAnswers;
   let allTimeCorrect = roundCorrectCount;
@@ -1708,7 +1660,6 @@ async function endRound(room) {
 
   const isMilestone = totalQuestions > 10 && finishedQuestionNum % 10 === 0 && finishedQuestionNum < totalQuestions;
 
-  // Host round end
   io.to(room.code).emit('game:round_ended', {
     correctAnswer: correctIdx,
     correctAnswerText: currentQ.options[correctIdx],
@@ -1726,7 +1677,6 @@ async function endRound(room) {
     allTimeTotal: allTimeTotal
   });
 
-  // Player round end
   Object.keys(room.activeSockets).forEach((sockId) => {
     const socket = io.sockets.sockets.get(sockId);
     if (socket) {
