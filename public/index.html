@@ -625,18 +625,32 @@
       background: linear-gradient(135deg, rgba(6, 78, 59, 0.95), rgba(4, 120, 87, 0.85));
       backdrop-filter: blur(12px);
       border: 2px solid #10b981;
-      padding: 0.75rem;
+      padding: 0.85rem;
       border-radius: 12px;
       margin: 0.25rem 0;
       box-shadow: 0 6px 20px rgba(16, 185, 129, 0.35);
+    }
+    .player-answer-top-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 0.35rem;
     }
     .player-answer-label {
       text-transform: uppercase;
       font-size: 0.7rem;
       letter-spacing: 0.1em;
       color: #6ee7b7;
-      margin-bottom: 0.2rem;
       font-weight: 800;
+    }
+    .player-alltime-badge {
+      background: rgba(15, 23, 42, 0.65);
+      border: 1px solid rgba(56, 189, 248, 0.5);
+      color: var(--cyan);
+      font-size: 0.75rem;
+      font-weight: 900;
+      padding: 0.2rem 0.6rem;
+      border-radius: 9999px;
     }
     .player-answer-text {
       font-size: 1.25rem;
@@ -1068,7 +1082,10 @@
       </button>
 
       <div class="player-answer-reveal" id="answer-reveal-wrapper">
-        <div class="player-answer-label">Correct Answer</div>
+        <div class="player-answer-top-row">
+          <span class="player-answer-label">Correct Answer</span>
+          <span id="player-alltime-badge" class="player-alltime-badge">🎯 --% All-Time</span>
+        </div>
         <div id="player-correct-answer" class="player-answer-text">---</div>
       </div>
 
@@ -1312,6 +1329,7 @@
     const playerRankDisplay = document.getElementById('player-rank-display');
     const playerDeltaDisplay = document.getElementById('player-delta-display');
     const playerCorrectAnswer = document.getElementById('player-correct-answer');
+    const playerAlltimeBadge = document.getElementById('player-alltime-badge');
     const answerRevealWrapper = document.getElementById('answer-reveal-wrapper');
     const playerPodiumArea = document.getElementById('player-podium-area');
     const leaderboardList = document.getElementById('leaderboard-list');
@@ -1602,7 +1620,7 @@
       haptic([100, 100, 200]);
 
       sabotageOverlay.className = 'sabotage-overlay shield-reflect';
-      sabAnimTarget.textContent = '🛡️💥';
+      sabAnimTarget.textContent = '🛡️️💥';
       sabOverlayTitle.textContent = 'SHIELD REFLECTED ATTACK!';
       sabOverlayDesc.textContent = `Deflected ${data.attackerName}'s ${data.sabotageType} attack right back at them!`;
 
@@ -1755,6 +1773,11 @@
 
       resultsHeading.textContent = "Round Results";
       playerCorrectAnswer.textContent = data.correctAnswerText;
+
+      // Render All-Time Global Accuracy Badge
+      const allTimeAcc = data.allTimeAccuracy !== undefined ? data.allTimeAccuracy : 0;
+      const allTimeTotal = data.allTimeTotal !== undefined ? data.allTimeTotal : 0;
+      playerAlltimeBadge.textContent = `🎯 ${allTimeAcc}% All-Time (${allTimeTotal} answers)`;
 
       if (data.myReactionTime !== null && data.myReactionTime !== undefined) {
         reactionTimePill.textContent = `⏱ Locked in: ${data.myReactionTime}s`;
