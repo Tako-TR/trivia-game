@@ -4,10 +4,161 @@ const { Server } = require('socket.io');
 const fs = require('fs');
 const path = require('path');
 const { Pool } = require('pg');
+const Filter = require('bad-words');
 
 const app = express();
 const server = http.createServer(app);
 const io = new Server(server);
+
+const baseFilter = new Filter();
+
+// Comprehensive youth ministry safety blocklist
+const CHURCH_FLAGGED_TERMS = [
+  // Profanity & vulgarity
+  'fuck', 'fck', 'fuk', 'fuc', 'fucker', 'fucking', 'shit', 'sh1t', 'sht', 'bitch', 'btch',
+  'b1tch', 'ass', 'a55', 'asshole', 'bastard', 'damn', 'crap', 'piss', 'cunt',
+
+  // Sexual anatomy & innuendo
+  'penis', 'pen1s', 'p3nis', 'dick', 'd1ck', 'dck', 'dik', 'dix', 'cock', 'c0ck', 'cok',
+  'vagina', 'pussy', 'pusy', 'puss', 'boob', 'boobs', 'b00b', 'b00bs', 'tit', 'tits',
+  'titties', 'clit', 'vulva', 'anus', 'anal', 'rectum', 'boner', 'erection', 'nutsack',
+  'ballsack', 'testicle', 'testicles', 'semen', 'cum', 'kumm', 'ejaculat', 'orgasm',
+  'masturbat', 'horny', 'dildo', 'condom', 'stripper', 'hooker', 'escort', 'whore',
+  'hoe', 'thot', 'slut', 'onlyfans', 'pornhub', 'brazzers', 'xnxx', 'hentai', 'porn',
+  'xxx', 'deeznut', 'deeznutz', 'sugma', 'ligma', 'gyatt', 'rizzler', 'skibidi',
+
+  // Drugs, vaping & alcohol
+  'weed', 'blunt', 'joint', 'stoner', 'high', 'drunk', 'beer', 'vodka', 'whiskey',
+  'liquor', 'cocaine', 'meth', 'heroin', 'vape', 'vaping', 'nicotine', 'bong', 'edible',
+  'cart', 'cigs', 'cigarette', 'tobacco', 'lean', 'fentanyl', 'percocet', 'xanax',
+
+  // Hate, slurs & violence
+  'nigger', 'nigga', 'n1gger', 'n1gga', 'negro', 'fag', 'faggot', 'f@g', 'retard',
+  'spic', 'chink', 'kike', 'wetback', 'nazi', 'hitler', 'suicide', 'killmyself',
+  'hangmyself', 'shootup', 'schoolshooter',
+
+  // Blasphemy & demonic parodies
+  'satan', 'demon', 'devil', 'lucifer', 'antichrist', '666'
+];
+
+baseFilter.addWords(...CHURCH_FLAGGED_TERMS);
+
+// Normalizes symbol substitutions, leetspeak, Unicode homoglyphs, and bypasses
+function cleanAndNormalizeGlyphs(str) {
+  if (!str) return '';
+  let s = str.toLowerCase();
+
+  // Multi-character glyph expansions
+  s = s.replace(/\|-\||}{/g, 'h')
+       .replace(/\|\/\|/g, 'n')
+       .replace(/\|\\\/\|/g, 'm')
+       .replace(/\/-\\/g, 'a')
+       .replace(/\|\)/g, 'd')
+       .replace(/\|3/g, 'b')
+       .replace(/\|_/g, 'l')
+       .replace(/\|\*/g, 'p')
+       .replace(/\|</g, 'k')
+       .replace(/\\\/\\\//g, 'w')
+       .replace(/\\\//g, 'v');
+
+  // Single-character Unicode / ASCII / Leetspeak mappings
+  const map = {
+    // A
+    '@': 'a', '4': 'a', 'а': 'a', 'α': 'a', 'д': 'a', 'λ': 'a', 'å': 'a', 'á': 'a', 'à': 'a', 'ä': 'a', 'â': 'a',
+    // B
+    '8': 'b', 'ß': 'b', 'в': 'b', 'Ь': 'b', 'ь': 'b',
+    // C
+    '(': 'c', '<': 'c', '{': 'c', '[': 'c', '©': 'c', '¢': 'c', 'с': 'c', 'ç': 'c',
+    // D
+    'ԁ': 'd', 'cl': 'd',
+    // E
+    '3': 'e', '€': 'e', 'е': 'e', 'є': 'e', 'é': 'e', 'è': 'e', 'ë': 'e', 'ê': 'e', 'э': 'e',
+    // F
+    'ƒ': 'f',
+    // G
+    '6': 'g', '9': 'g', 'q': 'g',
+    // H
+    'н': 'h', '#': 'h',
+    // I
+    '1': 'i', '!': 'i', '|': 'i', 'l': 'i', '¡': 'i', 'і': 'i', 'ї': 'i', 'í': 'i', 'ì': 'i', 'ï': 'i', 'î': 'i',
+    // J
+    'ј': 'j',
+    // K
+    'к': 'k',
+    // L
+    '£': 'l',
+    // M
+    'м': 'm',
+    // N
+    'п': 'n', 'ñ': 'n',
+    // O
+    '0': 'o', 'о': 'o', 'ø': 'o', 'ö': 'o', 'ó': 'o', 'ò': 'o', 'ô': 'o', 'θ': 'o',
+    // P
+    'р': 'p', 'ρ': 'p',
+    // R
+    '®': 'r', 'я': 'r',
+    // S
+    '5': 's', '$': 's', '§': 's', 'ѕ': 's', 'š': 's',
+    // T
+    '7': 't', '+': 't', '†': 't', 'т': 't',
+    // U
+    'u': 'u', 'μ': 'u', 'ü': 'u', 'ú': 'u', 'ù': 'u', 'û': 'u',
+    // V
+    'ν': 'v',
+    // W
+    'vv': 'w', 'uu': 'w', 'ш': 'w',
+    // X
+    '×': 'x', 'х': 'x', 'ж': 'x',
+    // Y
+    '¥': 'y', 'у': 'y', 'ý': 'y', 'ÿ': 'y',
+    // Z
+    '2': 'z', 'z': 'z', 'ž': 'z'
+  };
+
+  let out = '';
+  for (let i = 0; i < s.length; i++) {
+    const ch = s[i];
+    out += map[ch] || ch;
+  }
+  return out;
+}
+
+function isNameInappropriate(rawName) {
+  if (!rawName || typeof rawName !== 'string') return true;
+
+  const original = rawName.toLowerCase().trim();
+
+  // Length constraints
+  if (original.length < 2 || original.length > 20) return true;
+
+  // Direct check
+  if (baseFilter.isProfane(original)) return true;
+
+  // Normalized glyph decoding
+  const decoded = cleanAndNormalizeGlyphs(original);
+
+  // Strip all non-alphanumeric separator symbols (handles: f.u.c.k, s-e-x, d_i_c_k)
+  const stripped = decoded.replace(/[^a-z0-9]/g, '');
+
+  if (baseFilter.isProfane(stripped)) return true;
+
+  // Collapse repeated consecutive letters (handles: fuuuuuck -> fuck, ssssex -> sex)
+  const collapsed = stripped.replace(/(.)\1+/g, '$1');
+
+  // Multi-pass phrase inspection against blocklist
+  for (const term of CHURCH_FLAGGED_TERMS) {
+    if (original.includes(term) || stripped.includes(term) || collapsed.includes(term)) {
+      return true;
+    }
+  }
+
+  // Explicit number bypasses
+  if (stripped.includes('69') || stripped.includes('420') || stripped.includes('666')) {
+    return true;
+  }
+
+  return false;
+}
 
 const PORT = process.env.PORT || 3000;
 const QUESTION_DURATION = 15;
@@ -641,7 +792,7 @@ function getStreakLabel(streak) {
 const ACHIEVEMENTS_DEF = {
   'flawless': { name: 'Flawless Victory', icon: '🎯', desc: 'Answer every question correctly in a match' },
   'lightning': { name: 'Lightning Fast', icon: '💨', desc: 'Submit a correct answer in under 1.0s' },
-  'elevator': { name: 'The Elevator', icon: '🧗‍♂️️', desc: 'Climb 5+ spots during final 3 questions' },
+  'elevator': { name: 'The Elevator', icon: '🧗‍♂️', desc: 'Climb 5+ spots during final 3 questions' },
   'ice': { name: 'Ice in the Veins', icon: '🧊', desc: 'Win match on the very last question' },
   'lucky': { name: 'Lucky Guess', icon: '🍀', desc: 'Correct answer with <1s remaining' },
   'speed_demon': { name: 'Speed Demon', icon: '⚡', desc: 'Answer correctly in under 1.5s' },
@@ -787,12 +938,17 @@ io.on('connection', (socket) => {
   });
 
   socket.on('player:auth', async ({ username, pin, roomCode }) => {
-    const cleanUser = (username || '').trim().toLowerCase();
+    const cleanUser = (username || '').trim();
     const cleanPin = (pin || '').trim();
     const targetRoomCode = (roomCode || 'ROOM1').trim().toUpperCase();
 
     if (!cleanUser || !cleanPin || cleanUser.length < 2 || cleanPin.length < 4) {
       return socket.emit('player:auth_error', 'Username (2+ chars) and 4-digit PIN required.');
+    }
+
+    // MULTI-STAGE CHURCH SAFETY CHECK
+    if (isNameInappropriate(cleanUser)) {
+      return socket.emit('player:auth_error', "That nickname isn't appropriate for church youth group. Please choose another.");
     }
 
     const room = getOrCreateRoom(targetRoomCode);
@@ -1035,7 +1191,7 @@ io.on('connection', (socket) => {
     const targetSocket = io.sockets.sockets.get(targetItem.id);
     const targetPlayer = room.activeSockets[targetItem.id];
 
-    // CHECK POST-HIT IMMUNITY GRACE PERIOD (3.5s cooldown)
+    // Check post-hit immunity grace period (3.5s cooldown)
     const now = Date.now();
     if (targetPlayer && targetPlayer.sabotageImmuneUntil && now < targetPlayer.sabotageImmuneUntil) {
       const remainingSec = ((targetPlayer.sabotageImmuneUntil - now) / 1000).toFixed(1);
@@ -1045,11 +1201,10 @@ io.on('connection', (socket) => {
     // Deduct energy from sender
     sender.sabotageEnergy -= requiredEnergy;
 
-    // CHECK IF TARGET HAS A DEFENSIVE SHIELD EQUIPPED
+    // Check defensive shield
     if (targetPlayer && targetPlayer.hasShield) {
-      targetPlayer.hasShield = false; // Shield shatters absorbing the hit
+      targetPlayer.hasShield = false;
 
-      // 1. Notify target that shield held and reflected
       if (targetSocket) {
         targetSocket.emit('shield:reflected', {
           attackerName: sender.username,
@@ -1057,7 +1212,6 @@ io.on('connection', (socket) => {
         });
       }
 
-      // 2. Reflected hit strikes original attacker and gives attacker the immunity cooldown
       sender.sabotageImmuneUntil = Date.now() + 3500;
       socket.emit('game:incoming_sabotage', {
         sabotageType: sabotageType,
@@ -1066,7 +1220,6 @@ io.on('connection', (socket) => {
 
       socket.emit('sabotage:error', `SHIELD REFLECT! ${targetItem.name}'s shield reflected the attack back onto you!`);
 
-      // 3. Broadcast shield reflect alert to TV host screen
       io.to(room.code).emit('game:sabotage_banner', {
         attackerName: targetItem.name,
         attackerBadge: targetItem.badge || '🛡️',
@@ -1079,7 +1232,7 @@ io.on('connection', (socket) => {
       return;
     }
 
-    // Normal successful sabotage attack: apply 3.5s grace period to target
+    // Successful attack
     if (targetPlayer) {
       targetPlayer.sabotageImmuneUntil = Date.now() + 3500;
     }
@@ -1367,7 +1520,7 @@ function startNextQuestion(room) {
     answered: false
   }));
 
-  // 1. BROADCAST GLOBALLY TO HOST AND TV VIEWPORTS
+  // Host broadcast
   io.to(room.code).emit('game:new_question', {
     category: currentQ.category,
     question: currentQ.question,
@@ -1381,7 +1534,7 @@ function startNextQuestion(room) {
     connectedPlayers: connectedList
   });
 
-  // 2. DISPATCH PERSONAL ENERGY, SHIELD STATUS, AND LIVE RANK TO EACH PLAYER
+  // Player personal states
   const standings = getCurrentGameStandings(room);
   Object.keys(room.activeSockets).forEach((sockId) => {
     const sock = io.sockets.sockets.get(sockId);
@@ -1459,7 +1612,6 @@ async function endRound(room) {
       p.streak = (p.streak || 0) + 1;
       p.bestStreak = Math.max(p.bestStreak || 0, p.streak);
 
-      // Earn +1 Sabotage Energy Token on correct answer (up to 3)
       p.sabotageEnergy = Math.min(3, (p.sabotageEnergy || 0) + 1);
 
       const multiplier = getStreakMultiplier(p.streak);
@@ -1556,7 +1708,7 @@ async function endRound(room) {
 
   const isMilestone = totalQuestions > 10 && finishedQuestionNum % 10 === 0 && finishedQuestionNum < totalQuestions;
 
-  // Global broadcast to host
+  // Host round end
   io.to(room.code).emit('game:round_ended', {
     correctAnswer: correctIdx,
     correctAnswerText: currentQ.options[correctIdx],
@@ -1574,7 +1726,7 @@ async function endRound(room) {
     allTimeTotal: allTimeTotal
   });
 
-  // Targeted broadcast to each player device
+  // Player round end
   Object.keys(room.activeSockets).forEach((sockId) => {
     const socket = io.sockets.sockets.get(sockId);
     if (socket) {
